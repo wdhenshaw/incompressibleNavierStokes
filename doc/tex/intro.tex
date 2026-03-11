@@ -1,0 +1,62 @@
+\section{Introduction, governing equations, boundary conditions} \label{sec:introduction}
+
+
+
+
+
+The \texttt{ins.m} Matlab code solves the incompressible Navier-Stokes equations in velocity-pressure form,
+\bse
+\bat
+  & \p_t \uv + (\uv\cdot\grad) \uv + \f{1}{\rho} \grad p = \nu \Delta \uv,   \quad && \xv\in\Omega, ~t>0,   \\
+  & \Delta p = - \grad\uv:\grad\uv,                                          \quad && \xv\in\Omega, ~t>0,  \\
+  & \uv(\xv,0) = \uv_0(\xv)                                                  \quad && \xv\in\Omega,\\
+  & \grad\cdot\uv(\xv,0) = 0                                                \quad && \xv\in\p\Omega,
+\eat
+\ese
+with appropriate boundary conditions as discussed below.
+
+
+% -------------------------------------------------------
+\subsection{Boundary conditions}
+
+Let $\nv(\xv)$ denote the outward unit normal vector to a point $\xv$ on a boundary.
+Let $\tv$ denote the corresponding unit tangent vector.
+Here are the physical boundary conditions. Numerically, additional compatibility conditions will be used.
+
+\paragraph{No-slip wall or inflow}
+\bse
+\bat
+   & \uv(\xv,t) = \gv(\xv,t),      \quad && \xv\in\p\Omega,  ~t>0, \\
+   & \grad\cdot\uv(\xv,t) = 0,     \quad && \xv\in\p\Omega, ~t>0.
+\eat
+\ese
+
+
+\paragraph{Slip wall}
+\bse
+\bat
+   & \nv\cdot\uv(\xv,t) = 0       \quad && \xv\in\p\Omega,  ~t>0, \\
+   & \p_n( \tv\cdot\uv) = 0 ,     \quad && \xv\in\p\Omega,  ~t>0, \\
+   & \grad\cdot\uv(\xv,t) = 0     \quad && \xv\in\p\Omega, ~t>0.
+\eat
+\ese
+
+
+\paragraph{Outflow}
+\bse
+\bat
+   & a_0 p(\xv,t) + a_1 \p_n p(\xv,t) = g(\xv,t),    \quad && \xv\in\p\Omega,  ~t>0, \\
+   & \p_n^2(\tv\cdot\uv)                             \quad && \xv\in\p\Omega, ~t>0, \\
+   & \grad\cdot\uv(\xv,t) = 0                        \quad && \xv\in\p\Omega, ~t>0.
+\eat
+\ese
+
+\paragraph{Pressure inflow}
+\bse
+\bat
+   & p(\xv,t) = g_1(\xv,t),            \quad && \xv\in\p\Omega, ~t>0, \\
+   & \tv\cdot\uv = g_2                 \quad && \xv\in\p\Omega, ~t>0, \\
+   & \grad\cdot\uv(\xv,t) = 0          \quad && \xv\in\p\Omega, ~t>0 .
+\eat
+\ese
+

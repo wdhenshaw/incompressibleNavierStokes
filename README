@@ -1,0 +1,4 @@
+Matlab codes to solve the incompressible Navier Stokes equations
+
+ins.m       : main routine
+runChecks.m : run regression checks in the check folder, check/check.m

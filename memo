@@ -1,0 +1,1279 @@
+%
+%  Matlab code to solve the incompressible Navier Stokes Equations
+%
+
+
+cd /Users/henshaw/DropBox/research/incompressibleNavierStokes
+
+
+
+----------- FILES:
+
+ins.m : solve INS with pressure-poisson
+
+
+***************************************
+***** Sun March 8, 2026
+
+PLOTS FOR DOC 
+ins -ts=pc2 -tf=2.0 -tp=0.5 -ms=none -knownSolution=none -idebug=1 -nu=.0002 -ya=-.5 -yb=1.5 -xb=2 -bcs=ppnn -N0=800 -ic=shear -movieMode=1 -plotOption=3 -plotErrors=0 -kx=1 -checkTimeStep=20 -ad=1 -ad21=.1 -ad22=.1 -cfl=0.95 -savePlots=1 -plotName=insShearN800;
+
+
+
+TEST:
+
+ins -ts=pc2 -tf=2 -tp=.5 -ms=none -knownSolution=none -idebug=1 -nu=.02 -ya=-.5 -yb=1.5 -xb=2 -bcs=ppnn -N0=100 -ic=shear -movieMode=1 -plotOption=3 -plotErrors=0 -kx=1 -checkTimeStep=20 -ad=1 -ad21=.1 -ad22=.1 -cfl=0.95 -savePlots=1 -plotName=insShearN800
+
+
+runGridConvergence -ts=pc2 -tf=.25 -ms=none -knownSolution=TaylorGreen -bcs=nnnn -numResolutions=4
+
+>> runGridConvergence -ts=pc2 -tf=.25 -ms=none -knownSolution=TaylorGreen -bcs=nnnn -numResolutions=4
+  N     p-err  ratio   u-err  ratio   v-err ratio    div  ratio    cpu(s)  ratio
+ --------------------------------------------------------------------------------- 
+  10  7.88e-03       6.58e-03       5.79e-03       1.49e-02        3.00e-02
+  20  2.44e-03  3.2  1.37e-03  4.8  1.34e-03  4.3  9.84e-04 15.1   8.00e-02  2.7
+  40  6.76e-04  3.6  3.40e-04  4.0  3.36e-04  4.0  6.29e-05 15.7   1.03e+00 12.9
+  80  1.74e-04  3.9  8.51e-05  4.0  8.42e-05  4.0  3.94e-06 16.0   7.51e+00  7.3
+
+
+runGridConvergence -ts=pc2 -tf=.25 -ms=trig -numResolutions=3
+
+  N     p-err  ratio   u-err  ratio   v-err ratio    div  ratio    cpu(s)  ratio
+ --------------------------------------------------------------------------------- 
+  10  4.46e-02       6.31e-03       4.17e-03       4.00e-02        1.80e-01
+  20  1.16e-02  3.8  4.71e-04 13.4  3.54e-04 11.8  3.28e-03 12.2   1.60e-01  0.9
+  40  2.92e-03  4.0  1.17e-04  4.0  6.59e-05  5.4  2.31e-04 14.2   9.90e-01  6.2
+
+***************************************
+***** Sat March 7, 2026
+
+SAVE HARDCOPIES:
+
+ins -ts=im2  -tf=.5 -ms=none -knownSolution=TaylorGreen -idebug=1 -nu=0.1 -bcs=nnnn -N0=100 -plotOption=1 -savePlots=1 -plotName=insTaylorGreen
+
+
+new checks:
+ins -ts=pc2 -tzScale=1 -tf=.1 -ms=poly -knownSolution=none -nu=0.1 -degreex=2 -degreet=2 -bcs=ionn -N0=10 -idebug=1 -plotSolutionOnGhost=1 -plotEveryStep=1
+
+
+ins -ts=pc2 -tzScale=1 -tf=.1 -ms=poly -knownSolution=none -nu=0.1 -degreex=2 -degreet=2 -bcs=ionn -N0=10 -idebug=0
+Define BC forcing: finish me...
+
+
+
+PRESSURE INFLOW 
+ins -ts=im2 -tzScale=1 -tf=.1 -ms=poly -knownSolution=none -nu=0.1 -degreex=2 -degreet=1 -bcs=Innn -idebug=1 -N0=10 -plotSolutionOnGhost=1 -plotEveryStep=1;
+degreet=1:
+im2: t=1.00e-01: Nx= 10 Ny= 10 Nt=    7 dt=1.43e-02 max-Err(p,u,v)=(6.22e-15,2.66e-15,8.88e-16) cpu=2.90e-01(s)
+degreet=2:
+im2: t=1.00e-01: Nx= 10 Ny= 10 Nt=    7 dt=1.43e-02 max-Err(p,u,v)=(6.74e-06,1.84e-07,7.01e-09) cpu=4.00e-01(s)
+
+
+FIX ME: v on ghost ... fixed:
+ins -ts=ab2 -tzScale=1 -tf=.1 -ms=poly -knownSolution=none -nu=0.1 -degreex=2 -degreet=2 -bcs=Innn -idebug=1 -N0=10 -plotSolutionOnGhost=1 -plotEveryStep=1;
+
+ab2: t=1.00e-01: Nx= 10 Ny= 10 Nt=   17 dt=5.88e-03 max-Err(p,u,v)=(1.73e-14,1.78e-15,7.22e-16) cpu=4.30e-01(s)
+
+
+
+SLIP WALL + IMP
+
+
+IM2 + SLIP: OK 
+
+ins -ts=im2 -tzScale=1 -tf=.1 -ms=poly -knownSolution=none -nu=0.1 -degreex=2 -degreet=2 -bcs=nsnn -idebug=1 -N0=10 -plotSolutionOnGhost=1 -plotEveryStep=1;
+
+formImplicitTimeSteppingMatrix: solver 1: I1a=[3,11] I2a=[3,11] (interior eqn)
+Optimized fill of implicit time-stepping matrix: nzzEst=845, nzz=608
+formImplicitMatrix: time to fill matrix = 1.00e-02(s), factor matrix = 0.00e+00(s)
+formImplicitTimeSteppingMatrix: solver 2: I1a=[3,12] I2a=[3,11] (interior eqn)
+Optimized fill of implicit time-stepping matrix: nzzEst=845, nzz=686
+formImplicitMatrix: time to fill matrix = 2.00e-02(s), factor matrix = 2.00e-02(s)
+Warning: Matrix is singular to working precision. 
+> In decomposition/warnIfIllConditioned (line 713)
+
+OK:
+ins -ts=im2 -tzScale=1 -tf=.1 -ms=poly -knownSolution=none -nu=0.1 -degreex=2 -degreet=2 -bcs=snnn -idebug=1 -N0=10 -plotSolutionOnGhost=1 -plotEveryStep=1;
+
+
+
+AB2: + SLIP  ... FIXED 
+
+ins -ts=ab2 -tzScale=1 -tf=.1 -ms=poly -knownSolution=none -nu=0.1 -degreex=2 -degreet=2 -bcs=nsnn -idebug=1 -N0=10 -plotSolutionOnGhost=1 -plotEveryStep=1;
+
+-bcs=snnn : OK:
+ins -ts=ab2 -tzScale=1 -tf=.1 -ms=poly -knownSolution=none -nu=0.1 -degreex=2 -degreet=2 -bcs=snnn -idebug=1 -N0=10 -plotSolutionOnGhost=1 -plotEveryStep=1;
+
+***************************************
+***** Fri March 6, 2026
+
+MAC: max threads = 14
+
+FIX IMP TIME-STEPPIN FOR SLIP WALL
+
+FIX IMP MATRIX, FIX ASSIGN RHS FOR IMP
+
+CHECK SLIP WALL
+ins -ts=im2 -tzScale=1 -tf=.1 -ms=poly -knownSolution=none -nu=0.1 -degreex=2 -degreet=2 -bcs=snnn -idebug=1 -N0=10;
+
+PC2: DOES NOT WORK: ... FIXED 
+   degreex=0 OK 
+
+ins -ts=ab2 -tzScale=1 -tf=.1 -ms=poly -knownSolution=none -nu=0.1 -degreex=1 -degreet=2 -bcs=snnn -idebug=1 -N0=10 -plotSolutionOnGhost=1;
+
+ins -ts=pc2 -tzScale=1 -tf=.1 -ms=poly -knownSolution=none -nu=0.1 -degreex=2 -degreet=2 -bcs=snnn -idebug=1 -N0=10;
+pc2: t=1.00e-01: Nx= 10 Ny= 10 Nt=   11 dt=9.09e-03 max-Err(p,u,v)=(6.83e-01,4.53e-02,3.01e-01) cpu=2.50e-01(s)
+
+
+
+ins -ts=im2 -tzScale=1 -tf=.1 -ms=poly -knownSolution=none -nu=0.1 -degreex=2 -degreet=2 -bcs=nnnn -N0=10;
+
+im2: t=1.00e-01: Nx= 10 Ny= 10 Nt=    7 dt=1.43e-02 max-Err(p,u,v)=(2.57e-06,1.78e-07,1.41e-08) cpu=5.50e-01(s)
+
+TAYLOR GREEN -- BROKEN, THEN FIXED
+
+TG for check:
+ins -ts=im2 -tf=.2 -ms=none -knownSolution=TaylorGreen -idebug=1 -nu=0.1  -bcs=nnnn -N0=20 -plotOption=1;
+
+ins -ts=im2  -tf=.5 -ms=none -knownSolution=TaylorGreen -idebug=1 -nu=0.1 -bcs=nnnn -N0=100 -plotOption=1 -useNew=1;
+
+im2: t=9.848e-02 step=    13 dt=7.576e-03 div/grad= 5.43e-05, cpu= 2.57e+00(s)
+im2: t=1.970e-01 step=    26 dt=7.576e-03 div/grad= 2.73e-05, cpu= 3.02e+00(s)
+im2: t=3.030e-01 step=    40 dt=7.576e-03 div/grad= 1.44e-05, cpu= 3.42e+00(s)
+im2: t=4.015e-01 step=    53 dt=7.576e-03 div/grad= 9.15e-06, cpu= 3.88e+00(s)
+im2: t=5.000e-01 step=    66 dt=7.576e-03 div/grad= 6.71e-06, cpu= 4.25e+00(s)
+im2: t=5.00e-01: Nx=100 Ny=100 Nt=   66 dt=7.58e-03 max-Err(p,u,v)=(1.56e-06,9.09e-07,9.10e-07) cpu=4.25e+00(s)
+
+
+
+ins -ts=im2 -tf=0.5 -ms=none -knownSolution=Poiseuille -idebug=1 -nu=0.05 -xb=2 -bcs=ionn -N0=20 -ic=constant -plotOption=1;
+
+SHEAR: TWO CELLS FORM
+ins -ts=pc2 -tzScale=1 -tf=2 -ms=none -knownSolution=none -idebug=1 -nu=.0002 -ya=-.5 -yb=1.5 -xb=2 -bcs=ppnn -N0=800 -ic=shear -movieMode=1 -plotOption=3 -plotErrors=0 -kx=1 -checkTimeStep=20 -ad=1 -ad21=.1 -ad22=.1 -cfl=0.95 -numThreads=1;
+pc2: t=2.00e+00 Nx=800 Ny=800 Nt= 1005 dt=1.32e-03 cpu=6.41e+02(s)
+  ------------- TIMINGS pc2 Nx=800 Ny=800 Nt= 1005 --------------------
+                  cpu (s)     %   
+Total             6.41e+02  100.0
+  setup           7.13e+01   11.1
+  getUt           1.29e+02   20.1
+  implicit solve  0.00e+00    0.0
+  implicit factor 0.00e+00    0.0
+  pressure solve  3.89e+02   60.7
+  bc              4.00e-01    0.1
+  plotting        3.32e+01    5.2
+
+
+SHEAR
+ins -ts=pc2 -tzScale=1 -tf=2 -ms=none -knownSolution=none -idebug=1 -nu=.0005 -ya=-.5 -yb=1.5 -xb=2 -bcs=ppnn -N0=500 -ic=shear -movieMode=1 -plotOption=3 -plotErrors=0 -kx=1 -checkTimeStep=20 -ad=1 -ad21=.1 -ad22=.1 -cfl=0.95 -numThreads=1;
+
+ADD CHECK FILE
+
+FIRST CHECK 
+ins -ts=pc2 -tzScale=1 -tf=.1 -ms=poly -knownSolution=none -idebug=0 -nu=0.1 -degreex=2 -degreet=2 -bcs=nnnn -N0=10 -plotOption=-1
+
+ins -ts=pc2 -tzScale=1 -tf=.1 -ms=poly -knownSolution=none -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bcs=nnnn -N0=10 -plotOption=1
+
+Pressure inflow: SEEMS TO WORK
+
+ins -ts=pc2 -tzScale=1 -tf=2 -ms=none -knownSolution=none -idebug=1 -nu=0.1 -bcs=Ionn -N0=40 -ic=constant -plotOption=3 -movieMode=1 -pOutflow=-1;
+
+***************************************
+***** Thurs Mar 5, 2026
+
+
+ONE CELL: BROKEN : PERIODIC ?? --> bc=p = periodic not pressureInflow
+LOOKS OK AT cfl=.95: 
+ins -ts=pc2 -tzScale=1 -tf=2 -ms=none -knownSolution=none -idebug=1 -nu=.0005 -ya=-.5 -yb=1.5 -xb=2 -bcs=ppnn -N0=500 -ic=shear -movieMode=1 -plotOption=3 -plotErrors=0 -kx=1 -checkTimeStep=20 -ad=1 -ad21=.1 -ad22=.1 -cfl=0.95;
+
+
+ins -ts=pc2 -tzScale=1 -tf=2 -ms=none -knownSolution=none -idebug=1 -nu=.01 -ya=-.5 -yb=1.5 -xb=2 -bcs=ppnn -N0=100 -ic=shear -movieMode=1 -plotOption=3 -plotErrors=0 -kx=1 -checkTimeStep=20 -ad=1 -ad21=.1 -ad22=.1 -cfl=0.95;
+
+
+
+RE-ORGANIZE CODES:
+  advanceAdams
+  advancePC
+  advanceIM
+
+
+
+ADD ARTIFICIAL DISSIPATION TO getTimeStep
+
+TEST SLIP WALL:
+
+CHANNEL FLOW
+top slip:
+ins -ts=pc2 -tzScale=1 -tf=5 -ms=none -knownSolution=none -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bcs=ions -N0=40 -ic=constant -plotOption=3 -tp=.05;
+bottom slip:
+ins -ts=pc2 -tzScale=1 -tf=5 -ms=none -knownSolution=none -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bcs=iosn -N0=40 -ic=constant -plotOption=3 -tp=.05;
+
+
+TEST OUTFLOW BC
+
+BROKEN:  ... fixed
+ins -ts=im2 -tzScale=1 -tf=.5 -ms=none -knownSolution=TaylorGreen -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bcs=nnnn -N0=100 -plotOption=1 -useNew=1;
+
+
+ins -ts=im2 -tzScale=1 -tf=0.5 -ms=none -knownSolution=Poiseuille -idebug=1 -nu=0.05 -xb=2 -bcs=ppnn -N0=200 -ic=shear -movieMode=1 -plotOption=3 -plotErrors=0 -kx=1;
+im2: t=1.029e-01 step=     7 dt=1.471e-02 divu/grad= 7.81e-04, ucpu= 2.31e+00(s)
+im2: t=2.059e-01 step=    14 dt=1.471e-02 divu/grad= 1.35e-04, ucpu= 3.03e+00(s)
+im2: t=2.941e-01 step=    20 dt=1.471e-02 divu/grad= 5.64e-05, ucpu= 3.67e+00(s)
+im2: t=3.971e-01 step=    27 dt=1.471e-02 divu/grad= 1.76e-05, ucpu= 4.52e+00(s)
+im2: t=5.000e-01 step=    34 dt=1.471e-02 divu/grad= 5.60e-06, ucpu= 5.22e+00(s)
+
+CHANNEL FLOW
+ins -ts=pc2 -tzScale=1 -tf=5 -ms=none -knownSolution=none -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bcs=ionn -N0=40 -ic=constant -plotOption=3 -tp=.05;
+
+
+
+
+testPlotStreamLines -Nx=40 -idebug=0 -xb=1
+
+
+TEST SHEAR:
+
+ONE CELL:
+LOOKS OK AT cfl=.95: 
+ins -ts=pc2 -tzScale=1 -tf=2 -ms=none -knownSolution=none -idebug=1 -nu=.0005 -ya=-.5 -yb=1.5 -xb=2 -bcs=ppnn -N0=500 -ic=shear -movieMode=1 -plotOption=3 -plotErrors=0 -kx=1 -checkTimeStep=20 -ad=1 -ad21=.1 -ad22=.1 -cfl=0.95;
+
+Change the time-step: step=   800, dt=1.3661e-03, dtNew=1.2225e-03, numStepsRemaining=742 (rel-dtdiff= 1.05e-01)
+pc2: t=1.100e+00 step=   806 dt=1.223e-03 cpu= 1.68e+02(s)
+pc2: t=1.200e+00 step=   888 dt=1.223e-03 cpu= 1.83e+02(s)
+pc2: t=1.300e+00 step=   969 dt=1.223e-03 cpu= 1.99e+02(s)
+Change the time-step: step=   980, dt=1.2225e-03, dtNew=1.0923e-03, numStepsRemaining=629 (rel-dtdiff= 1.07e-01)
+pc2: t=1.400e+00 step=  1060 dt=1.092e-03 cpu= 2.16e+02(s)
+pc2: t=1.500e+00 step=  1151 dt=1.092e-03 cpu= 2.33e+02(s)
+Change the time-step: step=  1160, dt=1.0923e-03, dtNew=9.7309e-04, numStepsRemaining=504 (rel-dtdiff= 1.09e-01)
+pc2: t=1.600e+00 step=  1253 dt=9.731e-04 cpu= 2.51e+02(s)
+pc2: t=1.700e+00 step=  1356 dt=9.731e-04 cpu= 2.70e+02(s)
+pc2: t=1.800e+00 step=  1458 dt=9.731e-04 cpu= 2.88e+02(s)
+pc2: t=1.900e+00 step=  1561 dt=9.731e-04 cpu= 3.07e+02(s)
+Change the time-step: step=  1660, dt=9.7309e-04, dtNew=7.7847e-04, numStepsRemaining=5 (rel-dtdiff= 2.00e-01)
+pc2: t=2.000e+00 step=  1665 dt=7.785e-04 cpu= 3.25e+02(s)
+pc2: t=2.00e+00 Nx=500 Ny=500 Nt= 1665 dt=7.78e-04 cpu=3.25e+02(s)
+  ------------- TIMINGS pc2 Nx=500 Ny=500 Nt= 1665 --------------------
+                  cpu (s)    %   
+Total             3.25e+02  100.0
+  setup           1.22e+01    3.8
+  getUt           6.11e+01   18.8
+  implicit solve  0.00e+00    0.0
+  implicit factor 0.00e+00    0.0
+  pressure solve  2.30e+02   70.6
+  bc              1.14e+00    0.4
+  plotting        1.19e+01    3.7
+
+
+TWO CELLS
+ins -ts=pc2 -tzScale=1 -tf=2 -ms=none -knownSolution=none -idebug=1 -nu=.0001 -ya=-.5 -yb=1.5 -xb=2 -bcs=ppnn -N0=900 -ic=shear -movieMode=1 -plotOption=3 -plotErrors=0 -kx=2 -checkTimeStep=20 -ad=1 -ad21=.1 -ad22=.1 -cfl=0.95;
+
+
+
+ins -ts=pc2 -tzScale=1 -tf=1 -ms=none -knownSolution=none -idebug=1 -nu=.005 -ya=-.5 -yb=1.5 -xb=2 -bcs=ppnn -N0=200 -ic=shear -movieMode=1 -plotOption=3 -plotErrors=0 -kx=2 -checkTimeStep=20 -ad=1 -ad21=.1 -ad22=.1 -cfl=0.95;
+
+
+
+ins -ts=pc2 -tzScale=1 -tf=.2 -ms=none -knownSolution=none -idebug=1 -nu=.005 -ya=-.5 -yb=1.5 -xb=2 -bcs=ppnn -N0=200 -ic=shear -movieMode=1 -plotOption=3 -plotErrors=0 -kx=2 -checkTimeStep=20 -ad=1 -ad21=.1 -ad22=.1 -cfl=0.95;
+
+
+>> runGridConvergence -ts=pc2 -tf=.25 -ms=trig -numResolutions=3
+ t=2.50e-01: Nx= 10 Ny= 10 Nt=   13 dt=1.92e-02 max-Err(p,u,v)=(4.46e-02,6.31e-03,4.17e-03) cpu=1.00e-02(s)
+ t=2.50e-01: Nx= 20 Ny= 20 Nt=   51 dt=4.90e-03 max-Err(p,u,v)=(1.16e-02,4.71e-04,3.54e-04) cpu=7.00e-02(s)
+ t=2.50e-01: Nx= 40 Ny= 40 Nt=  204 dt=1.23e-03 max-Err(p,u,v)=(2.92e-03,1.17e-04,6.59e-05) cpu=7.30e-01(s)
+  N     p-err  ratio   u-err  ratio   v-err ratio    div  ratio    cpu(s)  ratio
+ --------------------------------------------------------------------------------- 
+  10  4.46e-02       6.31e-03       4.17e-03       4.00e-02        1.00e-02
+  20  1.16e-02  3.8  4.71e-04 13.4  3.54e-04 11.8  3.28e-03 12.2   7.00e-02  7.0
+  40  2.92e-03  4.0  1.17e-04  4.0  6.59e-05  5.4  2.31e-04 14.2   7.30e-01 10.4
+
+ins -ts=im2 -tzScale=1 -tf=.1 -ms=poly -knownSolution=none -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bcs=nnnn -N0=10 -plotOption=1 -useNew=1; 
+ins -ts=im2 -tzScale=1 -tf=.5 -ms=none -knownSolution=TaylorGreen -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bcs=nnnn -N0=100 -plotOption=1 -useNew=1;
+
+
+
+ins -ts=pc2 -tzScale=1 -tf=.1 -ms=poly -knownSolution=none -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bcs=nnnn -N0=10 -plotOption=1 -useNew=1; 
+ins -ts=pc2 -tzScale=1 -tf=.1 -ms=none -knownSolution=TaylorGreen -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bcs=nnnn -N0=100 -plotOption=1 -useNew=1;
+
+*** CPU TIMING FOR GETUT IS VERY VARIABLE***
+>>new:
+  ------------- TIMINGS pc2 Nx=100 Ny=100 Nt=  509 --------------------
+                  cpu (s)    %   
+Total             6.76e+00  100.0
+  setup           9.00e-02    1.3
+  getUt           3.10e-01    4.6
+  implicit solve  0.00e+00    0.0
+  implicit factor 0.00e+00    0.0
+  pressure solve  6.16e+00   91.1
+  bc              7.00e-02    1.0
+  plotting        5.90e-01    8.7
+
+>> OLD
+-------------------------------------------------------------------------------------------
+getTimeStep: dt = 1.968e-04 (dtMax= 1.00e+10)
+pressureEquation: **MATRIX IS SINGULAR** add an extra equation.
+Optimized fill of pressure matrix: nzzEst=63660, nzz=72231
+ t=1.00e-01: Nx=100 Ny=100 Nt=  509 dt=1.96e-04 max-Err(p,u,v)=(4.19e-04,9.42e-05,9.33e-05) cpu=7.24e+00(s)
+  ------------- TIMINGS pc2 Nx=100 Ny=100 Nt=  509 --------------------
+                  cpu (s)    %   
+Total             7.24e+00  100.0
+  setup           8.00e-02    1.1
+  getUt           4.30e-01    5.9
+  implicit solve  0.00e+00    0.0
+  implicit factor 0.00e+00    0.0
+  pressure solve  6.51e+00   89.9
+  bc              1.30e-01    1.8
+  plotting        5.90e-01    8.1
+
+
+ins -ts=ab2 -tzScale=1 -tf=.1 -ms=poly -knownSolution=none -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bcs=nnnn -N0=10 -plotOption=1;
+
+ins -ts=ab2 -tzScale=1 -tf=.1 -ms=none -knownSolution=TaylorGreen -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bcs=nnnn -N0=100 -plotOption=1;
+
+OLD: 
+  ------------- TIMINGS ab2 Nx=100 Ny=100 Nt=  890 --------------------
+                  cpu (s)    %   
+Total             6.24e+00  100.0
+  setup           9.00e-02    1.4
+  getUt           1.60e-01    2.6
+  implicit solve  0.00e+00    0.0
+  implicit factor 0.00e+00    0.0
+  pressure solve  5.72e+00   91.7
+  bc              1.30e-01    2.1
+  plotting        5.20e-01    8.3
+
+
+SHEAR FLOW 
+
+ONE CELL:
+ins -ts=pc2 -tzScale=1 -tf=50 -ms=none -knownSolution=none -idebug=1 -nu=.001 -ya=-.5 -yb=1.5 -xb=2 -bcs=ppnn -N0=300 -ic=shear -movieMode=1 -plotOption=3 -plotErrors=0 -kx=1 -checkTimeStep=20 -ad=1 -ad21=.1 -ad22=.1 -cfl=0.5;
+
+TWO CELLS
+ins -ts=pc2 -tzScale=1 -tf=2 -ms=none -knownSolution=none -idebug=1 -nu=.0001 -ya=-.5 -yb=1.5 -xb=2 -bcs=ppnn -N0=900 -ic=shear -movieMode=1 -plotOption=3 -plotErrors=0 -kx=2 -checkTimeStep=20 -ad=1 -ad21=.1 -ad22=.1 -cfl=0.5;
+
+ins -ts=pc2 -tzScale=1 -tf=50 -ms=none -knownSolution=none -idebug=1 -nu=.0001 -ya=-.5 -yb=1.5 -xb=2 -bcs=ppnn -N0=500 -ic=shear -movieMode=1 -plotOption=3 -plotErrors=0 -kx=2 -checkTimeStep=20 -ad=1 -ad21=.1 -ad22=.1 -cfl=0.5;
+
+ins -ts=pc2 -tzScale=1 -tf=50 -ms=none -knownSolution=none -idebug=1 -nu=.001 -ya=-.5 -yb=1.5 -xb=2 -bcs=ppnn -N0=300 -ic=shear -movieMode=1 -plotOption=3 -plotErrors=0 -kx=2 -checkTimeStep=20 -ad=1 -ad21=.1 -ad22=.1 -cfl=0.5;
+
+ins -ts=im2 -tzScale=1 -tf=0.5 -ms=none -knownSolution=Poiseuille -idebug=1 -nu=0.05 -xb=2 -bcs=ppnn -N0=200 -ic=shear -movieMode=1 -plotOption=3 -plotErrors=0 -kx=1;
+
+
+
+runGridConvergence -ts=im2 -tf=1.0 -ms=trig -numResolutions=4
+--New:
+  N     p-err  ratio   u-err  ratio   v-err ratio    div  ratio    cpu(s)  ratio
+ --------------------------------------------------------------------------------- 
+  10  6.22e-02       2.96e-02       1.95e-02       2.13e-01        1.00e-02
+  20  1.89e-02  3.3  1.35e-02  2.2  6.78e-03  2.9  1.09e-01  2.0   1.00e-02  1.0
+  40  7.11e-03  2.7  4.14e-03  3.3  2.58e-03  2.6  4.36e-02  2.5   5.00e-02  5.0
+  80  2.40e-03  3.0  8.55e-04  4.8  7.58e-04  3.4  1.23e-02  3.6   3.00e-01  6.0
+
+-- old: 
+ N     p-err  ratio   u-err  ratio   v-err ratio    div  ratio    cpu(s)  ratio
+ --------------------------------------------------------------------------------- 
+  10  6.22e-02       2.96e-02       1.95e-02       2.13e-01        1.00e-02
+  20  3.06e-02  2.0  1.32e-02  2.2  8.13e-03  2.4  1.51e-01  1.4   2.00e-02  2.0
+  40  8.33e-03  3.7  6.33e-03  2.1  3.86e-03  2.1  6.14e-02  2.5   1.70e-01  8.5
+  80  2.81e-03  3.0  1.14e-03  5.5  9.90e-04  3.9  1.51e-02  4.1   6.70e-01  3.9
+
+runGridConvergence -ts=ab2 -tf=.25 -ms=trig -numResolutions=3
+--New:
+ N     p-err  ratio   u-err  ratio   v-err ratio    div  ratio    cpu(s)  ratio
+ --------------------------------------------------------------------------------- 
+  10  5.57e-02       4.18e-03       2.76e-03       2.54e-02        2.00e-02
+  20  1.47e-02  3.8  4.72e-04  8.8  2.96e-04  9.3  2.01e-03 12.6   6.00e-02  3.0
+  40  3.29e-03  4.5  1.17e-04  4.0  6.56e-05  4.5  1.40e-04 14.3   6.70e-01 11.2
+-- Old 
+  N     p-err  ratio   u-err  ratio   v-err ratio    div  ratio    cpu(s)  ratio
+ --------------------------------------------------------------------------------- 
+  10  4.18e-02       4.09e-03       3.39e-03       2.53e-02        7.00e-02
+  20  1.47e-02  2.9  4.72e-04  8.7  2.96e-04 11.4  2.01e-03 12.6   1.00e-01  1.4
+  40  3.29e-03  4.5  1.17e-04  4.0  6.56e-05  4.5  1.40e-04 14.3   8.40e-01  8.4
+
+
+
+***************************************
+***** Wed March 4, 2026
+
+START ON STREAM LINE PLOTTER
+
+testPlotStreamLines -Nx=40 -idebug=0 -xb=1
+
+Plot streamlines: cpu= 1.41e+00(s) plotStreamLineArrows=1
+
+Plot streamlines: cpu= 8.00e-02(s) plotStreamLineArrows=0
+
+
+testPlotStreamLines -Nx=100 -idebug=1 
+
+>> testPlotStreamLines -Nx=10 -idebug=0 
+
+[Nx,Ny]=[ 50, 50] maxErr=2.650e-03
+[Nx,Ny]=[100,100] maxErr=6.551e-04
+[Nx,Ny]=[200,200] maxErr=1.648e-04
+
+
+
+SHEAR FLOW
+
+perturbation grows 
+ins -ts=pc2 -tzScale=1 -tf=50 -ms=none -knownSolution=none -idebug=1 -nu=.001 -ya=-.5 -yb=1.5 -xb=2 -bcs=ppnn -N0=300 -ic=shear -movieMode=1 -plotOption=3 -plotErrors=0 -kx=1 -checkTimeStep=20 -ad=1 -ad21=.1 -ad22=.1 -cfl=0.5;
+
+ins -ts=pc2 -tzScale=1 -tf=50 -ms=none -knownSolution=none -idebug=1 -nu=.001 -ya=-.5 -yb=1.5 -xb=2 -bcs=ppnn -N0=200 -ic=shear -movieMode=1 -plotOption=3 -plotErrors=0 -kx=1 -checkTimeStep=20 -ad=1 -ad21=.1 -ad22=.1 -cfl=0.5;
+
+ins -ts=pc2 -tzScale=1 -tf=50 -ms=none -knownSolution=none -idebug=1 -nu=.01 -ya=-.5 -yb=1.5 -xb=2 -bcs=ppnn -N0=100 -ic=shear -movieMode=1 -plotOption=3 -plotErrors=0 -kx=1 -checkTimeStep=20 -ad=1 -ad21=.1 -ad22=.1 -cfl=0.5;
+
+
+
+ADD ARTFICIAL DISSIPATION
+
+AD : looks 2nd-order 
+ins -ts=pc2 -tzScale=1 -tf=.1 -ms=trig -idebug=1 -nu=0.1 -bcs=nnnn -N0=10 -plotOption=1 -ad=1;
+
+t=1.00e-01: Nx= 10 Ny= 10 Nt=    6 dt=1.67e-02 max-Err(p,u,v)=(2.28e-01,4.87e-02,3.21e-02) cpu=1.00e-01(s)
+t=1.00e-01: Nx= 20 Ny= 20 Nt=   21 dt=4.76e-03 max-Err(p,u,v)=(6.02e-02,4.12e-03,2.53e-03) cpu=2.40e-01(s)
+t=1.00e-01: Nx= 40 Ny= 40 Nt=   82 dt=1.22e-03 max-Err(p,u,v)=(1.59e-02,7.24e-04,3.93e-04) cpu=5.80e-01(s)
+t=1.00e-01: Nx= 80 Ny= 80 Nt=  326 dt=3.07e-04 max-Err(p,u,v)=(4.05e-03,1.89e-04,9.67e-05) cpu=4.90e+00(s)
+
+Add predictor-corrector pc2
+
+ins -ts=pc2 -tzScale=1 -tf=.1 -ms=poly -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bcs=nnnn -N0=10 -plotOption=1;
+
+t=1.00e-01: Nx= 10 Ny= 10 Nt=   11 dt=9.09e-03 max-Err(p,u,v)=(4.88e-15,8.88e-16,8.05e-16) cpu=6.20e-01(s)
+
+***************************************
+***** Tues March 3, 2026
+
+ADD VARIABLE dt
+
+
+IM2:
+ins -ts=im2 -tzScale=1 -tf=.5 -ms=trig -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bcs=nnnn -N0=10 -plotOption=1 -checkTimeStep=25;
+
+ins -ts=im2 -tzScale=1 -tf=2 -ms=poly -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bcs=nnnn -N0=10 -plotOption=1 -checkTimeStep=25;
+
+
+ins -ts=ab2 -tzScale=1 -tf=.5 -ms=trig -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bcs=nnnn -N0=10 -plotOption=1 -checkTimeStep=25;
+
+
+ins -ts=ab2 -tzScale=1 -tf=.5 -ms=poly -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bcs=nnnn -N0=10 -plotOption=1 -checkTimeStep=25;
+
+Change the time-step: step=    25, dt=5.8824e-03, dtNew=5.5147e-03, numStepsRemaining=64
+getTimeStep: dt = 5.288e-03 (dtMax= 1.00e+10)
+Change the time-step: step=    50, dt=5.5147e-03, dtNew=5.2457e-03, numStepsRemaining=41
+getTimeStep: dt = 4.990e-03 (dtMax= 1.00e+10)
+Change the time-step: step=    75, dt=5.2457e-03, dtNew=4.9371e-03, numStepsRemaining=17
+ t=5.00e-01: Nx= 10 Ny= 10 Nt=   85 dt=4.94e-03 max-Err(p,u,v)=(4.62e-14,1.78e-15,1.33e-15) cpu=1.40e-01(s)
+
+No change dt: 
+ t=5.00e-01: Nx= 10 Ny= 10 Nt=   85 dt=5.88e-03 max-Err(p,u,v)=(2.49e-14,2.66e-15,1.30e-15) cpu=1.00e-01(s)
+
+ins -ts=ab2 -tzScale=1 -tf=.1 -ms=poly -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bcs=nnnn -N0=10 -plotOption=1;
+t=1.00e-01: Nx= 10 Ny= 10 Nt=   17 dt=5.88e-03 max-Err(p,u,v)=(7.11e-15,1.78e-15,8.60e-16) cpu=3.60e-01(s)
+
+runGridConvergence -ts=im2 -tf=1.0 -ms=trig -numResolutions=4
+ N     p-err  ratio   u-err  ratio   v-err ratio    div  ratio    cpu(s)  ratio
+ --------------------------------------------------------------------------------- 
+  10  6.22e-02       2.96e-02       1.95e-02       2.13e-01        1.00e-02
+  20  3.06e-02  2.0  1.32e-02  2.2  8.13e-03  2.4  1.51e-01  1.4   2.00e-02  2.0
+  40  8.33e-03  3.7  6.33e-03  2.1  3.86e-03  2.1  6.14e-02  2.5   1.70e-01  8.5
+  80  2.81e-03  3.0  1.14e-03  5.5  9.90e-04  3.9  1.51e-02  4.1   6.70e-01  3.9
+
+runGridConvergence -ts=ab2 -tf=.25 -ms=trig -numResolutions=3
+
+  N     p-err  ratio   u-err  ratio   v-err ratio    div  ratio    cpu(s)  ratio
+ --------------------------------------------------------------------------------- 
+  10  4.18e-02       4.09e-03       3.39e-03       2.53e-02        7.00e-02
+  20  1.47e-02  2.9  4.72e-04  8.7  2.96e-04 11.4  2.01e-03 12.6   1.00e-01  1.4
+  40  3.29e-03  4.5  1.17e-04  4.0  6.56e-05  4.5  1.40e-04 14.3   8.40e-01  8.4
+
+
+
+SHEAR FLOW
+
+ins -ts=im2 -tzScale=1 -tf=50 -ms=none -knownSolution=Poiseuille -idebug=1 -nu=0.002 -ya=-.5 -yb=1.5 -xb=2 -bcs=ppnn -N0=400 -ic=shear -movieMode=1 -plotOption=3 -plotErrors=0 -kx=1;
+
+ins -ts=im2 -tzScale=1 -tf=50 -ms=none -knownSolution=Poiseuille -idebug=1 -nu=0.005 -xb=2 -bcs=ppnn -N0=400 -ic=shear -movieMode=1 -plotOption=3 -plotErrors=0 -kx=1;
+
+
+ADD TIMINGS:
+ADD OPT PRESSURE FILL
+
+ADD OPT IMPLICIT FILL : 82 times faster for N=400
+
+ADD OPT PRESSURE RHS -- ABOUT THE SAME 
+
+ins -ts=im2 -tzScale=1 -tf=0.1 -ms=none -knownSolution=Poiseuille -idebug=1 -nu=0.01 -xb=2 -bcs=ppnn -N0=400 -plotOption=0 -useOptFill=1;
+
+NEW:
+  ------------- TIMINGS im2 Nx=400 Ny=200 Nt=   13 --------------------
+                  cpu (s)    %   
+Total             3.88e+00  100.0
+  setup           1.83e+00   47.2
+  getUt           5.00e-02    1.3
+  implicit solve  8.50e-01   21.9
+  pressure solve  1.11e+00   28.6
+  bc              0.00e+00    0.0
+
+OLD:
+ ------------- TIMINGS im2 Nx=400 Ny=200 Nt=   13 --------------------
+                  cpu (s)    %   
+Total             4.05e+00  100.0
+  setup           1.89e+00   46.7
+  getUt           7.00e-02    1.7
+  implicit solve  8.70e-01   21.5
+  pressure solve  1.18e+00   29.1
+  bc              0.00e+00    0.0
+
+TEST TZ: 
+ins -ts=ab2 -tzScale=1 -tf=.1 -ms=poly -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bcs=nnnn -N0=10 -plotOption=1 -useOptFill=1;
+
+
+
+ins -ts=im2 -tzScale=1 -tf=0.1 -ms=none -knownSolution=Poiseuille -idebug=1 -nu=0.01 -xb=2 -bcs=ppnn -N0=400 -plotOption=0 -useOptFill=1;
+
+
+  ------------- TIMINGS im2 Nx=400 Ny=200 Nt=  131 --------------------
+                  cpu (s)    %   
+Total             2.24e+01  100.0
+  setup           1.81e+00    8.1
+  getUt           4.60e-01    2.1
+  implicit solve  8.37e+00   37.3
+  pressure solve  1.12e+01   50.0
+  bc              4.00e-02    0.2
+
+
+
+ins -ts=im2 -tzScale=1 -tf=0.1 -ms=none -knownSolution=Poiseuille -idebug=1 -nu=0.01 -xb=2 -bcs=ppnn -N0=400 -plotOption=0 -useOptFill=0;
+
+NEW:
+formImplicitMatrix: time to fill matrix = 1.80e-01(s), factor matrix = 2.20e-01(s)
+
+OLD:
+formImplicitMatrix: time to fill matrix = 1.48e+01(s), factor matrix = 1.60e-01(s)
+
+
+ins -ts=im2 -tzScale=1 -tf=0.1 -ms=none -knownSolution=Poiseuille -idebug=1 -nu=0.01 -xb=2 -bcs=ppnn -N0=200 -plotOption=0 -useOptFill=1;
+
+NEW:
+formImplicitMatrix: time to fill matrix = 3.00e-02(s), factor matrix = 2.00e-02(s)
+OLD: 
+formImplicitMatrix: time to fill matrix = 1.14e+00(s), factor matrix = 2.00e-02(s)
+
+
+runGridConvergence -ts=ab2 -tf=.25 -ms=trig -numResolutions=3
+
+  N     p-err  ratio   u-err  ratio   v-err ratio    div  ratio    cpu(s)  ratio
+ --------------------------------------------------------------------------------- 
+  10  4.18e-02       4.09e-03       3.39e-03       2.53e-02        7.00e-02
+  20  1.47e-02  2.9  4.72e-04  8.7  2.96e-04 11.4  2.01e-03 12.6   1.00e-01  1.4
+  40  3.29e-03  4.5  1.17e-04  4.0  6.56e-05  4.5  1.40e-04 14.3   8.40e-01  8.4
+
+
+OPTFILL: FULL setup is 10 times faster so fill must be much faster
+ins -ts=ab2 -tzScale=1 -tf=0.1 -ms=none -knownSolution=Poiseuille -idebug=1 -nu=0.01 -xb=2 -bcs=ppnn -N0=200 -plotOption=0 -useOptFill=1;
+
+Opt:
+  ------------- TIMINGS ab2 Nx=200 Ny=100 Nt=   90 --------------------
+                  cpu (s)    %   
+Total             1.46e+00  100.0
+  setup           1.80e-01   12.3
+  getUt           6.00e-02    4.1
+  implicit solve  0.00e+00    0.0
+  pressure solve  1.17e+00   80.1
+  bc              2.00e-02    1.4
+
+
+Old
+  ------------- TIMINGS ab2 Nx=200 Ny=100 Nt=   90 --------------------
+                  cpu (s)    %   
+Total             2.97e+00  100.0
+  setup           1.89e+00   63.6
+  getUt           5.00e-02    1.7
+  implicit solve  0.00e+00    0.0
+  pressure solve  1.00e+00   33.7
+  bc              1.00e-02    0.3
+
+
+
+TEST: 
+ins -ts=ab2 -tzScale=1 -tf=.1 -ms=poly -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bcs=nnnn -N0=10 -plotOption=1 -useOptFill=0;
+
+ins -ts=ab2 -tzScale=1 -tf=0.1 -ms=none -knownSolution=Poiseuille -idebug=1 -nu=0.01 -xb=2 -bcs=ppnn -N0=100 -plotOption=0 -useOptFill=0;
+
+
+ins -ts=ab2 -tzScale=1 -tf=0.5 -ms=none -knownSolution=Poiseuille -idebug=1 -nu=0.01 -xb=2 -bcs=ppnn -N0=100 -plotOption=0;
+
+
+ins -ts=ab2 -tzScale=1 -tf=0.5 -ms=none -knownSolution=Poiseuille -idebug=1 -nu=0.01 -xb=2 -bcs=ppnn -N0=200 -plotOption=0;
+  ------------- TIMINGS ab2 Nx=200 Ny=100 Nt=  450 --------------------
+                  cpu (s)    %   
+Total             7.76e+00  100.0
+  setup           1.89e+00   24.4
+  getUt           3.70e-01    4.8
+  implicit solve  0.00e+00    0.0
+  pressure solve  5.41e+00   69.7
+  bc              4.00e-02    0.5
+
+ins -ts=im2 -tzScale=1 -tf=0.5 -ms=none -knownSolution=Poiseuille -idebug=1 -nu=0.01 -xb=2 -bcs=ppnn -N0=200 -plotOption=0;
+  ------------- TIMINGS im2 Nx=200 Ny=100 Nt=   33 --------------------
+                  cpu (s)    %   
+Total             5.41e+00  100.0
+  setup           3.18e+00   58.8
+  getUt           5.00e-02    0.9
+  implicit solve  1.03e+00   19.0
+  pressure solve  1.06e+00   19.6
+  bc              1.00e-02    0.2
+
+***************************************
+***** Mon March 2, 2026
+
+REMOVE GLOBALS
+
+SET MAX THREADS
+
+CHANGE TO x(:,:,2)
+
+NEW WAY FOR BCS
+
+START SHEAR FLOW:
+
+ins -ts=im2 -tzScale=1 -tf=50 -ms=none -knownSolution=Poiseuille -idebug=1 -nu=0.001 -xb=2 -bcs=ppnn -N0=400 -ic=shear -movieMode=1 -plotOption=3 -plotErrors=0 -kx=1;
+
+
+ins -ts=ab2 -tzScale=1 -tf=5 -ms=none -knownSolution=Poiseuille -idebug=1 -nu=0.01 -xb=2 -bcs=ppnn -N0=200 -ic=shear -movieMode=1 -plotOption=3;
+
+ADD ZERO and CONSTANT IC
+
+ins -ts=ab2 -tzScale=1 -tf=5 -ms=none -knownSolution=Poiseuille -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bcs=innn -N0=40 -ic=constant -plotOption=3;
+
+ins -ts=im2 -tzScale=1 -tf=5 -ms=none -knownSolution=Poiseuille -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bcs=innn -N0=40 -ic=constant -dtMax=.02 -plotOption=3;
+
+
+
+ins -ts=im2 -tzScale=1 -tf=.1 -ms=none -knownSolution=Poiseuille -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bcs=innn -N0=40 -plotOption=0;
+
+ins -ts=ab2 -tzScale=1 -tf=.1 -ms=none -knownSolution=Poiseuille -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bcs=innn -N0=40 -plotOption=0;
+
+runGridConvergence -ts=ab2 -tf=.25 -ms=trig -numResolutions=3
+
+  N     p-err  ratio   u-err  ratio   v-err ratio    div  ratio    cpu(s)  ratio
+ --------------------------------------------------------------------------------- 
+  10  4.18e-02       4.09e-03       3.39e-03       2.53e-02        1.40e-01
+  20  1.47e-02  2.9  4.72e-04  8.7  2.96e-04 11.4  2.01e-03 12.6   4.60e-01  3.3
+  40  3.29e-03  4.5  1.17e-04  4.0  6.56e-05  4.5  1.40e-04 14.3   5.55e+00 12.1
+
+runGridConvergence -ts=im2 -tf=1.0 -ms=trig  -numResolutions=4
+
+  N     p-err  ratio   u-err  ratio   v-err ratio    div  ratio    cpu(s)  ratio
+ --------------------------------------------------------------------------------- 
+  10  6.22e-02       2.96e-02       1.95e-02       2.13e-01        2.00e-02
+  20  3.06e-02  2.0  1.32e-02  2.2  8.13e-03  2.4  1.51e-01  1.4   2.00e-02  1.0
+  40  8.33e-03  3.7  6.33e-03  2.1  3.86e-03  2.1  6.14e-02  2.5   2.50e-01 12.5
+  80  2.81e-03  3.0  1.14e-03  5.5  9.90e-04  3.9  1.51e-02  4.1   5.40e-01  2.2
+
+BROKEN: bc=d ... FIXED 
+ins -ts=ab2 -tzScale=1 -tf=.1 -ms=poly -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bcs=dnnn -N0=10 -plotOption=1;
+
+BROKEN: bc=d:
+ins -ts=im2 -tzScale=1 -tf=1.0 -ms=trig -idebug=1 -nu=0.1 -bcs=ndnd -N0=40;
+
+OK: 
+ins -ts=im2 -tzScale=1 -tf=1.0 -ms=trig -idebug=1 -nu=0.1 -bcs=innn -N0=40;
+ t=1.00e+00: Nx= 40 Ny= 40 Nt=    4 dt=2.50e-01 max-Err(p,u,v)=(8.33e-03,6.33e-03,3.86e-03) cpu=2.60e-01(s)
+
+ins -ts=ab2 -tzScale=1 -tf=.1 -ms=none -knownSolution=TaylorGreen -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bcs=nnnn -N0=20 -plotOption=1;
+
+
+ins -ts=ab2 -tzScale=1 -tf=.1 -ms=poly -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bcs=ndnd -N0=30 -plotOption=0 
+
+POISEUILLE
+ins -ts=ab2 -tzScale=1 -tf=.1 -ms=none -knownSolution=Poiseuille -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bcs=innn -N0=20 -plotOption=1;
+
+ins -ts=ab2 -tzScale=1 -tf=.1 -ms=none -knownSolution=Poiseuille -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bcs=ddnn -N0=20 -plotOption=1;
+
+TAYLOR GREEN
+ins -ts=ab2 -tzScale=1 -tf=.1 -ms=none -knownSolution=TaylorGreen -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bcs=nnnn -N0=20 -plotOption=1;
+
+ins -ts=ab2 -tzScale=1 -tf=.1 -ms=poly -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bc1=noSlipWall -bc2=dirichlet  -bc3=noSlipWall -bc4=dirichlet -N0=30 -plotOption=0; 
+
+ t=1.00e-01: Nx= 30 Ny= 30 Nt=   89 dt=1.12e-03 max-Err(p,u,v)=(6.93e-14,1.78e-15,8.88e-16) cpu=5.00e-02(s)
+
+***************************************
+***** Sun March 1, 2026
+
+START ON NEW VERSION in research folder
+March 2026: NEW VERSION IN RESEARCH FOLDER
+
+STARTED FROM:  /Users/henshaw/Dropbox/math6890/codes/ins
+
+>> runGridConvergence -ts=im2 -tf=1.0 -ms=none -knownSolution=TaylorGreen -numResolutions=4
+ t=1.00e+00: Nx= 10 Ny= 10 Nt=   12 dt=8.33e-02 max-Err(u,v,p,div)=(9.99e-05,9.04e-05,8.66e-05,9.91e-04) cpu=3.00e-02(s)
+ t=1.00e+00: Nx= 20 Ny= 20 Nt=   26 dt=3.85e-02 max-Err(u,v,p,div)=(1.76e-06,1.52e-06,2.24e-06,1.18e-04) cpu=3.00e-02(s)
+ t=1.00e+00: Nx= 40 Ny= 40 Nt=   52 dt=1.92e-02 max-Err(u,v,p,div)=(2.14e-07,2.44e-07,2.05e-07,3.18e-05) cpu=3.20e-01(s)
+ t=1.00e+00: Nx= 80 Ny= 80 Nt=  105 dt=9.52e-03 max-Err(u,v,p,div)=(5.51e-08,5.56e-08,5.71e-08,8.03e-06) cpu=7.70e-01(s)
+  N     p-err  ratio   u-err  ratio   v-err ratio    div  ratio    cpu(s)  ratio
+ --------------------------------------------------------------------------------- 
+  10  8.66e-05       9.99e-05       9.04e-05       9.91e-04        3.00e-02
+  20  2.24e-06 38.6  1.76e-06 56.9  1.52e-06 59.5  1.18e-04  8.4   3.00e-02  1.0
+  40  2.05e-07 10.9  2.14e-07  8.2  2.44e-07  6.2  3.18e-05  3.7   3.20e-01 10.7
+  80  5.71e-08  3.6  5.51e-08  3.9  5.56e-08  4.4  8.03e-06  4.0   7.70e-01  2.4
+
+TAYLOR GREEN?
+ins -ts=ab2 -tzScale=1 -tf=.1 -ms=none -knownSolution=TaylorGreen -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bc1=dirichlet -bc2=dirichlet  -bc3=noSlipWall -bc4=noSlipWall -N0=20;-plotOption=1 
+
+POISEUILLE? .. works
+ins -ts=ab2 -tzScale=1 -tf=.1 -ms=none -knownSolution=Poiseuille -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bc1=dirichlet -bc2=dirichlet  -bc3=noSlipWall -bc4=noSlipWall -N0=20 -plotOption=1 
+
+ t=1.00e-01: Nx=20 Ny=20 Nt=36 dt=2.78e-03 max-Err(u,v,p,div)=(1.94e-16,3.36e-17,9.99e-16,4.44e-15) cpu=6.40e-01(s)
+
+
+
+ins -ts=im2 -tzScale=1 -tf=1.0 -ms=trig -idebug=1 -nu=0.1 -bc1=noSlipWall -bc2=dirichlet -bc3=noSlipWall -bc4=dirichlet -N0=40
+
+t=1.00e+00: Nx=40 Ny=40 Nt=4 dt=2.50e-01 max-Err(u,v,p,div)=(5.22e-03,4.47e-03,6.72e-03,6.51e-02) cpu=2.40e-01(s)
+
+
+runGridConvergence -ts=im2 -tf=1.0 -mx=trig -numResolutions=4
+
+ N     p-err  ratio   u-err  ratio   v-err ratio    div  ratio    cpu(s)  ratio
+ --------------------------------------------------------------------------------- 
+  10  6.30e-02       3.26e-02       2.07e-02       3.60e-01        1.00e-02
+  20  3.49e-02 1.81  1.19e-02 2.74  1.02e-02 2.02  1.85e-01 1.94   2.00e-02 2.00
+  40  6.72e-03 5.18  5.22e-03 2.28  4.47e-03 2.29  6.51e-02 2.85   2.40e-01 12.00
+  80  1.04e-03 6.49  9.50e-04 5.49  1.04e-03 4.29  1.52e-02 4.27   5.90e-01 2.46
+
+ N     p-err  ratio   u-err  ratio   v-err ratio    div  ratio    cpu(s)  ratio
+ --------------------------------------------------------------------------------- 
+  10  6.30e-02       3.26e-02       2.07e-02       3.60e-01        2.00e-02
+  20  3.49e-02 1.81  1.19e-02 2.74  1.02e-02 2.02  1.85e-01 1.94   4.00e-02 2.00
+  40  6.72e-03 5.18  5.22e-03 2.28  4.47e-03 2.29  6.51e-02 2.85   2.30e-01 5.75
+  80  1.04e-03 6.49  9.50e-04 5.49  1.04e-03 4.29  1.52e-02 4.27   1.13e+00 4.91
+
+ 
+
+
+runGridConvergence -numResolutions=4
+
+ N     p-err  ratio   u-err  ratio   v-err ratio   div ratio
+ ------------------------------------------------------------ 
+  10  4.29e-02       1.35e-02       7.61e-03       2.18e-01     
+  20  1.48e-02 2.90  2.05e-03 6.59  1.16e-03 6.54  6.58e-02 3.31
+  40  3.35e-03 4.42  2.80e-04 7.31  1.75e-04 6.67  1.79e-02 3.67
+  80  8.60e-04 3.89  3.62e-05 7.74  2.86e-05 6.11  4.63e-03 3.88
+
+
+
+START TO REMOVE GLOBAL's 
+
+>> ins -ts=ab2 -tzScale=1 -tf=.1 -ms=poly -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bc1=noSlipWall -bc2=dirichlet  -bc3=noSlipWall -bc4=dirichlet -N0=30 -plotOption=0 -numResolutions=1
+    bc1=noSlipWall, bc2=dirichlet, bc3=noSlipWall, bc4=dirichlet
+
+Newest:
+ t=1.00e-01: Nx=30 Ny=30 Nt=89 dt=1.12e-03 max-Err(p,u,v)=(6.93e-14,1.78e-15,8.88e-16) cpu=5.00e-02(s)
+t=1.00e-01: Nx=30 Ny=30 Nt=89 dt=1.12e-03 max-Err(p,u,v)=(6.93e-14,1.78e-15,8.88e-16) cpu=8.00e-02(s)
+
+Newer:
+ t=1.00e-01: Nx=30 Ny=30 Nt=89 dt=1.12e-03 max-Err(p,u,v)=(6.93e-14,1.78e-15,8.88e-16) cpu=2.20e-01(s)
+
+New:
+ t=1.00e-01: Nx=30 Ny=30 Nt=89 dt=1.12e-03 max-Err(p,u,v)=(6.93e-14,1.78e-15,8.88e-16) cpu=7.40e-01(s)
+
+OLD: 
+t=1.00e-01: Nx=30 Ny=30 Nt=89 dt=1.12e-03 max-Err(p,u,v)=(1.28e-11,7.78e-13,2.93e-13) cpu=4.47e+00(s)
+
+
+RUN AND TIME:
+
+   getUt is nothing
+ins -ts=ab2 -tzScale=1 -tf=.1 -ms=poly -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bc1=noSlipWall -bc2=dirichlet  -bc3=noSlipWall -bc4=dirichlet -N0=30 -plotOption=0 -numResolutions=1
+
+>> ins -ts=ab2 -tzScale=1 -tf=.1 -ms=poly -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bc1=noSlipWall -bc2=dirichlet  -bc3=noSlipWall -bc4=dirichlet -N0=30 -plotOption=0 -numResolutions=1
+insPP: ts=ab2, tFinal=0.1, nu=0.1, cfl=0.9, cdv=1, knownSolution=none, ms=poly, N0=30, idebug=1, degreex=2, degreet=2, tzScale=1, numResolutions=1
+    bc1=noSlipWall, bc2=dirichlet, bc3=noSlipWall, bc4=dirichlet
+ t=1.00e-01: Nx=30 Ny=30 Nt=89 dt=1.12e-03 max-Err(p,u,v)=(1.28e-11,7.78e-13,2.93e-13) cpu=4.47e+00(s)
+
+
+ins -ts=ab2 -tzScale=1 -tf=.25 -ms=trig -idebug=1 -nu=0.1 -bc1=noSlipWall -bc2=dirichlet -bc3=noSlipWall -bc4=dirichlet -N0=10 -numResolutions=3
+
+>> ins -ts=ab2 -tzScale=1 -tf=.25 -ms=trig -idebug=1 -nu=0.1 -bc1=noSlipWall -bc2=dirichlet -bc3=noSlipWall -bc4=dirichlet -N0=10 -numResolutions=3
+ins: ts=ab2, tFinal=0.25, nu=0.1, cfl=0.9, cdv=1, knownSolution=none, ms=trig, N0=10, idebug=1, degreex=2, degreet=2, tzScale=1, numResolutions=3
+    bc1=noSlipWall, bc2=dirichlet, bc3=noSlipWall, bc4=dirichlet
+ t=2.50e-01: Nx=10 Ny=10 Nt=22 dt=1.14e-02 max-Err(u,v,p,div)=(1.35e-02,7.61e-03,4.29e-02,2.18e-01) cpu=2.30e-01(s)
+ t=2.50e-01: Nx=20 Ny=20 Nt=89 dt=2.81e-03 max-Err(u,v,p,div)=(2.05e-03,1.16e-03,1.48e-02,6.58e-02) cpu=2.32e+00(s)
+ ratios(u,v,p,div)=(6.59,6.54,2.90,3.31) rates=(2.72,2.71,1.54,1.73)
+ t=2.50e-01: Nx=40 Ny=40 Nt=356 dt=7.02e-04 max-Err(u,v,p,div)=(2.80e-04,1.75e-04,3.35e-03,1.79e-02) cpu=3.39e+01(s)
+ ratios(u,v,p,div)=(7.31,6.67,4.42,3.67) rates=(2.87,2.74,2.14,1.87)
+>> 
+
+
+ins: ts=im2, tFinal=0.75, nu=0.1, cfl=0.9, cdv=1, knownSolution=none, ms=trig, N0=10, idebug=1, degreex=2, degreet=2, tzScale=1, numResolutions=4
+    bc1=noSlipWall, bc2=dirichlet, bc3=noSlipWall, bc4=dirichlet
+ t=7.50e-01: Nx=10 Ny=10 Nt=2 dt=3.75e-01 max-Err(u,v,p,div)=(1.29e-02,1.29e-02,3.36e-02,1.75e-01) cpu=7.00e-02(s)
+ t=7.50e-01: Nx=20 Ny=20 Nt=2 dt=3.75e-01 max-Err(u,v,p,div)=(4.91e-03,4.95e-03,1.17e-02,6.71e-02) cpu=1.40e-01(s)
+ ratios(u,v,p,div)=(2.63,2.60,2.86,2.61) rates=(1.40,1.38,1.52,1.39)
+ t=7.50e-01: Nx=40 Ny=40 Nt=3 dt=2.50e-01 max-Err(u,v,p,div)=(1.73e-03,2.87e-03,3.96e-03,4.09e-02) cpu=7.80e-01(s)
+ ratios(u,v,p,div)=(2.85,1.72,2.96,1.64) rates=(1.51,0.78,1.57,0.71)
+ t=7.50e-01: Nx=80 Ny=80 Nt=6 dt=1.25e-01 max-Err(u,v,p,div)=(4.93e-04,8.00e-04,6.91e-04,1.08e-02) cpu=5.01e+00(s)
+ ratios(u,v,p,div)=(3.50,3.59,5.73,3.80) rates=(1.81,1.84,2.52,1.92)
+
+
+
+
+
+
+ins -ts=ab2 -tzScale=1 -tf=.5 -ms=poly -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bc1=noSlipWall -bc2=dirichlet  -bc3=noSlipWall -bc4=dirichlet -N0=10 -numResolutions=1
+
+ins -ts=im2 -tzScale=1 -tf=.75 -ms=trig -idebug=1 -nu=0.1 -bc1=noSlipWall -bc2=dirichlet -bc3=noSlipWall -bc4=dirichlet -N0=10 -numResolutions=3
+
+
+ins -ts=ab2 -tzScale=1 -tf=.5 -ms=poly -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bc1=noSlipWall -bc2=dirichlet  -bc3=noSlipWall -bc4=dirichlet -N0=10 -numResolutions=1
+ins: ts=ab2, tFinal=0.5, nu=0.1, cfl=0.9, cdv=1, knownSolution=none, ms=poly, N0=10, idebug=1, degreex=2, degreet=2, tzScale=1, numResolutions=1
+    bc1=noSlipWall, bc2=dirichlet, bc3=noSlipWall, bc4=dirichlet
+ t=5.00e-01: Nx=10 Ny=10 Nt=84 dt=5.95e-03 max-Err(u,v,p,div)=(3.20e-14,2.00e-14,1.89e-13,6.27e-13)
+
+
+
+ >> ins -ts=im2 -tzScale=1 -tf=.5 -ms=poly -idebug=1 -nu=0.1 -degreex=2 -degreet=1 -bc1=noSlipWall -bc2=dirichlet  -bc3=noSlipWall -bc4=dirichlet -N0=10 -numResolutions=1
+ins: ts=im2, tFinal=0.5, nu=0.1, cfl=0.9, cdv=1, knownSolution=none, ms=poly, N0=10, idebug=1, degreex=2, degreet=1, tzScale=1, numResolutions=1
+    bc1=noSlipWall, bc2=dirichlet, bc3=noSlipWall, bc4=dirichlet
+ t=5.00e-01: Nx=10 Ny=10 Nt=34 dt=1.47e-02 max-Err(u,v,p,div)=(3.38e-14,1.80e-14,2.80e-13,6.48e-13)
+
+---- TRIG AB2 
+ins -ts=ab2 -tzScale=1 -tf=.25 -ms=trig -idebug=1 -nu=0.1 -bc1=noSlipWall -bc2=dirichlet -bc3=noSlipWall -bc4=dirichlet -N0=10 -numResolutions=3
+
+ins: ts=ab2, tFinal=0.25, nu=0.1, cfl=0.9, cdv=1, knownSolution=none, ms=trig, N0=10, idebug=1, degreex=2, degreet=2, tzScale=0, numResolutions=3
+    bc1=noSlipWall, bc2=dirichlet, bc3=noSlipWall, bc4=dirichlet
+ t=2.50e-01: Nx=10 Ny=10 Nt=23 dt=1.09e-02 max-Err(u,v,p,div)=(1.73e-02,1.89e-02,6.18e-02,7.12e-01)
+ t=2.50e-01: Nx=20 Ny=20 Nt=89 dt=2.81e-03 max-Err(u,v,p,div)=(4.53e-03,3.38e-03,1.61e-02,1.98e-01)
+ ratios(u,v,p,div)=(3.82,5.58,3.83,3.59) rates=(1.93,2.48,1.94,1.84)
+ t=2.50e-01: Nx=40 Ny=40 Nt=356 dt=7.02e-04 max-Err(u,v,p,div)=(1.10e-03,7.07e-04,4.35e-03,5.13e-02)
+ ratios(u,v,p,div)=(4.11,4.78,3.71,3.87) rates=(2.04,2.26,1.89,1.95)
+
+----- TRIG IM2
+ins -ts=im2 -tzScale=1 -tf=.75 -ms=trig -idebug=1 -nu=0.1 -bc1=noSlipWall -bc2=dirichlet -bc3=noSlipWall -bc4=dirichlet -N0=10 -numResolutions=4
+
+ins: ts=im2, tFinal=0.75, nu=0.1, cfl=0.9, cdv=1, knownSolution=none, ms=trig, N0=10, idebug=1, degreex=2, degreet=2, tzScale=1, numResolutions=4
+    bc1=noSlipWall, bc2=dirichlet, bc3=noSlipWall, bc4=dirichlet
+ t=7.50e-01: Nx=10 Ny=10 Nt=2 dt=3.75e-01 max-Err(u,v,p,div)=(1.29e-02,1.29e-02,3.36e-02,1.75e-01)
+ t=7.50e-01: Nx=20 Ny=20 Nt=2 dt=3.75e-01 max-Err(u,v,p,div)=(4.91e-03,4.95e-03,1.17e-02,6.71e-02)
+ ratios(u,v,p,div)=(2.63,2.60,2.86,2.61) rates=(1.40,1.38,1.52,1.39)
+ t=7.50e-01: Nx=40 Ny=40 Nt=3 dt=2.50e-01 max-Err(u,v,p,div)=(1.73e-03,2.87e-03,3.96e-03,4.09e-02)
+ ratios(u,v,p,div)=(2.85,1.72,2.96,1.64) rates=(1.51,0.78,1.57,0.71)
+ t=7.50e-01: Nx=80 Ny=80 Nt=6 dt=1.25e-01 max-Err(u,v,p,div)=(4.93e-04,8.00e-04,6.91e-04,1.08e-02)
+ ratios(u,v,p,div)=(3.50,3.59,5.73,3.80) rates=(1.81,1.84,2.52,1.92)
+
+*******************
+*** Nov 13, 2019
+
+REVISIT 
+
+BUILD ps8.m -- pressure free runs 
+
+
+
+*******************
+*** Dec 12, 2017
+
+PS8 -- RUN WITH ALTERNATE SCALING FOR TZ -- 
+
+(a) 
+
+1. ins -ts=fe -tzScale=1 -tf=.5 -ms=poly -idebug=1 -nu=0.1 -degreex=2 -degreet=1 -bc1=dirichlet -bc2=dirichlet -bc3=dirichlet -bc4=dirichlet -N0=10 -numResolutions=1
+
+2. ins -ts=fe -tzScale=1 -tf=.25 -ms=trig -idebug=1 -nu=0.1 -bc1=dirichlet -bc2=dirichlet -bc3=dirichlet -bc4=dirichlet -N0=10 -numResolutions=3
+
+
+(b)
+1. ins -ts=ab2 -tzScale=1 -tf=.5 -ms=poly -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bc1=noSlipWall -bc2=dirichlet  -bc3=noSlipWall -bc4=dirichlet -N0=10 -numResolutions=1
+
+2. ins -ts=ab2 -tzScale=1 -tf=.25 -ms=trig -idebug=1 -nu=0.1 -bc1=noSlipWall -bc2=dirichlet -bc3=noSlipWall -bc4=dirichlet -N0=10 -numResolutions=3
+
+(c)
+1. ins -ts=im2 -tzScale=1 -tf=.5 -ms=poly -idebug=1 -nu=0.1 -degreex=2 -degreet=1 -bc1=noSlipWall -bc2=dirichlet  -bc3=noSlipWall -bc4=dirichlet -N0=10 -numResolutions=1
+
+2. ins -ts=im2 -tzScale=1 -tf=.75 -ms=trig -idebug=1 -nu=0.1 -bc1=noSlipWall -bc2=dirichlet -bc3=noSlipWall -bc4=dirichlet -N0=10 -numResolutions=3
+
+
+
+*******************
+*** Dec 10, 2017
+
+PS 7 -- RUN WITH ALTERNATE SCALING FOR TZ -- 
+
+(c)
+pressureFreeINS -ts=fe -tf=.25 -ms=trig -idebug=1 -nu=0.1 -N0=5 -numResolutions=5 -tzScale=1
+
+
+
+
+(d)
+pressureFreeINS -ts=ab2 -tf=.25 -ms=trig -idebug=1 -nu=0.1 -N0=5 -numResolutions=5 -tzScale=1
+
+(e) 
+
+pressureFreeINS -ts=im2 -tf=.5 -ms=poly -degreex=2 -degreet=1 -idebug=1 -nu=0.1 -N0=10 -numResolutions=1 -tzScale=1
+
+More resolutions
+pressureFreeINS -ts=im2 -tf=.25 -ms=trig -idebug=1 -nu=0.1 -N0=20 -numResolutions=5 -tzScale=1
+
+Longer time: 
+pressureFreeINS -ts=im2 -tf=.75 -ms=trig -idebug=1 -nu=0.1 -N0=20 -numResolutions=5 -tzScale=1
+
+Final time 2.5
+pressureFreeINS -ts=im2 -tf=2.5 -ms=trig -idebug=1 -nu=0.1 -N0=5 -numResolutions=4 -tzScale=1
+
+
+*******************
+*** Nov 30, 2017
+
+
+PS8 results 
+
+(a) 
+
+1. ins -ts=fe -tf=.5 -ms=poly -idebug=1 -nu=0.1 -degreex=2 -degreet=1 -bc1=dirichlet -bc2=dirichlet -bc3=dirichlet -bc4=dirichlet -N0=10 -numResolutions=1
+
+2. ins -ts=fe -tf=.25 -ms=trig -idebug=1 -nu=0.1 -bc1=dirichlet -bc2=dirichlet -bc3=dirichlet -bc4=dirichlet -N0=10 -numResolutions=3
+
+
+(b)
+1. ins -ts=ab2 -tf=.5 -ms=poly -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bc1=noSlipWall -bc2=dirichlet  -bc3=noSlipWall -bc4=dirichlet -N0=10 -numResolutions=1
+
+2. ins -ts=ab2 -tf=.25 -ms=trig -idebug=1 -nu=0.1 -bc1=noSlipWall -bc2=dirichlet -bc3=noSlipWall -bc4=dirichlet -N0=10 -numResolutions=3
+
+(b)
+1. ins -ts=im2 -tf=.5 -ms=poly -idebug=1 -nu=0.1 -degreex=2 -degreet=1 -bc1=noSlipWall -bc2=dirichlet  -bc3=noSlipWall -bc4=dirichlet -N0=10 -numResolutions=1
+
+2. ins -ts=im2 -tf=.75 -ms=trig -idebug=1 -nu=0.1 -bc1=noSlipWall -bc2=dirichlet -bc3=noSlipWall -bc4=dirichlet -N0=10 -numResolutions=3
+
+*******************
+*** Nov 24, 2017
+
+(b)
+pressureFreeINS -ts=fe -tf=.5 -ms=poly -degreex=2 -degreet=1 -idebug=1 -nu=0.1 -N0=10 -numResolutions=1
+
+(c)
+pressureFreeINS -ts=fe -tf=.25 -ms=trig -idebug=1 -nu=0.1 -N0=5 -numResolutions=3
+
+
+
+
+(d)
+pressureFreeINS -ts=ab2 -tf=.5 -ms=poly -degreex=2 -degreet=2 -idebug=1 -nu=0.1 -N0=10 -numResolutions=1
+
+pressureFreeINS -ts=ab2 -tf=.25 -ms=trig -idebug=1 -nu=0.1 -N0=5 -numResolutions=3
+
+(e) 
+
+pressureFreeINS -ts=im2 -tf=.5 -ms=poly -degreex=2 -degreet=1 -idebug=1 -nu=0.1 -N0=10 -numResolutions=1
+
+pressureFreeINS -ts=im2 -tf=.25 -ms=trig -idebug=1 -nu=0.1 -N0=5 -numResolutions=3
+
+
+*******************
+*** Nov 11, 2017
+
+PRESSURE-FREE INS
+
+pressureFreeINS -ts=im2 -tf=.2 -ms=trig -idebug=1 -nu=0.1 -bc1=periodic -bc2=periodic  -bc3=periodic -bc4=periodic -N0=20 -numResolutions=2
+
+EXACT:
+pressureFreeINS -ts=ab2 -tf=.1 -ms=poly -degreex=2 -degreet=2 -idebug=1 -nu=0.1
+
+*******************
+*** Nov 6, 2017
+
+ins -ts=im2 -tf=.2 -ms=trig -idebug=1 -nu=0.1 -bc1=periodic -bc2=periodic  -bc3=periodic -bc4=periodic -N0=20 -numResolutions=2
+>> ins -ts=im2 -tf=.2 -ms=trig -idebug=1 -nu=0.1 -bc1=periodic -bc2=periodic  -bc3=periodic -bc4=periodic -N0=20 -numResolutions=3
+ins: ts=im2, tFinal=0.2, nu=0.1, cfl=0.9, cdv=1, knownSolution=none, ms=trig, N0=20, idebug=1, degreex=2, degreet=2, numResolutions=3
+    bc1=periodic, bc2=periodic, bc3=periodic, bc4=periodic
+pressureEquation: **MATRIX IS SINGULAR** add an extra equation.
+ t=2.00e-01: Nx=20 Ny=20 Nt=4 dt=5.00e-02 max-Err(p,u,v,div)=(1.30e-02,4.31e-03,4.31e-03,3.37e-02)
+im2: t=2.00e-01 CPU=5.6e-01 
+pressureEquation: **MATRIX IS SINGULAR** add an extra equation.
+ t=2.00e-01: Nx=40 Ny=40 Nt=7 dt=2.86e-02 max-Err(p,u,v,div)=(3.28e-03,1.08e-03,1.08e-03,5.44e-03)
+im2: t=2.00e-01 CPU=1.4e+00  err-ratios(p,u,v)=(3.97,3.98,3.98,6.18)
+pressureEquation: **MATRIX IS SINGULAR** add an extra equation.
+ t=2.00e-01: Nx=80 Ny=80 Nt=15 dt=1.33e-02 max-Err(p,u,v,div)=(8.34e-04,2.71e-04,2.71e-04,7.13e-04)
+im2: t=2.00e-01 CPU=8.5e+00  err-ratios(p,u,v)=(3.93,4.00,4.00,7.63)
+
+
+ab2: TRIG: periodic 
+ins -ts=ab2 -tf=.1 -ms=trig -idebug=1 -nu=0.1 -bc1=periodic -bc2=periodic  -bc3=periodic -bc4=periodic -N0=20 -numResolutions=2
+>> ins -ts=ab2 -tf=.1 -ms=trig -idebug=1 -nu=0.1 -bc1=periodic -bc2=periodic  -bc3=periodic -bc4=periodic -N0=20 -numResolutions=2
+ins: ts=ab2, tFinal=0.1, nu=0.1, cfl=0.9, cdv=1, knownSolution=none, ms=trig, N0=20, idebug=1, degreex=2, degreet=2, numResolutions=2
+    bc1=periodic, bc2=periodic, bc3=periodic, bc4=periodic
+pressureEquation: **MATRIX IS SINGULAR** add an extra equation.
+ t=1.00e-01: Nx=20 Ny=20 Nt=36 dt=2.78e-03 max-Err(p,u,v,div)=(1.30e-02,3.12e-03,3.12e-03,2.09e-03)
+ab2: t=1.00e-01 CPU=2.2e+00 
+pressureEquation: **MATRIX IS SINGULAR** add an extra equation.
+ t=1.00e-01: Nx=40 Ny=40 Nt=142 dt=7.04e-04 max-Err(p,u,v,div)=(3.17e-03,7.79e-04,7.79e-04,1.36e-04)
+ab2: t=1.00e-01 CPU=1.2e+01  err-ratios(p,u,v)=(4.09,4.01,4.01,15.41)
+
+
+ADD divergence damping -- seems to help
+
+>> ins -ts=im2 -tf=.25 -ms=trig -idebug=1 -nu=0.1  -bc1=noSlipWall -bc2=noSlipWall  -bc3=noSlipWall -bc4=noSlipWall -numResolutions=4 -cdv=1
+ins: ts=im2, tFinal=0.25, nu=0.1, cfl=0.9, cdv=1, knownSolution=none, ms=trig, N0=5, idebug=1, degreex=2, degreet=2, numResolutions=4
+    bc1=noSlipWall, bc2=noSlipWall, bc3=noSlipWall, bc4=noSlipWall
+pressureEquation: **MATRIX IS SINGULAR** add an extra equation.
+ t=2.50e-01: Nx=5 Ny=5 Nt=2 dt=1.25e-01 max-Err(p,u,v,div)=(1.96e-01,1.34e-01,1.10e-01,6.52e-01)
+im2: t=2.50e-01 CPU=2.5e-01 
+pressureEquation: **MATRIX IS SINGULAR** add an extra equation.
+ t=2.50e-01: Nx=10 Ny=10 Nt=2 dt=1.25e-01 max-Err(p,u,v,div)=(5.85e-02,2.78e-02,2.70e-02,2.26e-01)
+im2: t=2.50e-01 CPU=2.5e-01  err-ratios(p,u,v)=(3.35,4.82,4.08,2.88)
+pressureEquation: **MATRIX IS SINGULAR** add an extra equation.
+ t=2.50e-01: Nx=20 Ny=20 Nt=5 dt=5.00e-02 max-Err(p,u,v,div)=(1.14e-02,4.18e-03,4.27e-03,3.96e-02)
+im2: t=2.50e-01 CPU=7.1e-01  err-ratios(p,u,v)=(5.11,6.64,6.34,5.71)
+pressureEquation: **MATRIX IS SINGULAR** add an extra equation.
+ t=2.50e-01: Nx=40 Ny=40 Nt=9 dt=2.78e-02 max-Err(p,u,v,div)=(3.12e-03,1.01e-03,7.43e-04,7.75e-03)
+im2: t=2.50e-01 CPU=1.8e+00  err-ratios(p,u,v)=(3.66,4.13,5.75,5.12)
+
+
+TEST SINGULAR BC's
+
+IM2: 
+ins -ts=im2 -tf=.25 -ms=trig -idebug=1 -nu=0.1  -bc1=noSlipWall -bc2=noSlipWall  -bc3=noSlipWall -bc4=noSlipWall -numResolutions=3
+ins: ts=im2, tFinal=0.25, nu=0.1, cfl=0.9, knownSolution=none, ms=trig, N0=5, idebug=1, degreex=2, degreet=2, numResolutions=3
+    bc1=noSlipWall, bc2=noSlipWall, bc3=noSlipWall, bc4=noSlipWall
+pressureEquation: **MATRIX IS SINGULAR** add an extra equation.
+ t=2.50e-01: Nx=5 Ny=5 Nt=2 dt=1.25e-01 max-Err(p,u,v,div)=(2.27e-01,1.62e-01,1.26e-01,9.17e-01)
+im2: t=2.50e-01 CPU=2.2e-01 
+pressureEquation: **MATRIX IS SINGULAR** add an extra equation.
+ t=2.50e-01: Nx=10 Ny=10 Nt=2 dt=1.25e-01 max-Err(p,u,v,div)=(8.68e-02,4.20e-02,3.28e-02,3.53e-01)
+im2: t=2.50e-01 CPU=2.6e-01  err-ratios(p,u,v)=(2.62,3.86,3.82)
+pressureEquation: **MATRIX IS SINGULAR** add an extra equation.
+ t=2.50e-01: Nx=20 Ny=20 Nt=5 dt=5.00e-02 max-Err(p,u,v,div)=(3.50e-02,1.08e-02,9.09e-03,1.07e-01)
+im2: t=2.50e-01 CPU=7.4e-01  err-ratios(p,u,v)=(2.48,3.90,3.61)
+
+
+
+ins -ts=ab2 -tf=.1 -ms=trig -idebug=1 -nu=0.1  -bc1=noSlipWall -bc2=noSlipWall  -bc3=noSlipWall -bc4=noSlipWall -numResolutions=
+3
+
+*******************
+*** Nov 5, 2017
+
+TEST SINGULAR BC's
+TRIG: periodic *TROUBLE*
+ins -ts=ab2 -tf=.1 -ms=trig -idebug=3 -nu=0.1 -bc1=periodic -bc2=periodic  -bc3=periodic -bc4=periodic -N0=20
+
+Trig: noSLip -- *trouble* solution to extra is not zero 
+ins -ts=ab2 -tf=.1 -ms=trig -idebug=1 -nu=0.1  -bc1=noSlipWall -bc2=noSlipWall  -bc3=noSlipWall -bc4=noSlipWall -N0=20 -numResolutions=3
+
+
+Trig: noSLip -- *trouble* solution to extra is not zero 
+ins -ts=ab2 -tf=.1 -ms=trig -idebug=1 -nu=0.1  -bc1=noSlipWall -bc2=noSlipWall  -bc3=noSlipWall -bc4=noSlipWall -N0=20 -numResolutions=3
+
+POLY:
+>> ins -ts=ab2 -tf=.1 -ms=poly -degreex=2 -idebug=1 -nu=0.1 -bc1=noSlipWall -bc2=noSlipWall  -bc3=noSlipWall -bc4=noSlipWall
+ins: ts=ab2, tFinal=0.1, nu=0.1, cfl=0.9, knownSolution=none, ms=poly, N0=5, idebug=1, degreex=2, degreet=2, numResolutions=1
+    bc1=noSlipWall, bc2=noSlipWall, bc3=noSlipWall, bc4=noSlipWall
+pressureEquation: **MATRIX IS SINGULAR** add an extra equation.
+ t=1.00e-01: Nx=5 Ny=5 Nt=9 dt=1.11e-02 max-Err(p,u,v,div)=(8.44e-15,2.22e-15,6.66e-16,4.44e-15)
+ab2: t=1.00e-01 CPU=5.0e-01
+
+
+
+----
+TEST PERIODIC
+
+im2:      
+>> ins -ts=im2 -tf=.25 -ms=trig -idebug=1 -nu=0.1 -bc1=periodic -bc2=periodic -N0=20 -numResolutions=3
+ins: ts=im2, tFinal=0.25, nu=0.1, cfl=0.9, knownSolution=none, ms=trig, N0=20, idebug=1, degreex=2, degreet=2, numResolutions=3
+    bc1=periodic, bc2=periodic, bc3=dirichlet, bc4=dirichlet
+ t=2.50e-01: Nx=20 Ny=20 Nt=4 dt=6.25e-02 max-Err(p,u,v,div)=(6.61e-03,7.58e-03,5.50e-03,7.95e-02)
+im2: t=2.50e-01 CPU=5.7e-01 
+ t=2.50e-01: Nx=40 Ny=40 Nt=9 dt=2.78e-02 max-Err(p,u,v,div)=(1.63e-03,1.89e-03,1.34e-03,1.96e-02)
+im2: t=2.50e-01 CPU=1.6e+00  err-ratios(p,u,v)=(4.05,4.00,4.10)
+ t=2.50e-01: Nx=80 Ny=80 Nt=18 dt=1.39e-02 max-Err(p,u,v,div)=(4.06e-04,4.74e-04,3.36e-04,4.89e-03)
+im2: t=2.50e-01 CPU=6.8e+00  err-ratios(p,u,v)=(4.02,3.99,4.00)
+
+im2: 
+ins -ts=im2 -tf=.1 -ms=poly -degreex=0 -idebug=3 -nu=0.1 -bc1=periodic -bc2=periodic
+
+*******************
+*** Nov 4, 2017
+
+TEST PERIODIC
+
+
+ins -ts=ab2 -tf=.1 -ms=poly -degreex=0  -idebug=3 -nu=0.1 -N0=20 -bc1=periodic -bc2=periodic
+
+>> ins -ts=ab2 -tf=.1 -ms=trig -idebug=1 -nu=0.1 -bc1=periodic -bc2=periodic -numResolutions=2
+ins: ts=ab2, tFinal=0.1, nu=0.1, cfl=0.9, knownSolution=none, ms=trig, N0=5, idebug=1, degreex=2, degreet=2, numResolutions=2
+    bc1=periodic, bc2=periodic, bc3=dirichlet, bc4=dirichlet
+ t=1.00e-01: Nx=5 Ny=5 Nt=2 dt=5.00e-02 max-Err(p,u,v,div)=(2.22e-01,8.74e-02,5.76e-02,1.31e+00)
+ab2: t=1.00e-01 CPU=1.2e-01 
+ t=1.00e-01: Nx=10 Ny=10 Nt=9 dt=1.11e-02 max-Err(p,u,v,div)=(5.29e-02,1.96e-02,1.35e-02,3.25e-01)
+ab2: t=1.00e-01 CPU=4.9e-01  err-ratios(p,u,v)=(4.19,4.46,4.26)
+
+Periodic: 
+ins -ts=ab2 -tf=.1 -ms=trig -idebug=3 -nu=0.1 -N0=20 -bc1=periodic -bc2=periodic
+ t=2.78e-03: Nx=20 Ny=20 Nt=36 dt=2.78e-03 max-Err(p,u,v,div)=(1.62e-02,2.60e-04,1.83e-04,6.98e-02)
+ 
+Dirichlet:
+ins -ts=ab2 -tf=.1 -ms=trig -idebug=3 -nu=0.1 -N0=20
+ t=2.78e-03: Nx=20 Ny=20 Nt=36 dt=2.78e-03 max-Err(p,u,v,div)=(4.23e-03,3.21e-04,1.35e-04,7.28e-02)
+ 
+TEST Poiseuille -- looks OK:
+ins -ts=ab2 -tf=.1 -knownSolution=Poiseuille -idebug=3 -nu=0.1 -bc3=noSlipWall -bc4=noSlipWall -N0=20
+
+
+*******************
+*** Nov 2, 2017
+
+TEST Taylor Green -- looks OK
+>> ins -ts=im2 -tf=.5 -knownSolution=TaylorGreen -idebug=1 -nu=0.1 -numResolutions=1 -bc1=noSlipWall -N0=10 -numResolutions=3
+ins: ts=im2, tFinal=0.5, nu=0.1, cfl=0.9, knownSolution=TaylorGreen, ms=none, N0=10, idebug=1, degreex=2, degreet=2, numResolutions=3
+    bc1=noSlipWall, bc2=dirichlet, bc3=dirichlet, bc4=dirichlet
+ t=5.00e-01: Nx=10 Ny=10 Nt=6 dt=8.33e-02 max-Err(p,u,v,div)=(2.31e-03,2.47e-03,1.20e-03,2.31e-02)
+im2: t=5.00e-01 CPU=6.8e-01 
+ t=5.00e-01: Nx=20 Ny=20 Nt=13 dt=3.85e-02 max-Err(p,u,v,div)=(4.47e-04,4.75e-04,2.58e-04,6.44e-03)
+im2: t=5.00e-01 CPU=1.6e+00  err-ratios(p,u,v)=(5.18,5.20,4.67)
+ t=5.00e-01: Nx=40 Ny=40 Nt=26 dt=1.92e-02 max-Err(p,u,v,div)=(7.61e-05,6.15e-05,4.32e-05,1.53e-03)
+im2: t=5.00e-01 CPU=3.7e+00  err-ratios(p,u,v)=(5.88,7.72,5.98)
+
+
+TEST trig 
+>> ins -ts=im2 -tf=.5 -ms=trig -idebug=1 -bc1=noSlipWall -N0=10 -numResolutions=3
+ins: ts=im2, tFinal=0.5, nu=0.1, cfl=0.9, knownSolution=none, ms=trig, N0=10, idebug=1, degreex=2, degreet=2, numResolutions=3
+    bc1=noSlipWall, bc2=dirichlet, bc3=dirichlet, bc4=dirichlet
+ t=5.00e-01: Nx=10 Ny=10 Nt=4 dt=1.25e-01 max-Err(p,u,v,div)=(8.98e-03,2.55e-02,2.04e-02,1.93e-01)
+im2: t=5.00e-01 CPU=4.5e-01 
+ t=5.00e-01: Nx=20 Ny=20 Nt=9 dt=5.56e-02 max-Err(p,u,v,div)=(2.47e-03,6.62e-03,5.19e-03,4.36e-02)
+im2: t=5.00e-01 CPU=1.2e+00  err-ratios(p,u,v)=(3.64,3.85,3.94)
+ t=5.00e-01: Nx=40 Ny=40 Nt=18 dt=2.78e-02 max-Err(p,u,v,div)=(6.71e-04,1.70e-03,1.36e-03,1.09e-02)
+im2: t=5.00e-01 CPU=3.2e+00  err-ratios(p,u,v)=(3.68,3.90,3.83)
+
+
+
+
+
+Continue on NO-SLIP-WALL
+>> ins -ts=im2 -tf=.1 -ms=poly -degreex=2 -degreet=1 -idebug=1 bc1=noSlipWall -bc3=noSlipWall
+ins: ts=im2, tFinal=0.1, nu=0.1, cfl=0.9, knownSolution=none, ms=poly, N0=5, idebug=1, degreex=2, degreet=1, numResolutions=1
+    bc1=dirichlet, bc2=dirichlet, bc3=noSlipWall, bc4=dirichlet
+ t=1.00e-01: Nx=5 Ny=5 Nt=4 dt=2.50e-02 max-Err(p,u,v,div)=(5.71e-14,5.33e-15,3.33e-15,4.49e-14)
+im2: t=1.00e-01 CPU=4.7e-01
+
+
+TEST NSW with IM
+
+TEST Taylor Green
+ins -ts=ab2 -tf=.1 -knownSolution=TaylorGreen -idebug=1 -nu=0.1 -numResolutions=1 -bc1=noSlipWall -N0=10 -numResolutions=3
+ins: ts=ab2, tFinal=0.1, nu=0.1, cfl=0.9, knownSolution=TaylorGreen, ms=none, N0=10, idebug=1, degreex=2, degreet=2, numResolutions=3
+    bc1=noSlipWall, bc2=dirichlet, bc3=dirichlet, bc4=dirichlet
+ t=1.00e-01: Nx=10 Ny=10 Nt=9 dt=1.11e-02 max-Err(p,u,v,div)=(4.94e-02,2.37e-02,2.06e-02,8.82e-01)
+ab2: t=1.00e-01 CPU=5.7e-01 
+ t=1.00e-01: Nx=20 Ny=20 Nt=36 dt=2.78e-03 max-Err(p,u,v,div)=(8.47e-03,5.27e-03,5.14e-03,2.09e-01)
+ab2: t=1.00e-01 CPU=1.9e+00  err-ratios(p,u,v)=(5.83,4.49,4.01)
+ t=1.00e-01: Nx=40 Ny=40 Nt=143 dt=6.99e-04 max-Err(p,u,v,div)=(1.53e-03,1.37e-03,1.27e-03,5.12e-02)
+ab2: t=1.00e-01 CPU=9.4e+00  err-ratios(p,u,v)=(5.52,3.86,4.04)
+>>
+
+
+AB2: POLY: EXACT
+ins -ts=ab2 -tf=.1 -ms=poly -degreex=2 -degreet=2 -idebug=3 -bc1=noSlipWall
+
+*******************
+*** Nov 1, 2017
+
+START ON NOSLIPWALL
+AB2: POLY: EXACT
+ins -ts=ab2 -tf=.1 -ms=poly -degreex=2 -degreet=2 -idebug=3 -bc1=noSlipWall
+
+AB2: POLY: EXACT
+ins -ts=ab2 -tf=.1 -ms=poly -degreex=2 -degreet=2 -idebug=1
+
+TEST Taylor Green
+ins -ts=im2 -tf=.1 -knownSolution=TaylorGreen -idebug=1 -nu=0.1 -numResolutions=1
+
+
+IM2: Predictor-corrector 
+>> ins -ts=im2 -tf=.5 -knownSolution=TaylorGreen -idebug=1 -nu=0.1 -numResolutions=4
+ins: ts=im2, tFinal=0.5, nu=0.1, cfl=0.9, knownSolution=TaylorGreen, ms=none, N0=5, idebug=1, degreex=2, degreet=2, numResolutions=4
+ t=5.00e-01: Nx=5 Ny=5 Nt=4 dt=1.25e-01 max-Err(p,u,v)=(6.34e-05,6.14e-03,4.67e-03)
+im2: t=5.00e-01 CPU=1.3e-01 
+ t=5.00e-01: Nx=10 Ny=10 Nt=8 dt=6.25e-02 max-Err(p,u,v)=(3.36e-05,1.22e-03,1.08e-03)
+im2: t=5.00e-01 CPU=2.8e-01  err-ratios(p,u,v)=(1.89,5.03,4.31)
+ t=5.00e-01: Nx=20 Ny=20 Nt=17 dt=2.94e-02 max-Err(p,u,v)=(8.45e-06,3.04e-04,2.75e-04)
+im2: t=5.00e-01 CPU=5.4e-01  err-ratios(p,u,v)=(3.97,4.01,3.95)
+ t=5.00e-01: Nx=40 Ny=40 Nt=34 dt=1.47e-02 max-Err(p,u,v)=(1.99e-06,7.20e-05,6.69e-05)
+im2: t=5.00e-01 CPU=1.8e+00  err-ratios(p,u,v)=(4.24,4.22,4.11)
+
+
+
+TEST Taylor Green
+
+ins -ts=im2 -tf=.1 -knownSolution=TaylorGreen -idebug=3 -nu=0.1 -numResolutions=1
+
+
+>> ins -ts=ab2 -tf=.1 -knownSolution=TaylorGreen -idebug=1 -nu=0.1 -numResolutions=4 -cfl=.5
+ins: ts=ab2, tFinal=0.1, nu=0.1, cfl=0.5, knownSolution=TaylorGreen, ms=none, N0=5, idebug=1, degreex=2, degreet=2, numResolutions=4
+ t=1.00e-01: Nx=5 Ny=5 Nt=3 dt=3.33e-02 max-Err(p,u,v)=(1.77e-02,8.96e-02,1.07e-01)
+ab2: t=1.00e-01 CPU=4.0e-02 
+ t=1.00e-01: Nx=10 Ny=10 Nt=11 dt=9.09e-03 max-Err(p,u,v)=(6.68e-03,2.26e-02,2.12e-02)
+ab2: t=1.00e-01 CPU=1.9e-01  err-ratios(p,u,v)=(2.66,3.96,5.04)
+ t=1.00e-01: Nx=20 Ny=20 Nt=43 dt=2.33e-03 max-Err(p,u,v)=(1.17e-03,5.32e-03,5.11e-03)
+ab2: t=1.00e-01 CPU=9.3e-01  err-ratios(p,u,v)=(5.72,4.25,4.15)
+ t=1.00e-01: Nx=40 Ny=40 Nt=171 dt=5.85e-04 max-Err(p,u,v)=(2.53e-04,1.30e-03,1.25e-03)
+ab2: t=1.00e-01 CPU=9.6e+00  err-ratios(p,u,v)=(4.61,4.10,4.07)
+
+*******************
+*** Oct 31, 2017
+
+==== TEST IM2
+IM2: 
+ins -ts=im2 -tf=.5 -ms=poly -degreex=2 -degreet=2 -idebug=1 -nu=0.1 -numResolutions=3
+...FORM the IMPLICIT TIME-STEPPING MATRIX: Ng=169
+ t=5.00e-01: Nx=10 Ny=10 Nt=35 dt=1.43e-02 max-Err(p,u,v)=(2.41e-06,1.22e-05,1.11e-05)
+im2: t=5.00e-01 CPU=4.9e-01 
+...FORM the IMPLICIT TIME-STEPPING MATRIX: Ng=529
+ t=5.00e-01: Nx=20 Ny=20 Nt=65 dt=7.69e-03 max-Err(p,u,v)=(7.08e-07,2.83e-06,2.59e-06)
+im2: t=5.00e-01 CPU=1.5e+00  err-ratios(p,u,v)=(3.40,4.31,4.31)
+...FORM the IMPLICIT TIME-STEPPING MATRIX: Ng=1849
+ t=5.00e-01: Nx=40 Ny=40 Nt=126 dt=3.97e-03 max-Err(p,u,v)=(1.88e-07,6.69e-07,6.00e-07)
+im2: t=5.00e-01 CPU=9.7e+00  err-ratios(p,u,v)=(3.77,4.23,4.31)
+
+
+IM2: initial TEST POLY
+ins -ts=im2 -tf=.1 -ms=poly -degreex=2 -degreet=2 -idebug=3
+
+=== TEST AB2:
+
+AB2: POLY: EXACT
+ins -ts=ab2 -tf=.1 -ms=poly -degreex=2 -degreet=2 -idebug=1
+
+== True INS
+ins -ts=fe -tf=.1 -ms=poly -degreex=2 -degreet=1 -idebug=1
+
+TRIG:
+ins -ts=fe -tf=.1 -ms=trig -idebug=1
+ins: ts=fe, tFinal=0.1, nu=0.1, cfl=0.9, ms=trig, idebug=1, degreex=2, degreet=2, numResolutions=2
+>> ins -ts=fe -tf=.1 -ms=trig -idebug=1 -numResolutions=2
+ins: ts=fe, tFinal=0.1, nu=0.1, cfl=0.9, ms=trig, idebug=1, degreex=2, degreet=2, numResolutions=2
+ t=1.00e-01: Nx=20 Ny=20 Nt=24 dt=4.17e-03 max-Err(p,u,v)=(5.74e-03,6.09e-03,3.96e-03)
+ t=1.00e-01 CPU=4.7e-01 
+
+ t=1.00e-01: Nx=40 Ny=40 Nt=95 dt=1.05e-03 max-Err(p,u,v)=(1.44e-03,1.51e-03,9.91e-04)
+ t=1.00e-01 CPU=5.9e+00  err-ratios(p,u,v)=(3.99,4.04,4.00)
+
+ 
+POLY: EXACT
+ins -ts=fe -tf=.1 -ms=poly -degreex=2 -degreet=1 -idebug=1
+
+
+*******************
+*** Oct 30, 2017
+
+FAKE INS:
+
+Test FE + poly
+
+ins -ts=fe -tf=.1 -ms=poly -degreex=2 -degreet=1 -idebug=1
+
+
+*******************
+*** Oct 29, 2017
+
+START on ins.m 

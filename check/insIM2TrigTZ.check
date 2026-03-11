@@ -1,0 +1,8 @@
+--------------------- INS Check File --------------------------
+ms=trig, ts=im2, bcs=nnnn, knownSolution=none
+nu= 1.00e-01, cfl= 9.00e-01, tFinal= 1.00e-01, cdv= 1.00e+00
+ad=0, ad21= 1.00e-01, ad22= 1.00e-01
+Nx=10 Ny=10 Nt=2 dt=5.00e-02
+uNorm=9.19e-02, vNorm=7.27e-02, pNorm=1.19e+00
+maxDivU=9.33e-02, maxGradU=1.01e+00
+max-Err(p,u,v)=(5.92e-02,1.25e-02,8.16e-03)

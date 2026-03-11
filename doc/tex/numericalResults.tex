@@ -1,0 +1,120 @@
+\section{Numerical Results} \label{sec:numerical_results}
+
+
+% -------------------------------------------------------------------
+\clearpage
+\subsection{Taylor Green vortex}
+
+The Taylor Green vortex is an exact solution given by
+\bse
+\ba
+  u &=+\alpha \sin(k x) \cos(k y) F(t) \\
+  v &=-\alpha \cos(k x) \sin(k y) F(t) \\
+  p &= \f{\rho\alpha^2}{4} ( \cos(2 k x) + \cos(2 k y) ) \, F^2(t) \\
+  F(t) &\eqdef \exp( -2 \nu k^2 t )
+\ea
+\ese
+where $\alpha$ is a parameter defining the initial amplitude.
+
+\mni
+Figure~\ref{fig:TaylorGreenVortex} shows some results using the command
+\begin{Verbatim}[fontsize=\small]
+ins -ts=im2  -tf=.5 -ms=none -knownSolution=TaylorGreen -idebug=1 -nu=0.1 -bcs=nnnn -N0=100 -plotOption=1
+\end{Verbatim}
+
+{
+\newcommand{\figSizeWide}{16cm}
+\newcommand{\figSize}{9cm}
+\newcommand{\figHeight}{4.5cm}
+
+\begin{figure}[htb]
+\begin{center}
+\begin{tikzpicture}[scale=1]
+  \useasboundingbox (0,.6) rectangle (16,9.5);  % set the bounding box (so we have less surrounding white space)
+
+
+  \begin{scope}[yshift=\figHeight]
+    \figByWidthb{ 0.0}{0}{../fig/insTaylorGreenVelocityAndPressure}{\figSizeWide}[0.03][0.02][0][0];
+  \end{scope}  
+
+  \begin{scope}[yshift=0cm]
+    \figByWidthb{ 0.0}{0}{../fig/insTaylorGreenVorticityAndStreamLines}{\figSize}[0.05][0.01][0.05][0.05];
+    % \figByWidth{ 5.0}{0}{../fig/waveHoltz1DO4TENx32Omega6BdcEMGMRESHelmholtzSolutions}{\figSize}[0][0][0][0];
+    % \figByWidth{10.0}{0}{../fig/waveHoltz1DO4TENx32Omega6BdcEMGMRESMuFunction}{\figSize}[0][0][0][0];
+  \end{scope}  
+
+  % Draw grid for placing figure:
+  % \draw[step=1cm,gray] (0,0) grid (16,9.5);
+\end{tikzpicture}
+\end{center}
+\caption{Taylor Green vortex
+    } 
+\label{fig:TaylorGreenVortex}
+\end{figure}
+}
+
+
+
+% -------------------------------------------------------------------
+\clearpage
+\subsection{Shear flow in a periodic channel}
+
+Figure~\ref{fig:shearFlow} shows the roll-up of a shear flow in periodic channel.
+The initial condition is perturbed shear flow
+\ba
+  & u(x,y,0) = \tanh( \beta ( y-y_m) ) , \\
+  & v(x,y,0) = \delta\cos( 2\pi (y-y_m)) ) \sin( 2 \pi k_x x ) 
+\ea
+\begin{Verbatim}[fontsize=\small]
+ins -ts=pc2 -tf=2.0 -tp=0.5 -ms=none -knownSolution=none -idebug=1 -nu=.0002 -ya=-.5 -yb=1.5 -xb=2
+ -bcs=ppnn -N0=800 -ic=shear -movieMode=1 -plotOption=3 -plotErrors=0 -kx=1 -checkTimeStep=20 
+ -ad=1 -ad21=.1 -ad22=.1 -cfl=0.95
+\end{Verbatim}
+Artificial dissipation is added.
+
+
+{
+\newcommand{\figSizeWide}{16cm}
+\newcommand{\figSize}{9cm}
+\newcommand{\figHeight}{4.5cm}
+
+\begin{figure}[htb]
+\begin{center}
+\begin{tikzpicture}[scale=1]
+  \useasboundingbox (0,.6) rectangle (16,9.5);  % set the bounding box (so we have less surrounding white space)
+
+
+  \begin{scope}[yshift=\figHeight]
+    \figByWidthb{ 0.0}{0}{../fig/insShearN800t2p0VelocityAndPressure}{\figSizeWide}[0.03][0.02][0][0];
+  \end{scope}  
+
+  \begin{scope}[yshift=0cm]
+    \figByWidthb{ 0.0}{0}{../fig/insShearN800t2p0VorticityAndStreamLines}{\figSize}[0.05][0.01][0.05][0.05];
+    % \figByWidth{ 5.0}{0}{../fig/waveHoltz1DO4TENx32Omega6BdcEMGMRESHelmholtzSolutions}{\figSize}[0][0][0][0];
+    % \figByWidth{10.0}{0}{../fig/waveHoltz1DO4TENx32Omega6BdcEMGMRESMuFunction}{\figSize}[0][0][0][0];
+  \end{scope}  
+
+  % Draw grid for placing figure:
+  % \draw[step=1cm,gray] (0,0) grid (16,9.5);
+\end{tikzpicture}
+\end{center}
+\caption{Rollup of a shear flow in a channel.
+    } 
+\label{fig:shearFlow}
+\end{figure}
+}
+
+\mni
+Here are the timings on a Mac-book pro showing that most of the time is spent in solving for the pressure.
+\begin{Verbatim}[fontsize=\small]
+  ------------- TIMINGS pc2 Nx=800 Ny=800 Nt= 1005 --------------------
+                  cpu (s)     %   
+Total             5.89e+02  100.0
+  setup           7.09e+01   12.0
+  getUt           1.16e+02   19.7
+  implicit solve  0.00e+00    0.0
+  implicit factor 0.00e+00    0.0
+  pressure solve  3.75e+02   63.7
+  bc              3.50e-01    0.1
+  plotting        2.03e+01    3.4
+\end{Verbatim}

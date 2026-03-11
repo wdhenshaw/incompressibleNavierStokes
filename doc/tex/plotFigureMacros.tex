@@ -1,0 +1,161 @@
+
+% ------------------------------------------------------------------------------------------------------------------------
+% These macros need: \usepackage{xargs}% for optional args to \newcommandx
+% \figByHeight{xa}{ya}{file}{height}[cxa][cxb][cya][cyb]
+\newcommandx{\figByHeight}[9][5=0, 6=0, 7=0, 8=0,9=]{
+\draw (#1,#2) node[anchor=south west,xshift=-16pt,yshift=-4pt] {\trimh{#3}{#4}{#5}{#6}{#7}{#8}};}
+% draw bounding box: 
+\newcommandx{\figByHeightb}[9][5=0, 6=0, 7=0, 8=0,9=]{
+\draw (#1,#2) node[anchor=south west,xshift=-16pt,yshift=-4pt] {\trimhb{#3}{#4}{#5}{#6}{#7}{#8}};}
+
+% \figByHeightWithLabel{xa}{ya}{file}{height}[cxa][cxb][cya][cyb][label]
+\newcommandx{\figByHeightWithLabel}[9][5=0, 6=0, 7=0, 8=0,9=]{
+\draw (#1,#2) node[anchor=south west,xshift=-16pt,yshift=-4pt] {\trimh{#3}{#4}{#5}{#6}{#7}{#8}} node[draw=white,fill=white,inner sep=1pt,anchor=south west] {#9};}
+% draw bounding box:
+\newcommandx{\figByHeightWithLabelb}[9][5=0, 6=0, 7=0, 8=0,9=]{
+\draw (#1,#2) node[anchor=south west,xshift=-16pt,yshift=-4pt] {\trimhb{#3}{#4}{#5}{#6}{#7}{#8}} node[draw=white,fill=white,inner sep=1pt,anchor=south west] {#9};}
+
+
+% \figByWidth{xa}{ya}{file}{height}[cxa][cxb][cya][cyb]
+\newcommandx{\figByWidth}[9][5=0, 6=0, 7=0, 8=0,9=]{
+\draw (#1,#2) node[anchor=south west,xshift=-16pt,yshift=-4pt] {\trimw{#3}{#4}{#5}{#6}{#7}{#8}};}
+% draw bounding box: 
+\newcommandx{\figByWidthb}[9][5=0, 6=0, 7=0, 8=0,9=]{
+\draw (#1,#2) node[anchor=south west,xshift=-16pt,yshift=-4pt] {\trimwb{#3}{#4}{#5}{#6}{#7}{#8}};}
+
+% \figByWidthtWithLabel{xa}{ya}{file}{height}[cxa][cxb][cya][cyb][label]
+\newcommandx{\figByWidthWithLabel}[9][5=0, 6=0, 7=0, 8=0,9=]{
+\draw (#1,#2) node[anchor=south west,xshift=-16pt,yshift=-4pt] {\trimw{#3}{#4}{#5}{#6}{#7}{#8}} node[draw=white,fill=white,inner sep=1pt,anchor=south west] {#9};}
+% draw bounding box
+\newcommandx{\figByWidthWithLabelb}[9][5=0, 6=0, 7=0, 8=0,9=]{
+\draw (#1,#2) node[anchor=south west,xshift=-16pt,yshift=-4pt] {\trimwb{#3}{#4}{#5}{#6}{#7}{#8}} node[draw=white,fill=white,inner sep=1pt,anchor=south west] {#9};}
+% ------------------------------------------------------------------------------------------------------------------------
+
+%
+% ============================ Plot TWO matlab figures ==============================
+% USAGE: \plotTwoMatlabFigs{fig1}{fig2}{caption}{label}
+% 
+\newcommand{\plotTwoMatlabFigs}[4]{%
+\begin{figure}[htb]
+\begin{center}
+\begin{tikzpicture}[scale=1]
+  \useasboundingbox (0,.25) rectangle (16,6.75);  % set the bounding box (so we have less surrounding white space)
+
+   \draw(0.0,0.0) node[anchor=south west,xshift=-15pt,yshift=-8pt] {\trimw{#1}{7.5cm}{.0}{.0}{.0}{.0}};% 7.5=figwidth 
+   \draw(8.0,0.0) node[anchor=south west,xshift=-15pt,yshift=-8pt] {\trimw{#2}{7.5cm}{.0}{.0}{.0}{.0}};
+  % Draw grid for placing figure:
+  %\draw[step=1cm,gray] (0,0) grid (16,7);
+\end{tikzpicture}
+\end{center}
+\caption{#3}
+\label{#4}
+\end{figure}
+}% end plotTwoMatlabFigs
+
+%
+% ============================ Plot THREE matlab figures ==============================
+% USAGE: \plotThreeMatlabFigs{fig1}{fig2}{fig3}{caption}{label}
+% 
+\newcommand{\plotThreeMatlabFigs}[5]{%
+\begin{figure}[htb]
+\begin{center}
+\begin{tikzpicture}[scale=1]
+  \useasboundingbox (.5,.25) rectangle (16.5,5);  % set the bounding box (so we have less surrounding white space)
+
+   \draw(0.0, 0.0) node[anchor=south west,xshift=-15pt,yshift=-8pt] {\trimw{#1}{5.5cm}{.0}{.0}{.0}{.0}};% 5.5=figwidth 
+   \draw(5.75,0.0) node[anchor=south west,xshift=-15pt,yshift=-8pt] {\trimw{#2}{5.5cm}{.0}{.0}{.0}{.0}};% 5.5=figwidth 
+   \draw(11.5,0.0) node[anchor=south west,xshift=-15pt,yshift=-8pt] {\trimw{#3}{5.5cm}{.0}{.0}{.0}{.0}};
+  % Draw grid for placing figure:
+  % \draw[step=1cm,gray] (0.5,0) grid (16.5,5);
+\end{tikzpicture}
+\end{center}
+\caption{#4}
+\label{#5}
+\end{figure}
+}% end plotThreeMatlabFigs
+
+
+%
+% ============================ Plot ONE Figure by WIDTH ==============================
+% USAGE: \plotOneFigByWidth{fig1}{caption}{label}{width}{height}
+% 
+\newcommand{\plotOneFigByWidth}[5]{%
+\begin{figure}[htb]
+\begin{center}
+\begin{tikzpicture}[scale=1]
+  \useasboundingbox (0,.25) rectangle (#4,#5);  % set the bounding box (so we have less surrounding white space)
+
+   \draw(0.0,0.0) node[anchor=south west,xshift=-16pt,yshift=-5pt] {\trimw{#1}{#4}{.0}{.0}{.0}{.0}};
+  % Draw grid for placing figure:
+  % \draw[step=1cm,gray] (0,0) grid (#4,#5);
+\end{tikzpicture}
+\end{center}
+\caption{#2}
+\label{#3}
+\end{figure}
+}% end plotOneFigByWidth
+
+%
+% ============================ Plot ONE Figure by HEIGHT ==============================
+% USAGE: \plotOneFigByHeight{fig1}{caption}{label}{width}{height}
+% 
+\newcommand{\plotOneFigByHeight}[5]{%
+\begin{figure}[htb]
+\begin{center}
+\begin{tikzpicture}[scale=1]
+  \useasboundingbox (0,.25) rectangle (#4,#5);  % set the bounding box (so we have less surrounding white space)
+
+   \draw(0.0,0.0) node[anchor=south west,xshift=-16pt,yshift=-5pt] {\trimh{#1}{#5}{.0}{.0}{.0}{.0}};
+  % Draw grid for placing figure:
+  % \draw[step=1cm,gray] (0,0) grid (#4,#5);
+\end{tikzpicture}
+\end{center}
+\caption{#2}
+\label{#3}
+\end{figure}
+}% end plotOneFigByHeight
+
+
+
+%
+% ============================ Plot TWO Figures by Height ==============================
+% USAGE: \plotTwoFigsByHeight{fig1}{fig2}{caption}{label}{height}
+% 
+\newcommand{\plotTwoFigsByHeight}[5]{%
+\begin{figure}[htb]
+\begin{center}
+\begin{tikzpicture}[scale=1]
+  \useasboundingbox (0,.25) rectangle (16,#5);  % set the bounding box (so we have less surrounding white space)
+
+   \draw(0.0,0.0) node[anchor=south west,xshift=-16pt,yshift=-5pt] {\trimh{#1}{#5}{.0}{.0}{.0}{.0}};
+   \draw(8.0,0.0) node[anchor=south west,xshift=-16pt,yshift=-5pt] {\trimh{#2}{#5}{.0}{.0}{.0}{.0}};
+  % Draw grid for placing figure:
+  % \draw[step=1cm,gray] (0,0) grid (16,#5);
+\end{tikzpicture}
+\end{center}
+\caption{#3}
+\label{#4}
+\end{figure}
+}% end plotTwoFigsByHeight
+
+
+%
+% ============================ Plot TWO Figures by WIDTH ==============================
+% USAGE: \plotTwoFigsByWidth{fig1}{fig2}{caption}{label}{width}
+% 
+\newcommand{\plotTwoFigsByWidth}[5]{%
+\begin{figure}[htb]
+\begin{center}
+\begin{tikzpicture}[scale=1]
+  \useasboundingbox (0,.25) rectangle (16,#5);  % set the bounding box (so we have less surrounding white space)
+
+   \draw(0.0,0.0) node[anchor=south west,xshift=-16pt,yshift=-5pt] {\trimw{#1}{#5}{.0}{.0}{.0}{.0}};
+   \draw(8.0,0.0) node[anchor=south west,xshift=-16pt,yshift=-5pt] {\trimw{#2}{#5}{.0}{.0}{.0}{.0}};
+  % Draw grid for placing figure:
+  % \draw[step=1cm,gray] (0,0) grid (16,#5);
+\end{tikzpicture}
+\end{center}
+\caption{#3}
+\label{#4}
+\end{figure}
+}% end plotTwoFigsByWidth

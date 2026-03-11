@@ -1,0 +1,8 @@
+--------------------- INS Check File --------------------------
+ms=none, ts=im2, bcs=nnnn, knownSolution=TaylorGreen
+nu= 1.00e-01, cfl= 9.00e-01, tFinal= 2.00e-01, cdv= 1.00e+00
+ad=0, ad21= 1.00e-01, ad22= 1.00e-01
+Nx=20 Ny=20 Nt=6 dt=3.33e-02
+uNorm=2.07e-01, vNorm=2.07e-01, pNorm=4.27e-02
+maxDivU=9.90e-03, maxGradU=2.67e+00
+max-Err(p,u,v)=(1.52e-03,1.03e-03,6.00e-04)

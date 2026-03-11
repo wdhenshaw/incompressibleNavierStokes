@@ -1,0 +1,23 @@
+\clearpage
+\section{Discrete approximations} 
+
+The discrete approach is based on the methods described in~\cite{CGNS,splitStep2003,fins2020}.
+
+
+The method-of-lines approximation keeps time continuous and discretizes in space.
+Let $\Vv_\jv(t) \approx \uv(\xv_\jv,t)$, and $P_\jv(t) = p(\xv_\jv,t)$.
+The discretization of the interior equations takes the form
+\bse
+\bat
+   & \f{d}{dt} \Vv_\jv + (\Vv_\jv\cdot\grad_h) \Vv_\jv + \f{1}{\rho} \grad_h P_\jv = \nu \Delta_h \Vv_\jv - \Dc_h^{(2)} \Vv_\jv ,  \qquad && \jv\in\Omega_h , \\
+   & \Delta_h P_\jv = \grad_h \Vv_\jv : \grad_h \Vv_\jv + \f{c_d}{\dt} \grad_h \cdot \Vv_\jv                             ,   \qquad && \jv\in\Omega_h ,
+\eat
+where $\grad_h$ and $\Delta_h$ denote discrete approximations to $\grad$ and $\Delta$, respectively.
+The second-order artificial dissipation operator  $\Dc_h^{(2)} $ is 
+\ba
+   & \Dc_h^{(2)} \Vv_\jv \eqdef ( a_1 + a_2 \| \grad_h \Vv_\jv \|_1  )\Big(  (-\dx^2\Dpx\Dmx) + (-\dy^2\Dpy\Dmy) \Big), \\
+   & \| \grad_h \Vv_\jv \|_1  = |\Dzx V_{1,\jv} | + |\Dzx V_{2,\jv} | + |\Dzy V_{1,\jv} | + |\Dzy V_{2,\jv} |,
+\ea
+\ese
+while $c_d$ is the coefficient of the divergence damping.
+

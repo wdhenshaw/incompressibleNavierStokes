@@ -1,0 +1,514 @@
+% ----- definitions-----
+% \renewcommand{\url}[1]{}% ******** Remove URL's from bibtex entries ********
+\newcommand{\citeCount}[1]{}% for citation counts papers for WDH citations
+
+\newcommand{\bogus}[1]{{}}
+\newcommand{\strutt}{\rule{0pt}{10pt}}% strutt to make table height bigger
+
+
+\usepackage{cleveref}% clever references
+\crefformat{equation}{(#2#1#3)}
+\crefformat{figure}{#2#1#3}
+\crefformat{section}{#2#1#3}
+
+% skip and noindent:
+\newcommand{\bni}{\bigskip\noindent}
+\newcommand{\mni}{\medskip\noindent}
+\newcommand{\sni}{\smallskip\noindent}
+
+%  \shadedBoxWithShadow{equation|align|etc}{red|green|orange}{equations}
+\newcommand{\shadedBoxWithShadow}[3]{\begin{empheq}[box={\mymath[colback=#2!20,colframe=#2!60!black,drop lifted shadow, sharp corners]}]{#1} #3\end{empheq}}
+
+
+\newcommand{\ECR}{{\rm ECR}}
+\newcommand{\CR}{{\rm CR}}
+
+\newtheorem{recipe}{Recipe}
+
+\renewcommand{\Im}{{\rm Im}}
+\renewcommand{\Re}{{\rm Re}}
+
+\newcommand{\SSHMS}{SS-WaveHoltz}
+\newcommand{\SSWH}{SS-WaveHoltz}
+
+\newlength{\ycbTop}% For colour bar
+\newlength{\ycbMid}%
+
+% possible def's for coeffcients in the equations 
+\newcommand{\alphaP}{\alpha_p}
+\newcommand{\bk}{b_{0,m}}
+\newcommand{\btk}{b_{1,m}}
+\newcommand{\ak}{a_{0,m}}
+\newcommand{\atk}{a_{1,m}}
+% 
+\newcommand{\bz}{b_{0}}
+\newcommand{\bt}{b_{1}}
+\newcommand{\az}{a_{0}}
+\newcommand{\at}{a_{1}}
+
+% \newcommand{\epsa}{\check{a}} % \eps_0 * a
+\newcommand{\epsa}{\tilde{a}} % \eps_0 * a
+\newcommand{\ake}{\epsa_{0,m}}%  \eps_0 * a_{0,m} 
+\newcommand{\atke}{\epsa_{1,m}}
+\newcommand{\azme}{\epsa_{0,m}}%  \eps_0 * a_{0,m} 
+\newcommand{\atme}{\epsa_{1,m}}
+\newcommand{\attme}{\epsa_{2,m}}
+%
+\newcommand{\aze}{\epsa_{0}}
+\newcommand{\ate}{\epas_{1}}
+
+\newcommand{\Pvm}{\Pv_m}
+\newcommand{\p}{\partial}
+
+\newcommand{\Pvv}{\underline{\Pv}}
+\newcommand{\Evv}{\underline{\Ev}}
+\newcommand{\Np}{{N_p}}% Number of P_k vectors 
+\newcommand{\sump}{\sum_{m=1}^{\Np}}
+
+\newcommand{\tableFont}{\footnotesize}
+\newcommand{\tableFontSize}{\tableFont}
+\newcommand{\num}[2]{#1e#2} % Use this macro to define the format of the numbers in the table
+\newcommand{\errFormat}[1]{$e_{#1}$} % form of error label in tables
+\newcommand{\eem}{e^{(j)}}
+\newcommand{\rateLabel}{rate}
+
+\newcommand{\f}[2]{\frac{#1}{#2}}
+
+% short for for begin{align} and \end{align}
+\def\ba#1\ea{\begin{align}#1\end{align}}
+
+% short for for begin{align*} and \end{align*}
+\def\bas#1\eas{\begin{align*}#1\end{align*}}
+
+% short for for begin{alignat}{3} and \end{alignat}
+\def\bat#1\eat{\begin{alignat}{3}#1\end{alignat}}
+
+% short for for begin{alignat*}{3} and \end{alignat*}
+\def\bats#1\eats{\begin{alignat*}{3}#1\end{alignat*}}
+
+
+\newcommand{\bse}{\begin{subequations}}
+\newcommand{\ese}{\end{subequations}}
+
+
+\newcommand{\jumpI}[1]{\left[#1\right]_I}% jump at interfaces 
+
+%%%%%%%%Nour Added these definitions %%%%%%%%%%%%%
+\newcommand{\Nx}{N_x}
+\newcommand{\Ny}{N_y}
+\newcommand{\Nt}{N_t}
+\newcommand{\dpmx}{D_{+x}D_{-x}}
+\newcommand{\dpmy}{D_{+y}D_{-y}}
+\newcommand{\dpmt}{D_{+t}D_{-t}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\newcommand{\Dzt}{D_{0t}}
+\newcommand{\Dpt}{D_{+t}}
+\newcommand{\Dmt}{D_{-t}}
+\newcommand{\dt}{\Delta t}
+\newcommand{\dx}{\Delta x}
+\newcommand{\dy}{\Delta y}
+
+\newcommand{\dr}{{\Delta r}}
+\newcommand{\drl}{\dr_l}
+\newcommand{\Dprl}{D_{+l}}
+\newcommand{\Dmrl}{D_{-l}}
+\newcommand{\Dzrl}{D_{0l}}
+
+\newcommand{\defeq}{\overset{{\rm def}}{=}}% definition = 
+\newcommand{\eqdef}{\overset{{\rm def}}{=}}% definition = 
+
+\newcommand{\qvb}{\qv_b}% solid state
+\newcommand{\cma}{\,,\,}% command with a little space
+
+\newcommand{\av}{\mathbf{ a}}
+\newcommand{\bv}{\mathbf{ b}}
+\newcommand{\cv}{\mathbf{ c}}
+\newcommand{\dv}{\mathbf{ d}}
+\newcommand{\ev}{\mathbf{ e}}
+\newcommand{\fv}{\mathbf{ f}}
+\newcommand{\gv}{\mathbf{ g}}
+\newcommand{\hv}{\mathbf{ h}}
+\newcommand{\iv}{\mathbf{ i}}
+\newcommand{\jv}{\mathbf{ j}}
+\newcommand{\kv}{\mathbf{ k}}
+\newcommand{\lv}{\mathbf{ l}}
+\newcommand{\mv}{\mathbf{ m}}
+\newcommand{\nv}{\mathbf{ n}}
+\newcommand{\ov}{\mathbf{ o}}
+\newcommand{\pv}{\mathbf{ p}}
+\newcommand{\qv}{\mathbf{ q}}
+\newcommand{\rv}{\mathbf{ r}}
+\newcommand{\sv}{\mathbf{ s}}
+\newcommand{\tv}{\mathbf{ t}}
+\newcommand{\uv}{\mathbf{ u}}
+\newcommand{\vv}{\mathbf{ v}}
+\newcommand{\wv}{\mathbf{ w}}
+\newcommand{\xv}{\mathbf{ x}}
+\newcommand{\yv}{\mathbf{ y}}
+\newcommand{\zv}{\mathbf{ z}}
+% 
+\newcommand{\Av}{\mathbf{ A}}
+\newcommand{\Bv}{\mathbf{ B}}
+\newcommand{\Cv}{\mathbf{ C}}
+\newcommand{\Dv}{\mathbf{ D}}
+\newcommand{\Ev}{\mathbf{ E}}
+\newcommand{\Fv}{\mathbf{ F}}
+\newcommand{\Gv}{\mathbf{ G}}
+\newcommand{\Hv}{\mathbf{ H}}
+\newcommand{\Iv}{\mathbf{ I}}
+\newcommand{\Jv}{\mathbf{ J}}
+\newcommand{\Kv}{\mathbf{ K}}
+\newcommand{\Lv}{\mathbf{ L}}
+\newcommand{\Mv}{\mathbf{ M}}
+\newcommand{\Nv}{\mathbf{ N}}
+\newcommand{\Ov}{\mathbf{ O}}
+\newcommand{\Pv}{\mathbf{ P}}
+\newcommand{\Qv}{\mathbf{ Q}}
+\newcommand{\Rv}{\mathbf{ R}}
+\newcommand{\Sv}{\mathbf{ S}}
+\newcommand{\Tv}{\mathbf{ T}}
+\newcommand{\Uv}{\mathbf{ U}}
+\newcommand{\Vv}{\mathbf{ V}}
+\newcommand{\Wv}{\mathbf{ W}}
+\newcommand{\Xv}{\mathbf{ X}}
+\newcommand{\Yv}{\mathbf{ Y}}
+\newcommand{\Zv}{\mathbf{ Z}}
+
+\newcommand{\collon}{:}  % note \colon already defined by someone.
+\newcommand{\ff}{\tt}
+
+% \newcommand{\lt}{{<}}
+% \newcommand{\grad}{\nabla}
+% \newcommand{\comma}{~~~,~~}
+% \newcommand{\calo}{{\cal O}}
+
+\newcommand{\half}{{1\over2}}
+
+\newcommand{\Real}{{\mathbb R}}
+\newcommand{\Imag}{\text{Im}}
+\newcommand{\Complex}{{\mathbb C}}
+\newcommand{\Integers}{{\mathbb Z}}
+
+\newcommand{\zerov}{\mathbf{0}}
+
+
+\newcommand{\Ac}{{\mathcal A}}
+\newcommand{\Bc}{{\mathcal B}}
+\newcommand{\Cc}{{\mathcal C}}
+\newcommand{\Dc}{{\mathcal D}}
+\newcommand{\Ec}{{\mathcal E}}
+\newcommand{\Fc}{{\mathcal F}}
+\newcommand{\Gc}{{\mathcal G}}
+\newcommand{\Gs}{{\mathcal G}}
+\newcommand{\Ic}{{\mathcal I}}
+\newcommand{\Jc}{{\mathcal J}}
+\newcommand{\Kc}{{\mathcal K}}
+\newcommand{\Rc}{{\mathcal R}}
+\newcommand{\Lc}{{\mathcal L}}
+\newcommand{\Mc}{{\mathcal M}}
+\newcommand{\Nc}{{\mathcal N}}
+\newcommand{\Oc}{{\mathcal O}}
+\newcommand{\Pc}{{\mathcal P}}
+\newcommand{\Qc}{{\mathcal Q}}
+\newcommand{\Sc}{{\mathcal S}}
+\newcommand{\Tc}{{\mathcal T}}
+\newcommand{\Wc}{{\mathcal W}}
+
+
+
+\newcommand{\deltav}{\boldsymbol{\delta}}
+\newcommand{\omegav}{\boldsymbol{\omega}}
+\newcommand{\tauv}{\boldsymbol{\tau}}
+\newcommand{\phiv}{\boldsymbol{\phi}}
+\newcommand{\psiv}{\boldsymbol{\psi}}
+\newcommand{\sigmav}{\boldsymbol{\sigma}}
+\newcommand{\chiv}{\boldsymbol{\chi}}
+\newcommand{\thetav}{\boldsymbol{\theta}}
+
+
+\newcommand{\grad}{\nabla}
+
+\newcommand{\nd}{n_d}% number of space dimensions
+
+\newcommand{\eps}{\epsilon}
+\newcommand{\epsHat}{\hat{\epsilon}}
+\newcommand{\nHat}{\hat{n}}
+\newcommand{\muHat}{\hat{\mu}}
+\newcommand{\cHat}{\hat{c}}
+\newcommand{\chiHat}{\hat{\chi}}
+\newcommand{\epsBar}{\bar{\epsilon}}
+
+\newcommand{\epsz}{\epsilon_0}
+\newcommand{\epszxi}{\epsilon_{0,\xi}}
+\newcommand{\epszL}{\epsilon_{0,L}}
+\newcommand{\epszR}{\epsilon_{0,R}}
+\newcommand{\epszi}{\epsz^{-1}}
+\newcommand{\epszxii}{\epszxi^{-1}}
+\newcommand{\epszLi}{\epszL^{-1}}
+\newcommand{\epszRi}{\epszR^{-1}}
+\newcommand{\muz}{\mu_0}
+%\newcommand{\Ndomain}{N_d} 
+\newcommand{\Ndomain}{N}
+\newcommand{\kdomain}{k}
+%\newcommand{\Omegad}{\Omega_d}
+\newcommand{\Omegad}{\Omega_\kdomain}
+\newcommand{\Omegada}{\Omega_{\kdomain_1}}
+\newcommand{\Omegadb}{\Omega_{\kdomain_2}}
+\newcommand{\Gammad}{\Gamma_\kdomain}
+\newcommand{\epszd}{\eps_{0,d}}
+\newcommand{\muzd}{\mu_{0,d}}
+
+\newcommand{\xHat}{\hat{x}}
+\newcommand{\yHat}{\hat{y}}
+\newcommand{\zHat}{\hat{z}}
+
+\newcommand{\DvHat}{\hat{\Dv}}
+\newcommand{\PvHat}{\hat{\Pv}}
+\newcommand{\PHat}{\hat{P}}
+\newcommand{\Phat}{\hat{P}}
+\newcommand{\AvHat}{\hat{\Av}}
+\newcommand{\EvHat}{\hat{\Ev}}
+\newcommand{\EHat}{\hat{E}}
+\newcommand{\Ehat}{\hat{E}}
+\newcommand{\HzHat}{\hat{H}_z}
+\newcommand{\HvHat}{\hat{\Hv}}
+\newcommand{\HHat}{\hat{H}}
+
+\newcommand{\ap}{a_p}% coeff of in P equation, P_tt + a_p P_t + b_p P = c_p E 
+\newcommand{\bp}{b_p}% coeff of in P equation, P_tt + a_p P_t + b_p P = c_p E 
+\newcommand{\cp}{c_p}% coeff of in P equation, P_tt + a_p P_t + b_p P = c_p E 
+
+\newcommand{\Ej}{\mathbf{E}_{\jv}}
+\newcommand{\Pj}{\mathbf{P}_{\jv}}
+\newcommand{\Wj}{\mathbf{W}_{\jv}}
+\newcommand{\Qj}{\mathbf{Q}_{\jv}}
+
+\newcommand{\Ejn}{\Ej^n}
+\newcommand{\Pjn}{\Pj^n}
+ \newcommand{\Psij}{\mathbf{\Psi}_{\jv}}
+ 
+ \newcommand{\Wjn}{\Wj^n}
+\newcommand{\Qjn}{\Qj^n}
+
+
+\newcommand{\xiv}{{\mathbf{\xi}}}
+\newcommand{\muv}{{\boldsymbol{\mu}}}
+
+
+% \newcommand{\bb}[1]{\left[#1\right]}% old way to indicate [P_tt]_\jv^n 
+\newcommand{\bb}[1]{\left.#1\right|}% new way: P_tt |_\jv^n 
+
+\newcommand{\Pti}{{\blue \bb{\partial_t \Pv}_{\jv}^{n}}} % Pt on the interface 
+\newcommand{\Pmti}{{\blue \bb{\partial_t \Pv}_{m,\,\jv}^{n}}} % Pmt on the interface 
+\newcommand{\Pmtti}{{\blue \bb{\partial_t^2 \Pv}_{m,\,\jv}^{n}}} % Pmt on the interface 
+\newcommand{\Eti}{{\blue \bb{\partial_t \Ev}_{\jv}^{n}}} % Et on the interface 
+
+
+\newcommand{\Pttn}{{\blue \bb{\partial_t^2 \Pv}_{\jv}^{n}}} % Ptt on the interface 
+
+\newcommand{\Pttttn}{{\purple \bb{\partial_t^4 \Pv}_{\jv}^{n}}} % Ptttt on the interface
+\newcommand{\Pmttttn}{{\purple \bb{\partial_t^4 \Pv_m}_{\jv}^{n}}} % Ptttt on the interface
+\newcommand{\Pkttttn}{{\purple \bb{\partial_t^4 \Pv_m}_{\jv}^{n}}} % Ptttt on the interface
+\newcommand{\Pttitwon}{{\blue \bb{\partial_t^2 \Pv}_{\jv}^{*,n}}} % Ptt on the interface 
+
+
+\newcommand{\Ptti}{{\blue \bb{\partial_t^2 \Pv}_{\jv}^{n}}} % Ptt on the interface 
+\newcommand{\Ptttti}{{\purple \bb{\partial_t^4 \Pv}_{\jv}^{n}}} % Ptttt on the interface
+\newcommand{\Pttitwo}{{\blue \bb{\partial_t^2 \Pv}_{\jv}^{*,n}}} % Ptt on the interface 
+
+% 
+\newcommand{\Evj}{\Ev_{\jv}}
+\newcommand{\Evtj}{\Evt_{\jv}}
+\newcommand{\Pvj}{\Pv_{\jv}}
+\newcommand{\Pvk}{\Pv_{m}}
+\newcommand{\Pvkj}{\Pv_{m,\,\jv}}
+\newcommand{\Pvtj}{\Pvt_{\jv}}
+\newcommand{\Pvtkj}{\Pvt_{m,\,\jv}}
+% 
+\newcommand{\Pts}{{\blue\bb{\partial_t \Pv^*}_{\jv}^n}}
+\newcommand{\Ptts}{{\blue\bb{\partial_t^2 \Pv^*}_{\jv}^n}}
+\newcommand{\Ptttts}{{\blue\bb{\partial_t^4 \Pv^*}_{\jv}^n}}
+\newcommand{\DeltaPtts}{{\blue\bb{\Delta_{2h} \partial_t^2 \Pv^*}_{\jv}^n}}
+\newcommand{\DeltaPktts}{{\blue\bb{\Delta_{2h} \partial_t^2 \Pv_m^*}_{\jv}^n}}
+\newcommand{\Pttts}{{\blue\bb{\partial_t^3 \Pv^*}_{\jv}^n}}
+\newcommand{\Pktts}{{\blue\bb{\partial_t^2 \Pv_m^*}_{\jv}^n}}
+\newcommand{\Pmtts}{\Pktts}
+\newcommand{\Pkts}{{\blue\bb{\partial_t \Pv_m^*}_{\jv}^n}}
+\newcommand{\Pmts}{\Pkts}
+\newcommand{\Pkttts}{{\blue\bb{\partial_t^3 \Pv_m^*}_{\jv}^n}}
+\newcommand{\Ets}{{\blue\bb{\partial_t \Ev^*}_{\jv}^n}}
+\newcommand{\Etts}{{\blue\bb{\partial_t^2 \Ev^*}_{\jv}^n}}
+\newcommand{\Ettts}{{\blue\bb{\partial_t^3 \Ev^*}_{\jv}^n}}
+\newcommand{\DeltaEts}{{\blue\bb{\Delta_{2h} \partial_t \Ev^*}_{\jv}^n}}
+
+% Defines for the fourth-order scheme intermediate variables:
+%\newcommand{\Evt}{\widetilde{\Ev}}
+%\newcommand{\Pvt}{\widetilde{\Pv}}
+\newcommand{\Evt}{{\Ev^*}}
+\newcommand{\Pvt}{{\Pv^*}}
+% 
+
+
+\newcommand{\ca}{c^a}
+\newcommand{\cb}{c^b}
+\newcommand{\cc}{c^c}
+% 
+\newcommand{\cas}{c^{a}}
+\newcommand{\cbs}{c^{b}}
+\newcommand{\ccs}{c^{c}}
+\newcommand{\wva}{\wv_{2,\jv}} 
+\newcommand{\cvPtta}{\cv_{\rm ptt,2}}
+\newcommand{\cvPta}{\cv_{\rm pt,2}}
+\newcommand{\cvEta}{\cv_{\rm et,2}}
+\newcommand{\wvb}{\wv_{4,\jv}} 
+\newcommand{\cvPtttta}{\cv_{\rm ptttt,2}}
+\newcommand{\cvPttb}{\cv_{\rm ptt,4}}
+\newcommand{\cvPtb}{\cv_{\rm pt,4}}
+\newcommand{\cvEtb}{\cv_{\rm et,4}}
+
+\newcommand{\KEtwo}{K_{\Ev}^{(2)}}
+\newcommand{\KLEtwo}{K_{\Delta\Ev}^{(2)}}
+\newcommand{\KLEfour}{K_{\Delta\Ev}^{(4)}}% coeff of L(E) in 4th-order approx. to Ptt
+\newcommand{\KLLEfour}{K_{\Delta^2\Ev}^{(4)}}% coeff of L^2(E) in 4th-order approx. to Ptt
+
+\newcommand{\chiP}{\hat{\chi}}
+\newcommand{\atilde}{\tilde{a}}
+
+
+\newcommand{\Jn}{J_n}
+\newcommand{\Yn}{Y_n}
+\newcommand{\Hn}{H_n}
+
+\newcommand{\lr}{\alpha}% left or right 
+
+\newcommand{\thetaHat}{\hat\theta}
+\newcommand{\phiHat}{\hat\phi}
+\newcommand{\rHat}{{\hat r}}
+
+\newcommand{\ds}{{\Delta s}}
+
+\newcommand{\Arg}{\operatorname{Arg}}
+
+\DeclareMathOperator\erf{erf}
+
+
+\newcommand{\aHat}{\hat{a}}
+\newcommand{\bHat}{\hat{b}}
+
+
+\newcommand{\Dpx}{D_{+x}}
+\newcommand{\Dmx}{D_{-x}}
+\newcommand{\Dzx}{D_{0x}}
+\newcommand{\Dpy}{D_{+y}}
+\newcommand{\Dmy}{D_{-y}}
+\newcommand{\Dzy}{D_{0y}}
+\newcommand{\Dpz}{D_{+z}}
+\newcommand{\Dmz}{D_{-z}}
+\newcommand{\Dzz}{D_{0z}}
+
+\newcommand{\scriptsizess}{\scriptsize\sffamily}
+\newcommand{\ssf}{\scriptscriptstyle}% font for for small subscript
+
+\newcommand{\Ns}{{N_s}}% number of solutions we solve for 
+
+
+\newcommand{\Nfreq}{\Nc}% number of frequencies we solve for
+\newcommand{\Nf}{{\Nc_f}}% number of frequencies we solve for
+\newcommand{\Tbar}{{\widebar T}}
+\newcommand{\Tf}{\Tbar}% final time
+
+\newcommand{\sinc}{{\rm sinc}}
+\newcommand{\Uhat}{\hat{U}}
+\newcommand{\UHat}{\hat{U}}
+\newcommand{\omegaHat}{\hat{\omega}}
+\newcommand{\omegaTilde}{\tilde{\omega}}
+\newcommand{\omegaExplicit}{\omega_{e}}
+\newcommand{\omegaImplicit}{\omega_{i}}
+\newcommand{\Ttilde}{\tilde{T}}
+\newcommand{\TbarTilde}{\tilde{\Tbar}}
+\newcommand{\vHat}{\hat{v}}
+\newcommand{\fHat}{\hat{f}}
+
+%~~~~~~~~~~ CJC's commands ~~~~~~~~~~~~~~~~
+\newcommand\norm[1]{\left\lVert#1\right\rVert}
+\newcommand\abs[1]{\left\lvert#1\right\rvert}
+\newcommand\floor[1]{\left\lfloor#1\right\rfloor}
+
+\newcommand{\vk}{v^{(k)}}
+\newcommand{\vkpo}{v^{(k+1)}}
+\newcommand{\vkHat}{\hat{v}^{(k)}}
+\newcommand{\vkpoHat}{\hat{v}^{(k+1)}}
+\newcommand{\vvkHat}{\hat{\mathbf{v}}^{(k)}}
+\newcommand{\vvkpoHat}{\hat{\mathbf{v}}^{(k+1)}}
+\newcommand{\wHat}{\hat{w}}
+\newcommand{\What}{\hat{W}}
+\newcommand{\Vhat}{\hat{V}}
+\newcommand{\uHat}{\hat{u}}
+\newcommand{\uvHat}{\hat{\mathbf{u}}}
+\newcommand{\ewid}{m}		% the indexing variable for eigfxn expansions
+
+
+
+\newcommand{\Gcd}{\Gc_d}% disk grid
+\newcommand{\Ds}{\Dc}% deflation set 
+\newcommand{\ACR}{{\rm ACR}}% asymptotic CR
+\newcommand{\NITS}{N_{\ssf ITS}}% number of implicit time-steps per min-period
+\newcommand{\Nits}{\NITS}% number of implicit time-steps per min-period
+
+\newcommand{\lambdaTilde}{\tilde{\lambda}}
+\newcommand{\lambdaExplicit}{\lambda^e_{h,m}}
+\newcommand{\lambdaImplicit}{\lambda^i_{h,m}}
+% \newcommand{\betaTilde}{\tilde{\beta}}
+
+\newcommand{\vDot}{\dot{v}}
+\newcommand{\vDotHat}{\hat{\vDot}}
+
+\newcommand{\eDot}{\dot{e}}
+\newcommand{\eDotHat}{\hat{\eDot}}
+\newcommand{\eHat}{\hat{e}}
+\newcommand{\betacs}{\beta_{\rm cs}}
+
+\newcommand{\betacc}{\beta_{\rm cc}}
+
+\newcommand{\lamx}{\lambda_x}
+\newcommand{\Avtp}{\mathcal{A}^t_+}
+
+\newcommand{\cwt}{\cos(\omega t)}
+\newcommand{\swt}{\sin(\omega t)}
+
+\newcommand{\sincd}{\sinc_d}
+
+\newcommand{\ACRe}{\mu_{{\ssf E},h}}
+\newcommand{\ACRi}{\mu_{{\ssf I},h}}
+\newcommand{\ACRez}{\mu_{{\ssf E},0}}
+\newcommand{\ACRiz}{\mu_{{\ssf I},0}}
+
+
+\newcommand{\PPW}{{\rm PPW}}
+\newcommand{\PPWb}{{\rm PPW }}
+% \newcommand{\Nppw}{N_{\hbox{\tiny ppw}}}
+\newcommand{\Nppw}{\PPW}
+
+\newcommand{\alphag}{a_{g}}% Gaussian sourece amplitude
+\newcommand{\betag}{b_{g}}% Gaussian source exponential weight
+
+\newcommand{\Ep}{\Ec}% pollution error
+
+\newcommand{\kTilde}{\tilde{k}}
+\newcommand{\kappaTilde}{\tilde{\kappa}}
+\newcommand{\up}{u^f}% particular solution
+\newcommand{\Up}{U^f}
+\newcommand{\Ef}{E^f}
+\newcommand{\Amp}{\Ac}
+\newcommand{\Eamp}{\Ec_{\ssf A}}
+\newcommand{\Ephase}{\Ec_{\phi}}
+\newcommand{\Kamp}{K_{\ssf A}}
+\newcommand{\deltak}{\delta k}
+
+\newcommand{\CFL}{{\rm CFL}}
+\newcommand{\lambdaBar}{\bar\lambda}
+\newcommand{\cBar}{{\bar c}}
+\newcommand{\phiBar}{{\bar\phi}}
