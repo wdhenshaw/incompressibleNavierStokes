@@ -66,7 +66,7 @@ function par = plotSolution( tn,un,vn,pn, par)
     % Hardcopy 
     timeLabel=sprintf('t%.1f',tn);
     timeLabel = replace(timeLabel, ".", "p");
-    fprintf('timeLabel=[%s]\n',timeLabel);
+    % fprintf('timeLabel=[%s]\n',timeLabel);
     myPlotName = sprintf('%s%s',par.plotName,timeLabel);    
     if( par.savePlotThisStep && par.savePlots )
       savePlotFile( sprintf('%s/%sVelocityAndPressure',par.figDir,myPlotName),'pdf' );
@@ -122,6 +122,11 @@ function par = plotSolution( tn,un,vn,pn, par)
     % ---- ERRORS ----
     if( par.computeErrors && par.plotErrors )
 	    [maxErr,perr,uerr,verr,div] = getErrors( tn,un,vn,pn, par );
+
+      par.maxErr(1) = max(abs(perr(I1,I2)),[],'all');
+      par.maxErr(2) = max(abs(uerr(I1,I2)),[],'all');
+      par.maxErr(3) = max(abs(verr(I1,I2)),[],'all');
+      par.maxErr(4) = max(abs(div (I1,I2)),[],'all');
 
 	 	  figure(3)
 	    tl =tiledlayout('flow','TileSpacing','Compact');

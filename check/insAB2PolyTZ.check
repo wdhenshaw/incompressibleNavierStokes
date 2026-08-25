@@ -2,7 +2,7 @@
 ms=poly, ts=ab2, bcs=nnnn, knownSolution=none
 nu= 1.00e-01, cfl= 9.00e-01, tFinal= 1.00e-01, cdv= 1.00e+00
 ad=0, ad21= 1.00e-01, ad22= 1.00e-01
-Nx=10 Ny=10 Nt=17 dt=5.88e-03
+Nx=10 Ny=10 Nt=15 dt=6.67e-03
 uNorm=7.88e+00, vNorm=2.99e+00, pNorm=4.25e+00
-maxDivU=5.33e-15, maxGradU=1.61e+01
-max-Err(p,u,v)=(1.07e-14,1.78e-15,8.19e-16)
+maxDivU=8.88e-15, maxGradU=1.61e+01
+max-Err(p,u,v)=(2.66e-14,1.78e-15,8.95e-16)

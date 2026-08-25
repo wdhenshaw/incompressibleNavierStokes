@@ -12,18 +12,17 @@ function runChecks( varargin )
   addpath(genpath(pwd)); % allow matlab to find files in subfolders
 
 
-  % par.replace=0;  % set to 1 to save new check files
+  par.replace=0;  % set to 1 to save new check files
   checkDir = './check';
-  % par.echo=0; 
+  par.echo=0; 
 
   % --- read command line args ---
   for i = 1 : nargin
     line = varargin{i};
-    % par = assignCommandLineOption( line, par, par.echo );
+    par = assignCommandLineOption( line, par, par.echo );
   end
-  replace=0; % par.replace;
 
-  eval(sprintf('check -replace=%d',replace));
+  eval(sprintf('check -replace=%d',par.replace));
   % eval('check/check');
   % check
 

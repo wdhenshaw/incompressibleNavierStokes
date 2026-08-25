@@ -5,12 +5,359 @@
 
 cd /Users/henshaw/DropBox/research/incompressibleNavierStokes
 
-
+git clone https://github.com/wdhenshaw/incompressibleNavierStokes.git incompressibleNavierStokes
 
 ----------- FILES:
 
 ins.m : solve INS with pressure-poisson
 
+--- NICE EXAMPLES:
+
+(1) Shear flow -- Kelvin-Helmholtz instability
+
+-- finer grid N=500
+ins -ts=pc2 -tzScale=1 -tf=2 -tp=0.1 -ms=none -knownSolution=none -idebug=1 -nu=.0005 -ya=-.5 -yb=1.5 -xb=2 -bcs=ppnn -N0=500 -ic=shear -movieMode=1 -plotOption=3 -plotErrors=0 -kx=1 -checkTimeStep=20 -ad=1 -ad21=.1 -ad22=.1 -cfl=0.95 -numThreads=1;
+
+-- coarser grid N=300
+ins -ts=pc2 -tzScale=1 -tf=2 -tp=.05 -ms=none -knownSolution=none -idebug=1 -nu=.0005 -ya=-.5 -yb=1.5 -xb=2 -bcs=ppnn -N0=300 -ic=shear -movieMode=1 -plotOption=3 -plotErrors=0 -kx=1 -checkTimeStep=20 -ad=1 -ad21=.1 -ad22=.1 -cfl=0.95 -numThreads=1;
+
+
+
+***************************************
+***** Tues Aug 25, 2026
+
+commit files ...
+
+runChecks
+
+ ----- check SUMMARY ----
+Test  1: insAB2PolyTZ.check             : success.
+Test  2: insPC2PolyTZ.check             : success.
+Test  3: insPC2PolyTZnsns.check         : success.
+Test  4: insPC2PolyTZionn.check         : success.
+Test  5: insIM2PolyTZ.check             : success.
+Test  6: insIM2PolyTZsnsn.check         : success.
+Test  7: insPC2TrigTZ.check             : success.
+Test  8: insIM2TrigTZ.check             : success.
+Test  9: insIM2TaylorGreen.check        : success.
+===== SUCCESS. All regression tests passed. ======
+
+***************************************
+***** Mond JUne 29, 2026
+
+Fixed artificial dissipation --- need to use .* ----
+
+
+
+***************************************
+***** Sun June 28, 2026
+
+Test claude
+
+>/plan
+>How would I create a julia version of this code
+
+
+>/init
+
+
+--------------
+> what does this project do
+
+Let me look at the project structure and key files to give you an accurate answer.
+
+  Read 1 file, listed 1 directory
+
+This is a MATLAB research code for solving the incompressible Navier-Stokes (INS) equations in 2D. Here's what it does:
+
+Core purpose: Numerically simulate viscous, incompressible fluid flow using a pressure-Poisson projection approach on structured grids.
+
+Time integration schemes (selectable via -ts=):
+- ab2 — 2nd-order Adams-Bashforth (explicit)
+- pc2 — 2nd-order predictor-corrector
+- im2 — 2nd-order implicit (Crank-Nicolson style)
+
+Grid support:
+- Cartesian, curvilinear (annulus, rectangle, general mapped grids)
+- Periodic, Dirichlet, Neumann, slip-wall, inflow/outflow boundary conditions
+
+Test cases & validation:
+- Taylor-Green vortex (manufactured solution for convergence testing)
+- Poiseuille flow (exact solution)
+- Trigonometric/polynomial manufactured solutions for grid convergence studies
+- Kelvin-Helmholtz shear flow instability (physical simulation)
+
+Key capabilities:
+- Grid convergence verification (runGridConvergence.m) showing ~2nd-4th order accuracy
+- Artificial dissipation for stability in under-resolved flows
+- CFL-based adaptive time-stepping
+- Performance-optimized sparse matrix fill for the pressure Poisson solve
+- Regression check suite (runChecks.m)
+
+The development log (memo) shows active research work from March 2026, focused on extending to curvilinear grids, fixing implicit solver boundary conditions, and adding periodic BCs for annular domains.
+
+
+
+
+***************************************
+***** Tues March 17, 2026
+
+Test periodic BC for annulus
+ins -ts=ab2 -tf=.1 -ms=trig -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -degreex=2 -degreet=2 -bcs=ppnn -idebug=1 -plotEveryStep=1 -plotGrid=1 -map=Annulus -N0=5;
+
+ab2: t=1.00e-01: Nx=315 Ny= 40 Nt=  366 dt=2.73e-04 max-Err(p,u,v)=(7.69e-04,2.11e-04,1.73e-04) cpu=1.38e+01(s)
+ab2: t=1.00e-01: Nx=158 Ny= 20 Nt=   92 dt=1.09e-03 max-Err(p,u,v)=(2.97e-03,8.18e-04,6.60e-04) cpu=1.66e+00(s)
+ab2: t=1.00e-01: Nx= 79 Ny= 10 Nt=   24 dt=4.17e-03 max-Err(p,u,v)=(1.11e-02,3.08e-03,2.50e-03) cpu=1.80e-01(s)
+
+
+
+does shear flow still work?
+
+LOOK OK: 
+ins -ts=pc2 -tzScale=1 -tf=2 -ms=none -knownSolution=none -idebug=1 -nu=.0005 -ya=-.5 -yb=1.5 -xb=2 -bcs=ppnn -N0=500 -ic=shear -movieMode=1 -plotOption=3 -plotErrors=0 -kx=1 -checkTimeStep=20 -ad=1 -ad21=.1 -ad22=.1 -cfl=0.95 -numThreads=1;
+
+***************************************
+***** Mon March 16, 2026
+
+
+TAYLOR GREEN IM2 IS BROKEN: .. fixed .. imp rhs : need to set (u,v) on boundary
+ins -ts=im2 -tf=.2 -ms=none -knownSolution=TaylorGreen -nu=0.1  -bcs=nnnn -N0=20 -idebug=1 -plotOption=1 -plotEveryStep=1
+
+Taylor Green pc2 is OK 
+ins -ts=pc2 -tf=.2 -ms=none -knownSolution=TaylorGreen -nu=0.1  -bcs=nnnn -N0=20 -idebug=1 -plotOption=1 -plotEveryStep=1
+
+START WORK ON Neumamn pressure BC for curvilinear
+
+TRIG: looks order 2
+ins -ts=ab2 -tf=.1 -ms=trig -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -degreex=2 -degreet=2 -bcs=nnnn -idebug=1 -plotEveryStep=0 -plotGrid=1 -map=Annulus -N0=5;
+
+ab2: t=1.00e-01: Nx=158 Ny= 20 Nt=   92 dt=1.09e-03 max-Err(p,u,v)=(1.69e-02,1.19e-03,1.17e-03) cpu=5.61e+00(s)
+ab2: t=1.00e-01: Nx= 79 Ny= 10 Nt=   24 dt=4.17e-03 max-Err(p,u,v)=(6.25e-02,4.58e-03,4.46e-03) cpu=6.70e-01(s)
+ab2: t=1.00e-01: Nx= 40 Ny=  5 Nt=    7 dt=1.43e-02 max-Err(p,u,v)=(2.11e-01,1.69e-02,1.66e-02) cpu=6.90e-01(s)
+
+
+AFTER eval forcing at once 
+  ------------- TIMINGS ab2 Nx=158 Ny= 20 Nt=   92 --------------------
+                  cpu (s)     %   
+Total             1.80e+00  100.0
+  setup           8.00e-02    4.4
+  getUt           5.60e-01   31.1
+  implicit solve  0.00e+00    0.0
+  implicit factor 0.00e+00    0.0
+  pressure solve  1.00e+00   55.6
+  bc              8.00e-02    4.4
+  plotting        0.00e+00    0.0
+
+
+BEFORE : 
+
+  ------------- TIMINGS ab2 Nx=158 Ny= 20 Nt=   92 --------------------
+                  cpu (s)     %   
+Total             5.61e+00  100.0
+  setup           1.10e-01    2.0
+  getUt           4.83e+00   86.1
+  implicit solve  0.00e+00    0.0
+  implicit factor 0.00e+00    0.0
+  pressure solve  6.10e-01   10.9
+  bc              4.00e-02    0.7
+  plotting        0.00e+00    0.0
+
+
+
+Annulus -- poly looks order=2
+ins -ts=ab2 -tzScale=1 -tf=.1 -ms=poly -knownSolution=none -nu=0.05 -degreex=2 -degreet=2 -bcs=nnnn -idebug=1 -plotEveryStep=0 -plotGrid=1 -map=Annulus -N0=5;
+
+ab2: t=1.00e-01: Nx= 79 Ny= 10 Nt=   27 dt=3.70e-03 max-Err(p,u,v)=(9.27e-02,6.96e-03,3.72e-03) cpu=1.20e+00(s)
+
+ab2: t=1.00e-01: Nx= 40 Ny=  5 Nt=    9 dt=1.11e-02 max-Err(p,u,v)=(3.41e-01,2.62e-02,1.50e-02) cpu=3.80e-01(s)
+
+
+
+ADD p.n into pressure .. look ok for nonSquare
+ins -ts=ab2 -tzScale=1 -tf=.1 -ms=poly -knownSolution=none -nu=0.1 -degreex=2 -degreet=2 -bcs=nnnn -idebug=1 -N0=5 -Ny=5 -plotEveryStep=1 -map=Rectangle;
+
+ab2: t=1.429e-02 step=     1 dt=1.429e-02 err-[u,v,p]=[4.44e-16,2.22e-16,2.66e-15] div/grad= 2.31e-16, cpu= 8.50e+00(s)
+ab2: t=2.857e-02 step=     2 dt=1.429e-02 err-[u,v,p]=[8.88e-16,2.22e-16,3.55e-15] div/grad= 2.30e-16, cpu= 1.18e+01(s)
+ab2: t=4.286e-02 step=     3 dt=1.429e-02 err-[u,v,p]=[8.88e-16,4.44e-16,2.00e-15] div/grad= 1.99e-16, cpu= 1.41e+01(s)
+ab2: t=5.714e-02 step=     4 dt=1.429e-02 err-[u,v,p]=[8.88e-16,2.50e-16,3.11e-15] div/grad= 1.70e-16, cpu= 1.55e+01(s)
+
+
+
+
+FIX DIVERGENCE BC FOR CURVINEAR
+
+ins -ts=ab2 -tzScale=1 -tf=.1 -ms=poly -knownSolution=none -nu=0.1 -degreex=2 -degreet=2 -bcs=nnnn -idebug=1 -N0=5 -Ny=5 -plotEveryStep=1 -map=Annulus;
+
+applyBC: (side,axis)=(1,1) after set div(uv)=0 : max(abs(div))= 4.44e-16
+applyBC: (side,axis)=(1,2) after set div(uv)=0 : max(abs(div))= 8.88e-16
+applyBC: (side,axis)=(2,1) after set div(uv)=0 : max(abs(div))= 4.44e-16
+applyBC: (side,axis)=(2,2) after set div(uv)=0 : max(abs(div))= 9.99e-16
+
+
+ins -ts=ab2 -tzScale=1 -tf=.1 -ms=poly -knownSolution=none -nu=0.1 -degreex=2 -degreet=2 -bcs=nnnn -idebug=1 -N0=5 -Ny=5 -plotEveryStep=1 -map=Rectangle;
+
+applyBC: (side,axis)=(1,1) after set div(uv)=0 : max(abs(div))= 2.22e-16
+applyBC: (side,axis)=(1,2) after set div(uv)=0 : max(abs(div))= 8.88e-16
+applyBC: (side,axis)=(2,1) after set div(uv)=0 : max(abs(div))= 8.88e-16
+applyBC: (side,axis)=(2,2) after set div(uv)=0 : max(abs(div))= 8.88e-16
+
+
+***************************************
+***** Sun March 15, 2026
+
+
+RE-DO FIX BOUNDARY CONDITIONS FOR IMPLICIT MATRIX 
+
+ALL SLIP : OK 
+ins -ts=im2 -tzScale=1 -tf=.1 -ms=poly -knownSolution=none -nu=0.1 -degreex=2 -degreet=1 -bcs=ssss -idebug=1 -N0=10 -Ny=10 -plotEveryStep=1 -map=Cartesian;
+
+
+Slipwall corner: **trouble ... FIXED 
+ins -ts=im2 -tzScale=1 -tf=.1 -ms=poly -knownSolution=none -nu=0.1 -degreex=2 -degreet=1 -bcs=snsn -idebug=1 -N0=10 -Ny=10 -plotEveryStep=1 -map=Cartesian;
+
+bcs=nsnn : one slip wall : OK 
+ins -ts=im2 -tzScale=1 -tf=.1 -ms=poly -knownSolution=none -nu=0.1 -degreex=2 -degreet=1 -bcs=nsnn -idebug=1 -N0=10 -Ny=10 -plotEveryStep=1 -map=Cartesian;
+
+
+
+bcs=ndnn : 
+ins -ts=im2 -tzScale=1 -tf=.1 -ms=poly -knownSolution=none -nu=0.1 -degreex=2 -degreet=1 -bcs=ndnn -idebug=1 -N0=10 -Ny=10 -plotEveryStep=1 -map=Cartesian;
+
+ins -ts=im2 -tzScale=1 -tf=.1 -ms=poly -knownSolution=none -nu=0.1 -degreex=2 -degreet=1 -bcs=nnnn -idebug=1 -N0=3 -Ny=3 -plotEveryStep=1 -map=Cartesian;
+
+
+***************************************
+***** Sat March 14, 2026
+
+CONTINUE ON CURVILINEAR GRIDS
+
+IMPLICIT AND CURVLINEAR
+
+WHY DOES IMPLICIT EVEN WORK at corners???
+
+FIX CORNERS in IMP SOLVER
+
+SLIP WALL IS SPECIAL
+ins -ts=im2 -tzScale=1 -tf=.1 -ms=poly -knownSolution=none -nu=0.1 -degreex=2 -degreet=1 -bcs=nnss -idebug=1 -N0=10 -Ny=10 -plotEveryStep=1 -map=Cartesian;
+
+
+bcs=nnnn : OK 
+ins -ts=im2 -tzScale=1 -tf=.1 -ms=poly -knownSolution=none -nu=0.1 -degreex=2 -degreet=1 -bcs=nnnn -idebug=1 -N0=10 -Ny=10 -plotEveryStep=1 -map=Cartesian;
+
+bcs=dddd : fixed
+ins -ts=im2 -tzScale=1 -tf=.1 -ms=poly -knownSolution=none -nu=0.1 -degreex=2 -degreet=1 -bcs=dddd -idebug=1 -N0=10 -Ny=10 -plotEveryStep=1 -map=Cartesian;
+
+
+
+ins -ts=im2 -tzScale=1 -tf=.1 -ms=poly -knownSolution=none -nu=0.1 -degreex=2 -degreet=2 -bcs=nsnn -idebug=1 -N0=10 -Ny=10 -map=Rectangle;
+
+ins -ts=im2 -tzScale=1 -tf=.1 -ms=poly -knownSolution=none -nu=0.1 -degreex=2 -degreet=2 -bcs=nsnn -idebug=1 -N0=10 -Ny=10 -plotEveryStep=1 -map=Cartesian;
+
+
+ins -ts=im2 -tzScale=1 -tf=.1 -ms=poly -knownSolution=none -nu=0.1 -degreex=2 -degreet=2 -bcs=dddd -idebug=1 -N0=10 -Ny=10 -plotEveryStep=1 -map=Cartesian;
+
+
+
+FIX TIME STEP FOR CURVILINEAR
+
+---------- ANNULUS ----------
+Grid 90x16
+ins -ts=ab2 -tzScale=0 -tf=.5 -tp=.05 -ms=trig -knownSolution=none -nu=0.05 -bcs=dddd -idebug=1 -N0=80 -Ny=16 -cdv=0 -map=Annulus -plotEveryStep=0 -plotGrid=1;
+
+ab2: t=5.00e-01: Nx= 80 Ny= 16 Nt=  187 dt=2.67e-03 max-Err(p,u,v)=(1.31e-04,1.41e-02,1.53e-02) cpu=4.44e+00(s)
+
+Grid 40x8
+ins -ts=ab2 -tzScale=0 -tf=.5 tp=.05 -ms=trig -knownSolution=none -nu=0.05 -bcs=dddd -idebug=1 -N0=40 -Ny=8 -cdv=0 -map=Annulus -plotEveryStep=0 -plotGrid=1;
+
+ab2: t=5.00e-01: Nx= 40 Ny=  8 Nt=   48 dt=1.04e-02 max-Err(p,u,v)=(1.74e-03,5.65e-02,6.40e-02) cpu=7.00e-01(s)
+
+
+
+
+--------------
+
+
+
+NOn-SQUARE: 
+ins -ts=ab2 -tzScale=1 -tf=.1 -ms=poly -knownSolution=none -nu=0.1 -degreex=2 -degreet=2 -bcs=nsnn -idebug=1 -N0=20 -Ny=20 -map=Rectangle;
+
+getTimeStep: dt = 2.364e-03 (dte=2.364e-03, dti=4.364e-03, dti/dte=1.85e+00, dtMax= 1.00e+10)
+  imLambda=1.650e+02, reLambda=3.200e+02
+  grid spacings: [ds1Min,ds2Min]=[5.00e-02,5.00e-02] [ds1Max,ds2Max]=[5.00e-02,5.00e-02]
+
+
+
+CARTESIAN: 
+ins -ts=ab2 -tzScale=1 -tf=.1 -ms=poly -knownSolution=none -nu=0.1 -degreex=2 -degreet=2 -bcs=nsnn -idebug=1 -N0=20 -Ny=20;
+
+getTimeStep: dt = 2.364e-03 (dte=2.364e-03, dti=4.364e-03, dti/dte=1.85e+00, dtMax= 1.00e+10)
+  imLambda=1.650e+02, reLambda=3.200e+02
+
+
+
+
+***************************************
+***** Fri March 13, 2026
+
+CONTINUE ON CURVILINEAR GRIDS
+
+CHECK PRESSURE SOLVE: 
+
+DIRICHLET_DIRICHLET CORNERS FIXED 
+
+ADD CURVILINEAR GETUT:
+
+ins -ts=ab2 -tzScale=1 -tf=.1 -ms=trig -knownSolution=none -nu=0.1 -bcs=dddd -idebug=1 -N0=40 -Ny=10 -cdv=0 -map=Annulus -plotEveryStep=1;
+
+
+ins -ts=ab2 -tzScale=1 -tf=.1 -ms=poly -knownSolution=none -nu=0.1 -degreex=2 -degreet=2 -bcs=dddd -idebug=1 -N0=40 -Ny=10 -cdv=0 -map=Annulus -plotEveryStep=1;
+
+ins -ts=ab2 -tzScale=1 -tf=.1 -ms=poly -knownSolution=none -nu=0.1 -degreex=2 -degreet=2 -bcs=nsnn -idebug=1 -N0=10 -Ny=10 -map=Rectangle;
+
+
+IS bcs=dddd BROKEN ??
+
+POLY - TURN OFF DIV DAMPING 
+ins -ts=ab2 -tzScale=1 -tf=.1 -ms=poly -knownSolution=none -nu=0.1 -degreex=2 -degreet=2 -bcs=dddd -idebug=3 -N0=40 -Ny=10 -cdv=0 -map=Annulus;
+
+ins -ts=ab2 -tzScale=1 -tf=.1 -ms=poly -knownSolution=none -nu=0.1 -degreex=2 -degreet=2 -bcs=dddd -idebug=3 -N0=5;
+
+
+ins -ts=ab2 -tzScale=1 -tf=.1 -ms=poly -knownSolution=none -nu=0.1 -degreex=2 -degreet=2 -bcs=nsnn -idebug=1 -N0=10 -Ny=10 -map=Rectangle;
+
+
+ins -ts=ab2 -tzScale=1 -tf=.1 -ms=poly -knownSolution=none -nu=0.1 -degreex=2 -degreet=2 -bcs=nnnn -idebug=1 -N0=10 -Ny=10;
+
+
+***************************************
+***** Thurs March 12, 2026
+
+START ON CURVILINEAR GRIDS
+
+
+ins -ts=ab2 -tzScale=1 -tf=.1 -ms=poly -knownSolution=none -nu=0.1 -degreex=2 -degreet=2 -bcs=nsnn -idebug=1 -N0=10 -Ny=10 -map=Rectangle;
+
+ins -ts=ab2 -tzScale=1 -tf=.1 -ms=poly -knownSolution=none -nu=0.1 -degreex=2 -degreet=2 -bcs=nsnn -idebug=1 -N0=50 -Ny=10 -map=Annulus;
+
+
+***************************************
+***** Wed March 11, 2026
+
+Created a github account 
+
+(1) git clone https://github.com/wdhenshaw/incompressibleNavierStokes.git incompressibleNavierStokes
+
+add files ...
+
+git ccommit
+
+git push origin main
+
+
+Add setupGrid function
+
+
+ins -ts=ab2 -tzScale=1 -tf=.1 -ms=poly -knownSolution=none -nu=0.1 -degreex=2 -degreet=2 -bcs=nsnn -idebug=1 -N0=10;
 
 ***************************************
 ***** Sun March 8, 2026

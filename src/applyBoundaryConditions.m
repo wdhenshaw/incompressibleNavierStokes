@@ -13,6 +13,9 @@ function [u,v,par] = applyBoundaryConditions( u,v,t,par )
 
   dx = par.dx;
   dy = par.dy;
+  dr = par.dr(1);
+  ds = par.dr(2);  
+
 
   % declare operators 
   % --- Difference Operators ---
@@ -24,6 +27,16 @@ function [u,v,par] = applyBoundaryConditions( u,v,t,par )
 
   DzxDzy = @(u,I1,I2) ( u(I1+1,I2+1) - u(I1-1,I2+1) - u(I1+1,I2-1) +u(I1-1,I2-1) )*(1./(4.*dx*dy)); % u.xy 
 
+  Dr2 = @(u,I1,I2) ( u(I1+1,I2) -u(I1-1,I2) )/(2.*dr);   % u.r
+  Ds2 = @(u,I1,I2) ( u(I1,I2+1) -u(I1,I2-1) )/(2.*ds);   % u.s
+
+  Drr2 = @(u,I1,I2) ( u(I1+1,I2) -2*u(I1,I2) +u(I1-1,I2) )/(dr^2);                             % u.rr to second order
+  Dss2 = @(u,I1,I2) ( u(I1,I2+1) -2*u(I1,I2) +u(I1,I2-1) )/(ds^2);                             % u.ss
+  Drs2 = @(u,I1,I2) ( u(I1+1,I2+1) - u(I1-1,I2+1) - u(I1+1,I2-1) + u(I1-1,I2-1) )/(4*dr*ds);   % u.rs
+  
+  Dx2 = @(u,I1,I2) par.rx(I1,I2,1,1).*Dr2(u,I1,I2) + par.rx(I1,I2,2,1).*Ds2(u,I1,I2);  % u.x to order 2 
+  Dy2 = @(u,I1,I2) par.rx(I1,I2,1,2).*Dr2(u,I1,I2) + par.rx(I1,I2,2,2).*Ds2(u,I1,I2);  % u.y to order 2   
+
   % Define extrapolations: (is1=+1/-1 and is2=+1/-1 defines the direction ("shift") of extrapolation)
   extrap2 = @(u,I1,I2,is1,is2) (2.*u(I1+is1,I2+is2) -    u(I1+2*is1,I2+2*is2)                       );   % 2nd-order extrapolation
   extrap3 = @(u,I1,I2,is1,is2) (3.*u(I1+is1,I2+is2) - 3.*u(I1+2*is1,I2+2*is2) + u(I1+3*is1,I2+3*is2));   % 3rd-order extrapolation
@@ -33,6 +46,7 @@ function [u,v,par] = applyBoundaryConditions( u,v,t,par )
   % --- STAGE 1: Dirichlet Type boundary conditions ---
   for side=1:2
     for axis=1:2
+      
       % isv(1:2), is1, is2 : index shifts
       isv(1)=0; isv(2)=0; isv(axis)=1-2*(side-1);  is1=isv(1); is2=isv(2);
       mbc = side+2*(axis-1);  % pointer into gu and gv arrays
@@ -202,18 +216,57 @@ function [u,v,par] = applyBoundaryConditions( u,v,t,par )
       I1g=I1b-is1; I2g=I2b-is2; % ghost points 
 
       % -- Use divergence to set ghost ---
+      %   **** WATCH OUT FOR CORNERS WHERE div(u)=0 is applied twice -- FIX ME 
       if( par.bc(side,axis)==par.noSlipWall     || ...
           par.bc(side,axis)==par.slipWall       || ...
           par.bc(side,axis)==par.inflow         || ...
           par.bc(side,axis)==par.pressureInflow || ...
           par.bc(side,axis)==par.outflow )
-        if( axis==1 )
-          % u.x = - v-y 
-          u(I1g,I2g) = u(I1b+is1,I2b+is2) + (2.*dx*is1)*Dzy(v,I1b,I2b); 
+        if( par.isCartesian )
+
+          % --- Cartesian grid ---
+          if( axis==1 )
+            % u.x = - v-y 
+            u(I1g,I2g) = u(I1b+is1,I2b+is2) + (2.*dx*is1)*Dzy(v,I1b,I2b); 
+          else
+            % v.y = - u.x 
+            v(I1g,I2g) = v(I1b+is1,I2b+is2) + (2.*dy*is2)*Dzx(u,I1b,I2b); 
+          end
         else
-          % v.y = - u.x 
-          v(I1g,I2g) = v(I1b+is1,I2b+is2) + (2.*dy*is2)*Dzx(u,I1b,I2b); 
+          % ---- Curvilinear ---
+          %  div(uv) = 0 SETS THE NORMAL COMPONENT OF uv
+          % 
+          %   div(uv) = ar*u.r + br*v.r + as*u.s + bs*v.s 
+          %    ar = rx, as=sx
+          %    br = ry, bs=sy
+          % is = 1-2*(side-1);
+
+          % n1 = -is*par.rx(I1b,I2b,axis,1); % outward normal is (n1,n2)
+          % n2 = -is*par.rx(I1b,I2b,axis,2); 
+          % rxNorm = sqrt( n1.^2 + n2.^2 ); 
+          % n1 = n1./rxNorm;
+          % n2 = n2./rxNorm;
+          [n1,n2,rxNorm] = getBoundaryNormal( side,axis,I1b,I2b,par );
+
+          nDotUg = n1.*u(I1g    ,I2g    ) + n2.*v(I1g    ,I2g    ); % nv.uv on ghost to start
+          nDotUp = n1.*u(I1b+is1,I2b+is2) + n2.*v(I1b+is1,I2b+is2); % nv.uv on first line in
+          if( axis==1)
+            nDotUg = nDotUp - (2*dr)*(par.rx(I1b,I2b,2,1).*Ds2(u,I1b,I2b) + par.rx(I1b,I2b,2,2).*Ds2(v,I1b,I2b))./rxNorm - nDotUg;
+          else
+            nDotUg = nDotUp - (2*ds)*(par.rx(I1b,I2b,1,1).*Dr2(u,I1b,I2b) + par.rx(I1b,I2b,1,2).*Dr2(v,I1b,I2b))./rxNorm - nDotUg;
+          end 
+          % Set normal component of the ghost value
+          u(I1g,I2g) = u(I1g,I2g) + nDotUg.*n1; 
+          v(I1g,I2g) = v(I1g,I2g) + nDotUg.*n2; 
+
+          if( par.idebug>3 )
+            res = Dx2(u,I1b,I2b) + Dy2(v,I1b,I2b);
+            fprintf('applyBC: (side,axis)=(%d,%d) after set div(uv)=0 : max(abs(div))=%9.2e\n',side,axis,max(abs(res)));
+            pause
+          end
+   
         end
+
       end
     end
   end

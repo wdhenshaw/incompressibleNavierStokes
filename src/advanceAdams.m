@@ -3,9 +3,9 @@
 %
 function [unp1,vnp1,pnp1,par,ut,vt] = advanceAdams( t,dt, un,vn,pn,unp1,vnp1,pnp1, ut,vt,par )
 
- tnp1 = t + dt;
+  tnp1 = t + dt;
 
- [I1,I2] = getIndex( par.gid );
+  [I1,I2] = getIndex( par.gid );
 
   utm=ut; vtm=vt; % save old du/dt 
   [ut,vt,par] = getUt( t,un,vn,pn,par.nuScaleFactor,par );

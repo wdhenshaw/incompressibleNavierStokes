@@ -12,6 +12,8 @@ function [p,par] = pressureEquation( t,u,v,dt,factorMatrix,par )
   nu  = par.nu;
   cdv = par.cdv;
   ms  = par.ms;
+  nu  = par.nu;
+  rho = par.rho;
 
   % iax = par.iax;  ibx = par.ibx; 
   % iay = par.iay;  iby = par.iby; 
@@ -27,6 +29,8 @@ function [p,par] = pressureEquation( t,u,v,dt,factorMatrix,par )
 
   dx = par.dx;
   dy = par.dy;  
+  dr = par.dr(1);
+  ds = par.dr(2);  
 
   numGhost = par.numGhost;
 
@@ -43,11 +47,23 @@ function [p,par] = pressureEquation( t,u,v,dt,factorMatrix,par )
 
   DzxDzy = @(u,I1,I2) ( u(I1+1,I2+1) - u(I1-1,I2+1) - u(I1+1,I2-1) +u(I1-1,I2-1) )*(1./(4.*dx*dy)); % u.xy 
 
+  % derivatives of entreis in the Jacobian matrix
+  DJzr = @(u,I1,I2,m1,m2) ( u(I1+1,I2,m1,m2) -u(I1-1,I2,m1,m2) )/(2*dr);
+  DJzs = @(u,I1,I2,m1,m2) ( u(I1,I2+1,m1,m2) -u(I1,I2-1,m1,m2) )/(2*ds);
+
+  Dr2 = @(u,I1,I2) ( u(I1+1,I2) -u(I1-1,I2) )/(2.*dr);   % u.r
+  Ds2 = @(u,I1,I2) ( u(I1,I2+1) -u(I1,I2-1) )/(2.*ds);   % u.s
+
+  Dx2 = @(u,I1,I2) par.rx(I1,I2,1,1).*Dr2(u,I1,I2) + par.rx(I1,I2,2,1).*Ds2(u,I1,I2);  % u.x to order 2 
+  Dy2 = @(u,I1,I2) par.rx(I1,I2,1,2).*Dr2(u,I1,I2) + par.rx(I1,I2,2,2).*Ds2(u,I1,I2);  % u.y to order 2 
+
+
+
   % Define extrapolations: (is1=+1/-1 and is2=+1/-1 defines the direction ("shift") of extrapolation)
   extrap3 = @(u,I1,I2,is1,is2) (3.*u(I1+is1,I2+is2) - 3.*u(I1+2*is1,I2+2*is2) + u(I1+3*is1,I2+3*is2));   % 3rd-order extrapolation
 
-  % convert (ix,iy) to equation number in the matrix:  
-  eqn = @(ix,iy)  1 + ix-1 + Ngx*( iy-1 );
+  % convert (i1,i2) to equation number in the matrix:  
+  eqn = @(i1,i2)  1 + i1-1 + Ngx*( i2-1 );
 
     
   % persistent NgSave L U ; % holds LU factors of the pressure matrix
@@ -109,26 +125,79 @@ function [p,par] = pressureEquation( t,u,v,dt,factorMatrix,par )
 
     % fprintf('form pressure matrixImplicitTimeSteppingMatrix:  I1=[%d,%d] I2=[%d,%d] (interior eqn)\n',I1(1),I1(end), I2(1),I2(end));
 
-    for( ix=I1 )
-    for( iy=I2 )
-      ie = eqn(ix,iy) ; % eqn number for pt (ix,iy) 
-      setValue( ie,eqn(ix  ,iy-1),(               1/dy^2   ) );
-      setValue( ie,eqn(ix-1,iy  ),(      1/dx^2            ) );
-      setValue( ie,eqn(ix  ,iy  ),( -2*( 1/dx^2 + 1/dy^2 ) ) );
-      setValue( ie,eqn(ix+1,iy  ),(      1/dx^2            ) );
-      setValue( ie,eqn(ix  ,iy+1),(               1/dy^2   ) );
-      if( isSingular==1 ) 
-        setValue(ie,Ngs,1.);
-      end 
-    end
+    if( par.isCartesian )
+
+      % --- Cartesian grid ---
+      for( i1=I1 )
+      for( i2=I2 )
+        ie = eqn(i1,i2) ; % eqn number for pt (i1,i2) 
+        setValue( ie,eqn(i1  ,i2-1),(               1/dy^2   ) );
+        setValue( ie,eqn(i1-1,i2  ),(      1/dx^2            ) );
+        setValue( ie,eqn(i1  ,i2  ),( -2*( 1/dx^2 + 1/dy^2 ) ) );
+        setValue( ie,eqn(i1+1,i2  ),(      1/dx^2            ) );
+        setValue( ie,eqn(i1  ,i2+1),(               1/dy^2   ) );
+        if( isSingular==1 ) 
+          setValue(ie,Ngs,1.);
+        end 
+      end
+      end
+      
+    else
+      % --- curvilinear ---
+ 
+
+      for( i1=I1 )
+      for( i2=I2 )
+        ie = eqn(i1,i2) ; % eqn number for pt (i1,i2) 
+        rx = par.rx(i1,i2,1,1);
+        ry = par.rx(i1,i2,1,2);
+        sx = par.rx(i1,i2,2,1);
+        sy = par.rx(i1,i2,2,2);
+
+        rxr = DJzr(par.rx,i1,i2,1,1);
+        rxs = DJzs(par.rx,i1,i2,1,1);
+        ryr = DJzr(par.rx,i1,i2,1,2);
+        rys = DJzs(par.rx,i1,i2,1,2);
+        sxr = DJzr(par.rx,i1,i2,2,1);
+        sxs = DJzs(par.rx,i1,i2,2,1);
+        syr = DJzr(par.rx,i1,i2,2,2);
+        sys = DJzs(par.rx,i1,i2,2,2);        
+
+        rxx = rx*rxr + sx*rxs;
+        ryy = ry*ryr + sy*rys;
+
+        sxx = rx*sxr + sx*sxs;
+        syy = ry*syr + sy*sys;
+
+        % Lap(u) = c20*u.rr + c11*u.rs + c02*u.ss + c10*u.rr + c01*u.ss 
+        c20 = (rx^2 + ry^2)/dr^2;
+        c02 = (sx^2 + sy^2)/ds^2;
+        c11 = 2*( rx*sx + ry*sy )/(4*dr*ds); 
+        c10 = (rxx+ryy)/(2.*dr);
+        c01 = (sxx+syy)/(2.*ds);
+
+        setValue( ie,eqn(i1-1,i2-1),(                            +c11  ) );
+        setValue( ie,eqn(i1  ,i2-1),(            c02        -c01       ) );
+        setValue( ie,eqn(i1+1,i2-1),(                            -c11  ) );
+        setValue( ie,eqn(i1-1,i2  ),(      c20        -c10             ) );
+        setValue( ie,eqn(i1  ,i2  ),( -2*( c20 + c02  )                ) );
+        setValue( ie,eqn(i1+1,i2  ),(      c20        +c10             ) );
+        setValue( ie,eqn(i1-1,i2+1),(                            -c11  ) );
+        setValue( ie,eqn(i1  ,i2+1),(            c02       +c01        ) );
+        setValue( ie,eqn(i1+1,i2+1),(                            +c11  ) );        
+        if( isSingular==1 ) 
+          setValue(ie,Ngs,1.);
+        end 
+      end
+      end      
     end
     
     % add extra equation in the last row -- all ones except that last column
     if( isSingular==1 )
       ie=Ngs; % final equation
-      for( ix=I1 )
-      for( iy=I2 )
-        setValue(ie,eqn(ix,iy),1.);
+      for( i1=I1 )
+      for( i2=I2 )
+        setValue(ie,eqn(i1,i2),1.);
       end
       end
     end
@@ -136,24 +205,69 @@ function [p,par] = pressureEquation( t,u,v,dt,factorMatrix,par )
     % Boundary conditions for the matrix 
     dxv(1)=dx; dxv(2)=dy; % save grid spacing in an array
 
+    % cornerIsSet = zeros(2,2,par.nd); 
+
     for side=1:2
       for axis=1:2
         % isv(1:2), is1, is2 : index shifts
         isv(1)=0; isv(2)=0; isv(axis)=1-2*(side-1);  is1=isv(1); is2=isv(2);  
   
         [I1b,I2b]=getBoundaryIndex(side,axis,par);
-        for iy=I2b
-          for ix=I1b
-            if( par.bc(side,axis)==par.dirichlet || ...
-                par.bc(side,axis)==par.pressureInflow )
-              ie=eqn(ix,iy); 
-              setValue(ie,ie,1.);
+
+        if( par.bc(side,axis)==par.dirichlet )
+          % -- special case for Dirichlet BC (FIX ME for some other cases)
+          J1b = I1b;
+          J2b = I2b;
+          if( axis==2 ) % top or bottom 
+            % skip Dirichlet-Dirichlet corners
+            i1a = par.gid(1,1);
+            i1b = par.gid(2,1);
+            if( par.bc(1,1)==par.dirichlet || par.bc(1,1)==par.pressureInflow ) i1a=par.gid(1,1)+1; end
+            if( par.bc(2,1)==par.dirichlet || par.bc(2,1)==par.pressureInflow ) i1b=par.gid(2,1)-1; end
+            J1b = i1a:i1b;
+          end
+          % fprintf(' side=%d axis=%d, I1b=[%d,%d] I2b=[%d,%d] J1b=[%d,%d] J2b=[%d,%d]\n',...
+          %      side,axis,I1b(1),I1b(end), I2b(1), I2b(end), J1b(1),J1b(end), J2b(1), J2b(end) );
+          % WARNING : Do not set the corner value more than once since Matlab ACCUMULATES repeated entries
+          for i2=J2b
+          for i1=J1b
+            ie=eqn(i1,i2);   % boundary point
+            setValue(ie,ie,1.); 
+          end 
+          end       
+        end 
+
+
+        for i2=I2b
+          for i1=I1b
+
+            if( par.bc(side,axis)==par.dirichlet )
+
+              % Boundary points are now done above
+              % % WARNING : Do not set the corner value more than once since Matlab ACCUMULATES repeated entries
+              % ie=eqn(i1,i2);   % boundary point
+              % setValue(ie,ie,1.);
+
               % Extrapolate ghost
-              ie=eqn(ix-is1,iy-is2); 
+              ie=eqn(i1-is1,i2-is2); 
               setValue(ie,ie,                     1.); 
-              setValue(ie,eqn(ix      ,iy      ),-3.); 
-              setValue(ie,eqn(ix+  is1,iy+  is2), 3.);  
-              setValue(ie,eqn(ix+2*is1,iy+2*is2),-1.); 
+              setValue(ie,eqn(i1      ,i2      ),-3.); 
+              setValue(ie,eqn(i1+  is1,i2+  is2), 3.);  
+              setValue(ie,eqn(i1+2*is1,i2+2*is2),-1.); 
+
+            elseif( par.bc(side,axis)==par.pressureInflow )
+
+              % % WARNING : Do not set the corner value more than once since Matlab ACCUMULATES repeated entries
+              ie=eqn(i1,i2);   % boundary point
+              setValue(ie,ie,1.);
+
+              % Extrapolate ghost
+              ie=eqn(i1-is1,i2-is2); 
+              setValue(ie,ie,                     1.); 
+              setValue(ie,eqn(i1      ,i2      ),-3.); 
+              setValue(ie,eqn(i1+  is1,i2+  is2), 3.);  
+              setValue(ie,eqn(i1+2*is1,i2+2*is2),-1.); 
+
 
             elseif( par.bc(side,axis)==par.noSlipWall || ...
                     par.bc(side,axis)==par.slipWall   || ...
@@ -161,31 +275,58 @@ function [p,par] = pressureEquation( t,u,v,dt,factorMatrix,par )
               % Neumann BC :
                 %    (+-)*Dz( p ) = RHS  : use outward normal 
               % nSign = 2*(side-1)-1; % sign of normal, -1 on left and +1 on right
-              % fprintf('pressureEqn: fill-in a Neumann BC (side,axis)=(%d,%d) (ix,iy)=(%d,%d) (is1,is2)=(%d,%d) nSign=%g\n',side,axis,ix,iy,is1,is2,nSign); 
+              % fprintf('pressureEqn: fill-in a Neumann BC (side,axis)=(%d,%d) (i1,i2)=(%d,%d) (is1,is2)=(%d,%d) nSign=%g\n',side,axis,i1,i2,is1,is2,nSign); 
 
-              ie=eqn(ix-is1,iy-is2); % ghost point
-              setValue(ie,eqn(ix-is1,iy-is2), 1/(2.*dxv(axis))); % ghost point 
-              setValue(ie,eqn(ix+is1,iy+is2),-1/(2.*dxv(axis))); % first interior point
+              ie=eqn(i1-is1,i2-is2); % ghost point
+
+              if( par.isCartesian )
+                setValue(ie,eqn(i1-is1,i2-is2), 1/(2.*dxv(axis))); % ghost point 
+                setValue(ie,eqn(i1+is1,i2+is2),-1/(2.*dxv(axis))); % first interior point
+              else
+                % p.n = n1*p.x + n2*p.y 
+                %     = (n1*rx + n2*ry) p.r + (n1*sx + n2*sy)*p.s = ...
+                rx = par.rx(i1,i2,1,1);
+                ry = par.rx(i1,i2,1,2);
+                sx = par.rx(i1,i2,2,1);
+                sy = par.rx(i1,i2,2,2);
+
+                % ---- get outward normal (n1,n2) ----
+                is = 1-2*(side-1);
+                n1 = -is*par.rx(i1,i2,axis,1); 
+                n2 = -is*par.rx(i1,i2,axis,2); 
+                rxNorm = sqrt( n1.^2 + n2.^2 ); 
+                n1 = n1./rxNorm;
+                n2 = n2./rxNorm;                  
+                % --- done get normal ---
+
+                ar = n1*rx + n2*ry;
+                as = n1*sx + n2*sy;
+                setValue(ie,eqn(i1-1,i2  ),-ar/(2.*dr)); 
+                setValue(ie,eqn(i1+1,i2  ), ar/(2.*dr)); 
+                setValue(ie,eqn(i1  ,i2-1),-as/(2.*ds)); 
+                setValue(ie,eqn(i1  ,i2+1), as/(2.*ds)); 
+
+              end
 
             elseif( par.bc(side,axis)==par.outflow )
               % a0*p + a1*p.n = RHS 
 
               % This equation is put into the matrix at the ghost point: 
-              ie=eqn(ix-is1,iy-is2);     % ghost point 
+              ie=eqn(i1-is1,i2-is2);     % ghost point 
               a0 = par.outflowPressureCoeffp;
-              setValue(ie,eqn(ix,iy),a0); % 
+              setValue(ie,eqn(i1,i2),a0); % 
 
-              ie=eqn(ix-is1,iy-is2); % ghost point
+              ie=eqn(i1-is1,i2-is2); % ghost point
               a1 = par.outflowPressureCoeffpn;
-              setValue(ie,eqn(ix-is1,iy-is2), a1/(2.*dxv(axis))); % ghost point 
-              setValue(ie,eqn(ix+is1,iy+is2),-a1/(2.*dxv(axis))); % first interior point                
+              setValue(ie,eqn(i1-is1,i2-is2), a1/(2.*dxv(axis))); % ghost point 
+              setValue(ie,eqn(i1+is1,i2+is2),-a1/(2.*dxv(axis))); % first interior point                
 
               
             elseif( par.bc(side,axis)==par.periodic )
               % Periodic: p(iax-1,.) = p(ibx-1,.) ...
-              ie=eqn(ix-is1,iy-is2); % ghost point
+              ie=eqn(i1-is1,i2-is2); % ghost point
               setValue(ie,ie                                            , 1.); 
-              setValue(ie,eqn(ix+(ibx-iax)*is1-is1,iy+(iby-iay)*is2-is2),-1.); 
+              setValue(ie,eqn(i1+(ibx-iax)*is1-is1,i2+(iby-iay)*is2-is2),-1.); 
             else
               fprintf('pressure matrx: fill-BC: finish me...\n'); pause; 
             end
@@ -202,12 +343,12 @@ function [p,par] = pressureEquation( t,u,v,dt,factorMatrix,par )
       for( side2=0:1 )
         is1 = 1-2*side1;
         is2 = 1-2*side2;
-        ix=par.gid(side1+1,1)-is1; iy=par.gid(side2+1,2)-is2; % corner ghost point
-        ie=eqn(ix,iy); 
+        i1=par.gid(side1+1,1)-is1; i2=par.gid(side2+1,2)-is2; % corner ghost point
+        ie=eqn(i1,i2); 
         setValue(ie,ie                    , 1.);
-        setValue(ie,eqn(ix+  is1,iy+  is2),-3.); 
-        setValue(ie,eqn(ix+2*is1,iy+2*is2), 3.);  
-        setValue(ie,eqn(ix+3*is1,iy+3*is2),-1.); 
+        setValue(ie,eqn(i1+  is1,i2+  is2),-3.); 
+        setValue(ie,eqn(i1+2*is1,i2+2*is2), 3.);  
+        setValue(ie,eqn(i1+3*is1,i2+3*is2),-1.); 
       end
     end 
 
@@ -217,96 +358,6 @@ function [p,par] = pressureEquation( t,u,v,dt,factorMatrix,par )
     A = sparse(ia(1:nzz), ja(1:nzz), aa(1:nzz), Ngs, Ngs); % Creates the sparse matrix 
 
     
-    % else 
-    %   % ---- OLD WAY TO FILL MATRIX ---
-    %   A = sparse(Ngs,Ngs);   % implicit matrix 
-    %   % L = sparse(Ngs,Ngs);   % implicit matrix 
-    %   % U = sparse(Ngs,Ngs);   % implicit matrix 
-      
-
-
-    %   % Fill in the interior equations (and also the boundary pts for Neumann BC's )
-
-    %   [I1,I2] = getIndexInterior( par.gid,par.pc,par );
-
-    %   for( ix=I1 )
-    %   for( iy=I2 )
-    %     ie = eqn(ix,iy) ; % eqn number for pt (ix,iy) 
-    %     A(ie,eqn(ix  ,iy-1)) = (               1/dy^2   );
-    %     A(ie,eqn(ix-1,iy  )) = (      1/dx^2            );
-    %     A(ie,eqn(ix  ,iy  )) = ( -2*( 1/dx^2 + 1/dy^2 ) );
-    %     A(ie,eqn(ix+1,iy  )) = (      1/dx^2            );
-    %     A(ie,eqn(ix  ,iy+1)) = (               1/dy^2   );
-    %     if( isSingular==1 ) A(ie,Ngs)=1.; end 
-    %   end
-    %   end
-      
-    %   % add extra equation in the last row -- all ones except that last column
-    %   if( isSingular==1 )
-    %     ie=Ngs; % final equation
-    %     for( ix=I1 )
-    %     for( iy=I2 )
-    %       A(ie,eqn(ix,iy))=1;       
-    %     end
-    %     end
-    %   end
-       
-    %   % Boundary conditions for the matrix 
-    %   dxv(1)=dx; dxv(2)=dy; % save grid spacing in an array
-
-    %   for side=1:2
-    %     for axis=1:2
-    %       % isv(1:2), is1, is2 : index shifts
-    %       isv(1)=0; isv(2)=0; isv(axis)=1-2*(side-1);  is1=isv(1); is2=isv(2);  
-    
-    %       [I1b,I2b]=getBoundaryIndex(side,axis,par);
-    %       for iy=I2b
-    %         for ix=I1b
-    %           if( par.bc(side,axis)==par.dirichlet )
-    %             ie=eqn(ix,iy); A(ie,ie)=1.;
-    %             % Extrapolate ghost
-    %             ie=eqn(ix-is1,iy-is2); A(ie,ie)=1.; A(ie,eqn(ix,iy))=-3.; A(ie,eqn(ix+is1,iy+is2))=3.;  A(ie,eqn(ix+2*is1,iy+2*is2))=-1.; 
-
-    %           elseif( par.bc(side,axis)==par.noSlipWall || ...
-    %                   par.bc(side,axis)==par.slipWall   || ...
-    %                   par.bc(side,axis)==par.inflow )
-    %             % Neumann BC :
-    %               %    (+-)*Dz( p ) = RHS  : use outward normal 
-    %             nSign = 2*(side-1)-1; % sign of normal, -1 on left and +1 on right
-    %             % fprintf('pressureEqn: fill-in a Neumann BC (side,axis)=(%d,%d) (ix,iy)=(%d,%d) (is1,is2)=(%d,%d) nSign=%g\n',side,axis,ix,iy,is1,is2,nSign); 
-
-    %             ie=eqn(ix-is1,iy-is2); % ghost point
-    %             A(ie,eqn(ix-is1,iy-is2))=  1/(2.*dxv(axis)); % ghost point 
-    %             A(ie,eqn(ix+is1,iy+is2))= -1/(2.*dxv(axis)); % first interior point
-
-    %           elseif( par.bc(side,axis)==par.periodic )
-    %             % Periodic: p(iax-1,.) = p(ibx-1,.) ...
-    %             ie=eqn(ix-is1,iy-is2); % ghost point
-    %             A(ie,ie)=1.; A(ie,eqn(ix+(ibx-iax)*is1-is1,iy+(iby-iay)*is2-is2))=-1; 
-    %           else
-    %             fprintf('pressure matrx: fill-BC: finish me...\n'); pause; 
-    %           end
-    %         end
-    %       end
-    %     end
-    %   end
-
-
-    %   % extrapolate corners along the diagonal 
-    %   % par.gid(side,axis) : grid index range
-    %   % par.gid(1,1)=iax; par.gid(2,1)=ibx; par.gid(1,2)=iay; par.gid(2,2)=iby; 
-    %   for( side1=0:1 )
-    %     for( side2=0:1 )
-    %       is1 = 1-2*side1;
-    %       is2 = 1-2*side2;
-    %       ix=par.gid(side1+1,1)-is1; iy=par.gid(side2+1,2)-is2; % corner ghost point
-    %       ie=eqn(ix,iy); 
-    %       A(ie,ie)=1.; A(ie,eqn(ix+is1,iy+is2))=-3.; A(ie,eqn(ix+2*is1,iy+2*is2))=3.;  A(ie,eqn(ix+3*is1,iy+3*is2))=-1.; 
-    %     end
-    %   end 
-  
-    % end % end old way 
-
 
     % [L,U]=lu(A);   % factor the matrix: A=LU
     par.dA = decomposition(A);   % factor the matrix
@@ -336,59 +387,42 @@ function [p,par] = pressureEquation( t,u,v,dt,factorMatrix,par )
   % fprintf('Ngx=%d, Ngy=%d, [iax,ibx]=[%d,%d] [iay,iby]=[%d,%d] factorMatrix=%d x=[%d,%d]\n',Ngx,Ngy,iax,ibx,iay,iby,factorMatrix,size(par.x,1),size(par.x,2));
   pf(I,J) =  par.pfe(par.x(I,J,1),par.x(I,J,2),t);
 
-  useOpt=0;
-  if(  useOpt )
-    % THIS WAS ABOUT THE SAME TIME 
-    [I1,I2] = getIndexInterior( par.gid,par.pc,par );
-    if( 1==0 )
-      r=zeros(Ngx,Ngy);
-      for( i2=I2)
-      for( i1=I1 )
-        ux(i1,i2) = Dzx(u,i1,i2); 
-        uy(i1,i2) = Dzy(u,i1,i2); 
-        vx(i1,i2) = Dzx(v,i1,i2); 
-        vy(i1,i2) = Dzy(v,i1,i2);               
-        r(i1,i2)= -( ux(i1,i2).^2 + 2.*uy(i1,i2).*vx(i1,i2) + vy(i1,i2).^2) + (cdv/dt)*(ux(i1,i2)+vy(i1,i2)) + pf(i1,i2); 
-      end
-      end
-      r = reshape( r, [Ng,1]) ;
-      rhs(1:Ng) = r(1:Ng);      
-    else
-      r=zeros(Ngx,Ngy);
-      ux(I,J) = Dzx(u,I,J); 
-      uy(I,J) = Dzy(u,I,J); 
-      vx(I,J) = Dzx(v,I,J); 
-      vy(I,J) = Dzy(v,I,J);       
-      r(I1,I2)= -( ux(I1,I2).^2 + 2.*uy(I1,I2).*vx(I1,I2) + vy(I1,I2).^2) + (cdv/dt)*(ux(I1,I2)+vy(I1,I2)) + pf(I1,I2); 
-      r = reshape( r, [Ng,1]) ;
-      rhs(1:Ng) = r(1:Ng);
-    end
-
-  else
-    ux = zeros(Ngx,Ngy);
-    uy = zeros(Ngx,Ngy);
-    vx = zeros(Ngx,Ngy);
-    vy = zeros(Ngx,Ngy);
+  
+  ux = zeros(Ngx,Ngy);
+  uy = zeros(Ngx,Ngy);
+  vx = zeros(Ngx,Ngy);
+  vy = zeros(Ngx,Ngy);
+  if( par.isCartesian )
     ux(I,J) = Dzx(u,I,J); 
     uy(I,J) = Dzy(u,I,J); 
     vx(I,J) = Dzx(v,I,J); 
-    vy(I,J) = Dzy(v,I,J);   
+    vy(I,J) = Dzy(v,I,J);  
+  else
+    % these next could be made faster by re-using u.r and u.s etc.
+    ux(I,J) = Dx2(u,I,J); 
+    uy(I,J) = Dy2(u,I,J); 
+    vx(I,J) = Dx2(v,I,J); 
+    vy(I,J) = Dy2(v,I,J);      
+  end 
 
-    % I = i1x:i2x; J=i1y:i2y; 
-    [I1,I2] = getIndexInterior( par.gid,par.pc,par );
-    for( iy=I2)
-    for( ix=I1 )
-      ie = eqn(ix,iy); % eqn number for pt (ix,iy) 
+  % I = i1x:i2x; J=i1y:i2y; 
+  [I1,I2] = getIndexInterior( par.gid,par.pc,par );
+  for( i2=I2)
+  for( i1=I1 )
+    ie = eqn(i1,i2); % eqn number for pt (i1,i2) 
 
-      % ux = Dzx(u,ix,iy); uy=Dzy(u,ix,iy); 
-      % vx = Dzx(v,ix,iy); vy=Dzy(v,ix,iy); 
-      divDamping = (cdv/dt)*(ux(ix,iy)+vy(ix,iy)); % divergence damping 
+    % ux = Dzx(u,i1,i2); uy=Dzy(u,i1,i2); 
+    % vx = Dzx(v,i1,i2); vy=Dzy(v,i1,i2); 
+    divDamping = (cdv/dt)*(ux(i1,i2)+vy(i1,i2)); % divergence damping 
 
-      rhs(ie)= -( ux(ix,iy)^2 + 2.*uy(ix,iy)*vx(ix,iy) + vy(ix,iy)^2) + divDamping + pf(ix,iy);
-      % rhs(ie)= -( ux^2 + 2.*uy*vx + vy^2) + divDamping + pfe(par.x(ix,iy,1),par.x(ix,iy,2),t);
+    rhs(ie)= -( ux(i1,i2)^2 + 2.*uy(i1,i2)*vx(i1,i2) + vy(i1,i2)^2) + divDamping + pf(i1,i2);
+    % rhs(ie)= -( ux^2 + 2.*uy*vx + vy^2) + divDamping + pfe(par.x(i1,i2,1),par.x(i1,i2,2),t);
 
+    if( 1==0 ) % For TESTING 
+      rhs(ie) = par.pexx(par.x(i1,i2,1),par.x(i1,i2,2),t) +  par.peyy(par.x(i1,i2,1),par.x(i1,i2,2),t);
     end
-    end
+
+  end
   end
 
   % --- Boundary conditions ---
@@ -406,19 +440,19 @@ function [p,par] = pressureEquation( t,u,v,dt,factorMatrix,par )
 
       
       % Loop over boundary points on face=(side,axis)
-      for iy=I2b
-        for ix=I1b
+      for i2=I2b
+        for i1=I1b
           if( par.bc(side,axis)==par.dirichlet )
-            ie=eqn(ix,iy); % boundary pt
-            % rhs(ie)=par.gp{mbc}(par.x(ix,iy,1),par.x(ix,iy,2),t); 
-            rhs(ie)=par.pe(par.x(ix,iy,1),par.x(ix,iy,2),t);
+            ie=eqn(i1,i2); % boundary pt
+            % rhs(ie)=par.gp{mbc}(par.x(i1,i2,1),par.x(i1,i2,2),t); 
+            rhs(ie)=par.pe(par.x(i1,i2,1),par.x(i1,i2,2),t);
 
           elseif( par.bc(side,axis)==par.pressureInflow  )
 
-            ie=eqn(ix,iy); % boundary pt
+            ie=eqn(i1,i2); % boundary pt
             
             if( addBoundaryForcing==1 )
-              rhs(ie)=par.pe(par.x(ix,iy,1),par.x(ix,iy,2),t);
+              rhs(ie)=par.pe(par.x(i1,i2,1),par.x(i1,i2,2),t);
             else
               rhs(ie)=par.pressureInflowValue;
             end
@@ -428,45 +462,87 @@ function [p,par] = pressureEquation( t,u,v,dt,factorMatrix,par )
                   par.bc(side,axis)==par.inflow )
 
             % Neumann BC :
-            ie=eqn(ix-is1,iy-is2); % ghost point
-            if( 1==0 ) % TEMP ***
-              rhs(ie)=par.gp{mbc}(par.x(ix,iy,1),par.x(ix,iy,2),t);  % test: give exact p.n 
-            else
+            ie=eqn(i1-is1,i2-is2); % ghost point
       
+            if( par.isCartesian )
+
+              % -- cartesian ---
               if( axis==1 )
                 % p.n = (+/-) nu*( u.xx ) = (+/-) nu*( -v.xy )
-                rhs(ie)= -is1*nu*( -DzxDzy(v,ix,iy) );
+                rhs(ie)= -is1*nu*( -DzxDzy(v,i1,i2) );
+
                 if( addBoundaryForcing==1 )
-                  % vxy = DzxDzy(v,ix,iy); vxyTrue=vexy(par.x(ix,iy,1),par.x(ix,iy,2),t); 
+                  % vxy = DzxDzy(v,i1,i2); vxyTrue=vexy(par.x(i1,i2,1),par.x(i1,i2,2),t); 
                   % fprintf('--Pressure: par.noSlipWall : add boundary forcing, vxy=%8.2e vxye=%8.2e diff=%8.2e\n',vxy,vxyTrue,vxy-vxyTrue);
                   
-                  rhs(ie)= rhs(ie) -is1*( par.pex(par.x(ix,iy,1),par.x(ix,iy,2),t) + nu*par.vexy(par.x(ix,iy,1),par.x(ix,iy,2),t) ); 
-                  %% rhs(ie)= -is1*( pex(par.x(ix,iy,1),par.x(ix,iy,2),t) ); % TEST 
+                  rhs(ie)= rhs(ie) -is1*( par.pex(par.x(i1,i2,1),par.x(i1,i2,2),t) + nu*par.vexy(par.x(i1,i2,1),par.x(i1,i2,2),t) ); 
+                  %% rhs(ie)= -is1*( pex(par.x(i1,i2,1),par.x(i1,i2,2),t) ); % TEST 
                 end
               else
                 % p.n = (+/-) nu*( v.yy ) = (+/-) nu*( -u.xy )
-                rhs(ie)= -is2*nu*( -DzxDzy(u,ix,iy) );
+                rhs(ie)= -is2*nu*( -DzxDzy(u,i1,i2) );
                 if( addBoundaryForcing==1 )
-                  rhs(ie)= rhs(ie) -is2*( par.pey(par.x(ix,iy,1),par.x(ix,iy,2),t) + nu*par.uexy(par.x(ix,iy,1),par.x(ix,iy,2),t) ); 
+                  rhs(ie)= rhs(ie) -is2*( par.pey(par.x(i1,i2,1),par.x(i1,i2,2),t) + nu*par.uexy(par.x(i1,i2,1),par.x(i1,i2,2),t) ); 
                 end
               end
+
+            else 
+              % -- curvilinear --
+              %  p.n = rho * nu* [ n1 * ( nu*Delta(u) ) + n2 * ( nu Delta v ) ]
+              % CURL-CURL BC
+              %   u.xx + u.yy -> -v.xy + u.yy
+              %   v.xx + v.yy ->  v.xx - u.xy 
+              % 
+
+              % ---- get outward normal (n1,n2) ----
+              is = 1-2*(side-1);
+              n1 = -is*par.rx(i1,i2,axis,1); 
+              n2 = -is*par.rx(i1,i2,axis,2); 
+              rxNorm = sqrt( n1.^2 + n2.^2 ); 
+              n1 = n1./rxNorm;
+              n2 = n2./rxNorm;                  
+              % --- done get normal ---
+
+              if( 1==0 )
+                % ****** TESTING set p.n = exact p.n ***
+                rhs(ie)= n1*par.pex(par.x(i1,i2,1),par.x(i1,i2,2),t) + n2*par.pey(par.x(i1,i2,1),par.x(i1,i2,2),t);
+              else
+
+                [UX,UXX] = getDerivatives( i1,i2,u,v,par );
+
+                vxy = UXX(2,1,2);
+                uyy = UXX(1,2,2);
+                vxx = UXX(2,1,1);
+                uxy = UXX(1,1,2);
+
+                rhs(ie)= rho*nu*( n1*(-vxy+uyy) + n2*(vxx-uxy) ); % curl-curl BC 
+
+                if( addBoundaryForcing==1 )
+                  rhs(ie)= rhs(ie) ...
+                      + n1*par.pex(par.x(i1,i2,1),par.x(i1,i2,2),t) + n2*par.pey(par.x(i1,i2,1),par.x(i1,i2,2),t) ...
+                      - rho*nu*( n1*( -par.vexy(par.x(i1,i2,1),par.x(i1,i2,2),t) + par.ueyy(par.x(i1,i2,1),par.x(i1,i2,2),t) ) + ...
+                                 n2*(  par.vexx(par.x(i1,i2,1),par.x(i1,i2,2),t) - par.uexy(par.x(i1,i2,1),par.x(i1,i2,2),t) ) );
+                end
+              end
+              
             end
+
           elseif( par.bc(side,axis)==par.outflow )
 
             % Outflow: a0*p + a1*p.n = a0*pOutflow
-            ie=eqn(ix-is1,iy-is2); % ghost point
+            ie=eqn(i1-is1,i2-is2); % ghost point
             a0 = par.outflowPressureCoeffp;
             a1 = par.outflowPressureCoeffpn;
             if( manufacturedSolution )
-              rhs(ie) =            a0* par.pe(par.x(ix,iy,1),par.x(ix,iy,2),t)  ...
-                        -isv(axis)*a1*par.pex(par.x(ix,iy,1),par.x(ix,iy,2),t);
+              rhs(ie) =            a0* par.pe(par.x(i1,i2,1),par.x(i1,i2,2),t)  ...
+                        -isv(axis)*a1*par.pex(par.x(i1,i2,1),par.x(i1,i2,2),t);
             else
               rhs(ie)= a0*par.pOutflow;  
             end  
 
           elseif( par.bc(side,axis)==par.periodic )
             % rhs should be zero already
-            ie=eqn(ix-is1,iy-is2); % ghost point
+            ie=eqn(i1-is1,i2-is2); % ghost point
             rhs(ie)=0.; 
           else
             fprintf('pressure matrx: fill-BC: finish me...\n'); pause; 
@@ -483,9 +559,9 @@ function [p,par] = pressureEquation( t,u,v,dt,factorMatrix,par )
       extraVal=0; 
       % I1=iax:ibx; I2=iay:iby; 
       [I1,I2]=getIndex( par.gid );
-      for iy=I2
-        for ix=I1
-          extraVal = extraVal + par.pe(par.x(ix,iy,1),par.x(ix,iy,2),t); 
+      for i2=I2
+        for i1=I1
+          extraVal = extraVal + par.pe(par.x(i1,i2,1),par.x(i1,i2,2),t); 
         end
       end
       rhs(Ngs)=extraVal;
@@ -500,10 +576,10 @@ function [p,par] = pressureEquation( t,u,v,dt,factorMatrix,par )
    % copy vector solution to the grid function solution
    % I1g = iax-numGhost:ibx+numGhost; I2g=iay-numGhost:iby+numGhost; % include ghost points
    [I1g,I2g] = getIndex( par.gid,numGhost ); % include ghost points
-   for( ix=I1g )
-   for( iy=I2g )
-     ie = eqn(ix,iy); % eqn number for pt (ix,iy) 
-     p(ix,iy)=rhs(ie);
+   for( i1=I1g )
+   for( i2=I2g )
+     ie = eqn(i1,i2); % eqn number for pt (i1,i2) 
+     p(i1,i2)=rhs(ie);
    end
    end
    if( isSingular==1 && mod(floor(idebug/2),2)==1 )
@@ -513,7 +589,9 @@ function [p,par] = pressureEquation( t,u,v,dt,factorMatrix,par )
    % check errors
    if( mod(floor(idebug/2),2)==1 )
      pTrue = par.pe(par.x(I1g,I2g,1),par.x(I1g,I2g,2),t);
-     err = p(I,J) - pTrue(I,J);
+
+     [I1,I2] = getIndex(par.gid);
+     err = p(I1,I2) - pTrue(I1,I2);
      % maxErr = norm(err,inf); % TROUBLE %
      maxErr=max(max(abs(err)));
      fprintf('>>> Poisson: t=%10.3e, dx=%g dy=%g max error=%9.2e\n',t,dx,dy,maxErr); 
@@ -527,8 +605,13 @@ function [p,par] = pressureEquation( t,u,v,dt,factorMatrix,par )
      
      if( 1==1 || mod(floor(par.plotOption/2),2)== 1 )
        figure(4)
-       surf(par.x(:,:,1),par.x(:,:,2),p);
+       surf(par.x(:,:,1),par.x(:,:,2),p); hold on;
+       contour3( par.x(:,:,1),par.x(:,:,2),p,'k-' ); 
+       colormap(par.rainbowMap); colorbar; shading interp; 
+       xlabel('x'); ylabel('y'); view(0,90);  % top view 
        title(sprintf('p : t=%8.2e Nx=%d Ny=%d',t,Ngx,Ngy)); xlabel('x'); ylabel('y'); set(gca,'FontSize',14);
+       hold off;
+       setAspectRatio();       
     
        % figure(2)
        % surf(x,y,pTrue);
@@ -536,9 +619,17 @@ function [p,par] = pressureEquation( t,u,v,dt,factorMatrix,par )
        % drawnow; commandwindow; 
   
        figure(5)
-       surf(par.x(:,:,1),par.x(:,:,2),err);
+       surf(par.x(:,:,1),par.x(:,:,2),err); hold on;
+       contour3( par.x(:,:,1),par.x(:,:,2),err,'k-' ); 
+       colormap(par.rainbowMap); colorbar; shading interp; 
+       xlabel('x'); ylabel('y'); view(0,90);  % top view 
+
        title(sprintf('p-err : t=%8.2e Nx=%d Ny=%d',t,Ngx,Ngy)); xlabel('x'); ylabel('y'); set(gca,'FontSize',14);
+       hold off;
+       setAspectRatio();   
+
        drawnow; commandwindow; 
+
        pause; 
      end 
    end

@@ -40,130 +40,156 @@ function [unp1,vnp1,par] = solveImplicitTimeStep( unp1,vnp1,tnp1, par )
   end
 
   % Boundary conditions for implicit equations
-  if( 1==1 )
-    % **NEW WAY**
-    if( ~strcmp(par.ms,'none') ) manufacturedSolution=1; else manufacturedSolution=0; end
+  if( ~strcmp(par.ms,'none') || ~strcmp(par.knownSolution,'known')  ) manufacturedSolution=1; else manufacturedSolution=0; end
 
-    for side=1:2
-      for axis=1:2
-        isv(1)=0; isv(2)=0; isv(axis)=1-2*(side-1);  is1=isv(1); is2=isv(2);
-        mbc = side+2*(axis-1);  % pointer into gu and gv arrays
-        [I1b,I2b]=getBoundaryIndex(side,axis,par);
+  for axis=1:2
+  for side=1:2
+    isv(1)=0; isv(2)=0; isv(axis)=1-2*(side-1);  is1=isv(1); is2=isv(2);
+    mbc = side+2*(axis-1);  % pointer into gu and gv arrays
+    [I1b,I2b]=getBoundaryIndex(side,axis,par);
 
-        if( par.bc(side,axis)==par.dirichlet  || ...
-            par.bc(side,axis)==par.noSlipWall || ...
-            par.bc(side,axis)==par.inflow )
-          % u = given
-          for i2=I2b
-            for i1=I1b 
-              ie=eqn(i1,i2); % boundary point 
-              rhsu(ie) = par.gu{mbc}(par.x(i1,i2,1),par.x(i1,i2,2),tnp1);
-              rhsv(ie) = par.gv{mbc}(par.x(i1,i2,1),par.x(i1,i2,2),tnp1);
-            end
-          end
+    if( par.bc(side,axis)==par.dirichlet  || ...
+        par.bc(side,axis)==par.noSlipWall || ...
+        par.bc(side,axis)==par.inflow )
 
-        elseif( par.bc(side,axis)==par.slipWall )
-          % -- slip wall  --
-          %   nv.uv   = given 
-          %  (tv.uv).n = given
-          % (n1,n2) = outward normal 
-          n1 = -is1;
-          n2 = -is2; 
-          for i2=I2b
-          for i1=I1b 
+      [I1b,I2b]=getAdjustedBoundaryIndex(side,axis,par);  % adjusted index 
+      % u = given
+      for i2=I2b
+      for i1=I1b 
+        ie=eqn(i1,i2); % boundary point 
+        if( manufacturedSolution )
+          rhsu(ie) = par.ue(par.x(i1,i2,1),par.x(i1,i2,2),tnp1);
+          rhsv(ie) = par.ve(par.x(i1,i2,1),par.x(i1,i2,2),tnp1);
 
-            ie=eqn(i1,i2); % boundary point
-            if( axis==1 )
-              % left/right : set u 
-              if( manufacturedSolution )
-                rhsu(ie) = par.gu{mbc}(par.x(i1,i2,1),par.x(i1,i2,2),tnp1);
-              else
-                rhsu(ie)=0.;
-              end 
-            else
-              % bottom/top: set v 
-              if( manufacturedSolution )
-                rhsv(ie) = par.gv{mbc}(par.x(i1,i2,1),par.x(i1,i2,2),tnp1);
-              else
-                rhsv(ie)=0.; 
-              end
-            end
-
-            % (tv.uv).n = given
-            ie=eqn(i1-is1,i2-is2); % ghost point 
-            if( axis==1 )
-               % left/right : v.x = 
-              if( manufacturedSolution )
-                rhsv(ie) = n1*par.vex(par.x(i1,i2,1),par.x(i1,i2,2),tnp1);
-              else
-                rhsv(ie)=0.;
-              end
-            else
-              % bottom top: u.y = 
-              if( manufacturedSolution )
-                rhsu(ie) = n2*par.uey(par.x(i1,i2,1),par.x(i1,i2,2),tnp1);
-              else
-                rhsu(ie)=0.;
-              end               
-            end 
-
-          end % end for i1
-          end % end for i2 
-
-        elseif( par.bc(side,axis)==par.pressureInflow )
-
-          %   tv.uv = given 
-          %   nv.uv = extrapolated 
-          for i2=I2b
-          for i1=I1b 
-            ie=eqn(i1,i2); % boundary point
-            if( axis==1 )
-              % left/right : set v  
-              if( manufacturedSolution )
-                rhsv(ie) = par.gv{mbc}(par.x(i1,i2,1),par.x(i1,i2,2),tnp1);
-              else
-                rhsv(ie)=0.; 
-              end
-            else
-              % bottom/top: set u 
-              if( manufacturedSolution )
-                rhsu(ie) = par.gu{mbc}(par.x(i1,i2,1),par.x(i1,i2,2),tnp1);
-              else
-                rhsu(ie)=0.; 
-              end
-            end
-          end
-          end             
-
-        elseif( par.bc(side,axis)==par.outflow )
-          % velocity is extrapolated -- do nothing here
-
-        elseif( par.bc(side,axis)==par.periodic )
-          % do nothing here 
-
+          % fprintf(' imp rhs: (i1,i2)=(%3d,%3d) ie=%3d ue=%10.3e\n',i1,i2,ie,rhsu(ie));
         else
-          fprintf('solveImplicitTimeStep: ERROR: unexpected bc=%d\n',par.bc(side,axis));
-          pause;
-
-        end  
-
+          rhsu(ie) = 0;
+          rhsv(ie) = 0;
+        end
       end
+      end
+
+    elseif( par.bc(side,axis)==par.slipWall )
+      % -- slip wall  --
+      %   nv.uv   = given 
+      %  (tv.uv).n = given
+      % (n1,n2) = outward normal 
+      n1 = -is1;
+      n2 = -is2; 
+
+      [I1b,I2b]=getAdjustedBoundaryIndex(side,axis,par);  % adjusted index 
+      for i2=I2b
+      for i1=I1b 
+
+        ie=eqn(i1,i2); % boundary point
+        if( axis==1 )
+          % left/right : set u 
+          if( manufacturedSolution )
+            rhsu(ie) = par.gu{mbc}(par.x(i1,i2,1),par.x(i1,i2,2),tnp1);
+          else
+            rhsu(ie)=0.;
+          end 
+        else
+          % bottom/top: set v 
+          if( manufacturedSolution )
+            rhsv(ie) = par.gv{mbc}(par.x(i1,i2,1),par.x(i1,i2,2),tnp1);
+          else
+            rhsv(ie)=0.; 
+          end
+        end
+
+      end % end for i1
+      end % end for i2 
+
+      [I1b,I2b]=getBoundaryIndex(side,axis,par);
+      for i2=I2b
+      for i1=I1b       
+        % (tv.uv).n = given
+        ie=eqn(i1-is1,i2-is2); % ghost point 
+        if( axis==1 )
+           % left/right : v.x = 
+          if( manufacturedSolution )
+            rhsv(ie) = n1*par.vex(par.x(i1,i2,1),par.x(i1,i2,2),tnp1);
+          else
+            rhsv(ie)=0.;
+          end
+        else
+          % bottom top: u.y = 
+          if( manufacturedSolution )
+            rhsu(ie) = n2*par.uey(par.x(i1,i2,1),par.x(i1,i2,2),tnp1);
+          else
+            rhsu(ie)=0.;
+          end               
+        end 
+
+      end % end for i1
+      end % end for i2 
+
+    elseif( par.bc(side,axis)==par.pressureInflow )
+
+      %   tv.uv = given 
+      %   nv.uv = extrapolated 
+      [I1b,I2b]=getAdjustedBoundaryIndex(side,axis,par);  % adjusted index 
+      for i2=I2b
+      for i1=I1b 
+        ie=eqn(i1,i2); % boundary point
+        if( axis==1 )
+          % left/right : set v  
+          if( manufacturedSolution )
+            rhsv(ie) = par.gv{mbc}(par.x(i1,i2,1),par.x(i1,i2,2),tnp1);
+          else
+            rhsv(ie)=0.; 
+          end
+        else
+          % bottom/top: set u 
+          if( manufacturedSolution )
+            rhsu(ie) = par.gu{mbc}(par.x(i1,i2,1),par.x(i1,i2,2),tnp1);
+          else
+            rhsu(ie)=0.; 
+          end
+        end
+      end
+      end             
+
+    elseif( par.bc(side,axis)==par.outflow )
+      % velocity is extrapolated -- do nothing here
+
+    elseif( par.bc(side,axis)==par.periodic )
+      % do nothing here 
+
+    else
+      fprintf('solveImplicitTimeStep: ERROR: unexpected bc=%d\n',par.bc(side,axis));
+      pause;
+
     end  
-  else
-    % OLD: 
-    if( par.bc(1,1)~=par.periodic )
-      for( iy=iay:iby )
-        ix=iax; ie=eqn(ix,iy); rhsu(ie)=par.guax(par.x(ix,iy,1),par.x(ix,iy,2),tnp1); rhsv(ie)=par.gvax(par.x(ix,iy,1),par.x(ix,iy,2),tnp1); 
-        ix=ibx; ie=eqn(ix,iy); rhsu(ie)=par.gubx(par.x(ix,iy,1),par.x(ix,iy,2),tnp1); rhsv(ie)=par.gvbx(par.x(ix,iy,1),par.x(ix,iy,2),tnp1); 
-      end
-    end
-    if( par.bc(1,2)~=par.periodic )
-      for( ix=iax:ibx )
-        iy=iay; ie=eqn(ix,iy); rhsu(ie)=par.guay(par.x(ix,iy,1),par.x(ix,iy,2),tnp1); rhsv(ie)=par.gvay(par.x(ix,iy,1),par.x(ix,iy,2),tnp1); 
-        iy=iby; ie=eqn(ix,iy); rhsu(ie)=par.guby(par.x(ix,iy,1),par.x(ix,iy,2),tnp1); rhsv(ie)=par.gvby(par.x(ix,iy,1),par.x(ix,iy,2),tnp1); 
+
+  end
+  end  
+
+
+  %
+  % ----- FIX UP CORNERS ---
+  %   
+  for( side1=1:2 )
+  for( side2=1:2 )
+    if( par.bc(side1,1)==par.slipWall && ...
+        par.bc(side2,2)==par.slipWall ) 
+      % slipwall - slipwall corner: give both components
+      i1=par.gid(side1,1); i2=par.gid(side2,2); % corner point
+      ie = eqn(i1,i2);
+      if( manufacturedSolution )
+        rhsu(ie) = par.gu{mbc}(par.x(i1,i2,1),par.x(i1,i2,2),tnp1);
+      else
+        rhsu(ie)=0.;
+      end 
+      if( manufacturedSolution )
+        rhsv(ie) = par.gv{mbc}(par.x(i1,i2,1),par.x(i1,i2,2),tnp1);
+      else
+        rhsv(ie)=0.; 
       end
     end
   end
+  end 
 
   % --- solve ---
   rhsu = par.dAimp{1}\rhsu; 
@@ -181,6 +207,14 @@ function [unp1,vnp1,par] = solveImplicitTimeStep( unp1,vnp1,tnp1, par )
      unp1(ix,iy)=rhsu(ie);
      vnp1(ix,iy)=rhsv(ie);
   end
+  end
+
+  if( 1==0 || par.idebug>3 )
+    % -- check the error --
+    pnp1 = zeros(par.Ngx,par.Ngy);
+    fprintf('ERRORS AFTER IMPLICIT SOLVE\n');
+    par = plotSolution( tnp1,unp1,vnp1,pnp1, par);
+    pause
   end
 
   par.cpuImplicit = par.cpuImplicit + cputime - cpu0;
