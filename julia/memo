@@ -1,0 +1,129 @@
+
+
+***************************************
+***** Tues June 30, 2026
+
+julia ins.jl -ts=pc2 -tzScale=1 -tf=2 -tp=0.1 -ms=none -knownSolution=none -idebug=1 -nu=.0005 -ya=-.5 -yb=1.5 -xb=2 -bcs=ppnn -N0=500 -ic=shear -movieMode=1 -plotOption=3 -plotErrors=0 -kx=1 -checkTimeStep=20 -ad=1 -ad21=.1 -ad22=.1 -cfl=0.95 -numThreads=1;
+
+Change time-step: step=260 dt=3.8911e-03 dtNew=3.4678e-03 (rel-diff= 1.09e-01)
+pc2: t=1.098e+00 step=   285 dt=3.468e-03 div/grad= 1.84e-05 cpu= 4.24e+01(s)
+pc2: t=1.199e+00 step=   314 dt=3.468e-03 div/grad= 2.87e-05 cpu= 4.55e+01(s)
+Change time-step: step=320 dt=3.4678e-03 dtNew=3.0243e-03 (rel-diff= 1.28e-01)
+pc2: t=1.301e+00 step=   347 dt=3.024e-03 div/grad= 4.35e-05 cpu= 4.89e+01(s)
+pc2: t=1.401e+00 step=   380 dt=3.024e-03 div/grad= 7.28e-05 cpu= 5.23e+01(s)
+Change time-step: step=380 dt=3.0243e-03 dtNew=2.6149e-03 (rel-diff= 1.35e-01)
+pc2: t=1.501e+00 step=   418 dt=2.615e-03 div/grad= 9.13e-05 cpu= 5.63e+01(s)
+pc2: t=1.600e+00 step=   456 dt=2.615e-03 div/grad= 1.07e-04 cpu= 6.02e+01(s)
+pc2: t=1.699e+00 step=   494 dt=2.615e-03 div/grad= 1.08e-04 cpu= 6.41e+01(s)
+pc2: t=1.801e+00 step=   533 dt=2.615e-03 div/grad= 8.70e-05 cpu= 6.81e+01(s)
+pc2: t=1.901e+00 step=   571 dt=2.615e-03 div/grad= 7.02e-05 cpu= 7.20e+01(s)
+pc2: t=2.000e+00 step=   609 dt=2.615e-03 div/grad= 5.68e-05 cpu= 7.60e+01(s)
+Press Enter to continue...
+pc2: t=2.00e+00 Nx=500 Ny=500 Nt=  609 dt=2.61e-03 cpu=7.86e+01(s)
+  ------------- TIMINGS pc2 Nx=500 Ny=500 Nt=  609 --------------------
+                  cpu (s)     %
+Total             7.86e+01  100.0
+  setup           1.12e+01   14.3
+  getUt           2.51e+01   31.9
+  implicit solve  0.00e+00    0.0
+  implicit factor 0.00e+00    0.0
+  pressure solve  3.10e+01   39.4
+  bc              6.55e-02    0.1
+
+------ MATLAB:
+ins -ts=pc2 -tzScale=1 -tf=2 -tp=0.1 -ms=none -knownSolution=none -idebug=1 -nu=.0005 -ya=-.5 -yb=1.5 -xb=2 -bcs=ppnn -N0=500 -ic=shear -movieMode=1 -plotOption=3 -plotErrors=0 -kx=1 -checkTimeStep=20 -ad=1 -ad21=.1 -ad22=.1 -cfl=0.95 -numThreads=1;
+
+Change the time-step: step=   380, dt=3.0243e-03, dtNew=2.6149e-03, numStepsRemaining=229 (rel-dtdiff= 1.35e-01)
+pc2: t=1.501e+00 step=   418 dt=2.615e-03 div/grad= 9.13e-05, cpu= 1.01e+02(s)
+pc2: t=1.600e+00 step=   456 dt=2.615e-03 div/grad= 1.07e-04, cpu= 1.08e+02(s)
+pc2: t=1.699e+00 step=   494 dt=2.615e-03 div/grad= 1.08e-04, cpu= 1.16e+02(s)
+pc2: t=1.801e+00 step=   533 dt=2.615e-03 div/grad= 8.70e-05, cpu= 1.24e+02(s)
+pc2: t=1.901e+00 step=   571 dt=2.615e-03 div/grad= 7.02e-05, cpu= 1.31e+02(s)
+pc2: t=2.000e+00 step=   609 dt=2.615e-03 div/grad= 5.68e-05, cpu= 1.38e+02(s)
+pc2: t=2.00e+00 Nx=500 Ny=500 Nt=  609 dt=2.61e-03 cpu=1.38e+02(s)
+  ------------- TIMINGS pc2 Nx=500 Ny=500 Nt=  609 --------------------
+                  cpu (s)     %   
+Total             1.38e+02  100.0
+  setup           1.54e+01   11.1
+  getUt           1.43e+01   10.4
+  implicit solve  0.00e+00    0.0
+  implicit factor 0.00e+00    0.0
+  pressure solve  8.78e+01   63.5
+  bc              3.80e-01    0.3
+  plotting        1.63e+01   11.8
+
+
+***************************************
+***** Mon June 29, 2026
+
+Test julia version
+
+Julia version : artificial dissipation seems to be missing??
+
+julia ins.jl -ts=pc2 -tzScale=1 -tf=2 -tp=.05 -ms=none -knownSolution=none -idebug=1 -nu=.0005 -ya=-.5 -yb=1.5 -xb=2 -bcs=ppnn -N0=300 -ic=shear -movieMode=1 -plotOption=3 -plotErrors=0 -kx=1 -checkTimeStep=20 -ad=1 -ad21=.1 -ad22=.1 -cfl=0.95 -numThreads=1;
+
+julia ins.jl -ts=pc2 -tzScale=1 -tf=.1 -tp=.05 -ms=none -knownSolution=none -idebug=1 -nu=.005 -ya=-.5 -yb=1.5 -xb=2 -bcs=ppnn -N0=100 -ic=shear -movieMode=0 -plotEveryStep=1 -plotOption=3 -plotErrors=0 -kx=1 -checkTimeStep=20 -ad=1 -ad21=.1 -ad22=.1 -cfl=0.95;
+
+***************************************
+***** Sun June 28, 2026
+
+
+TEST julia version 
+
+julia ins.jl -ts=ab2 -tf=.1 -ms=poly -nu=0.05 -degreex=2 -degreet=2 -bcs=nnnn -idebug=1 -N0=100;
+
+
+Mac43: julia ins.jl -ts=ab2 -tf=.1 -ms=poly -nu=0.05 -degreex=2 -degreet=2 -bcs=nnnn -idebug=1 -N0=100;
+-----------------Incompressible Navier-Stokes ---------------------------
+ ts=ab2, tFinal=0.1, nu=0.05, cfl=0.9, cdv=1, knownSolution=none, N0=100, idebug=1
+ ms=poly, degreex=2, degreet=2, [kx,ky,kt]=[1,1,0.5]*2pi, tzScale=0
+ bcLabel=nnnn, bc=[2,2,2,2], gid=[2,102,2,102]
+ ad=0, ad21=0.1, ad22=0.1
+--------------------------------------------------------------------------
+getTimeStep: dt = 2.179e-04 (dte=2.179e-04, dti=8.727e-04, dti/dte=4.01e+00, dtMax= 1.00e+10)
+  imLambda=8.250e+02, reLambda=4.000e+03
+Optimized fill of pressure matrix: nzzEst=84880, nzz=72231
+ab2: t=1.000e-01 step=   459 dt=2.179e-04 err-[u,v,p]=[4.44e-15,1.55e-15,1.73e-12] div/grad= 9.68e-15 cpu= 3.22e+00(s)
+ab2: t=1.00e-01 Nx=100 Ny=100 Nt=  459 dt=2.18e-04 max-Err(p,u,v)=(1.73e-12,4.44e-15,1.55e-15) cpu=3.51e+00(s)
+  ------------- TIMINGS ab2 Nx=100 Ny=100 Nt=  459 --------------------
+                  cpu (s)     %
+Total             3.51e+00  100.0
+  setup           6.52e-01   18.5
+  getUt           8.38e-01   23.8
+  implicit solve  0.00e+00    0.0
+  implicit factor 0.00e+00    0.0
+  pressure solve  1.65e+00   46.8
+  bc              1.78e-02    0.5
+
+
+
+  MATLAB:
+  >> ins -ts=ab2 -tf=.1 -ms=poly -nu=0.05 -degreex=2 -degreet=2 -bcs=nnnn -idebug=1 -N0=100;
+-----------------Incompressible Navier-Stokes ---------------------------------------------
+ ts=ab2, tFinal=0.1, nu=0.05, cfl=0.9, cdv=1, knownSolution=none, N0=100, idebug=1 numThreads=1, maxThreads=1
+ map=Cartesian
+ manufactured solution ms=poly, degreex=2, degreet=2, [kx,ky,kt]=[1,1,0.5]*2*pi, tzScale=0
+ par.bcLabel=nnnn, par.bc=[2,2,2,2] par.gid=[2,102,2,102]
+ useOptFill = 1 (use optimized fill method for matrices)
+ ad=0, ad21=0.1, ad22=0.1 (ad=1 : add artificial dissipation)
+ plotEveryStep=0, plotOption=1
+ outflow: outflowPressureCoeffp=1, outflowPressureCoeffpn=1, pOutflow=0
+ ic=default
+-------------------------------------------------------------------------------------------
+getTimeStep: dt = 2.179e-04 (dte=2.179e-04, dti=8.727e-04, dti/dte=4.01e+00, dtMax= 1.00e+10)
+  imLambda=8.250e+02, reLambda=4.000e+03
+pressureEquation: **MATRIX IS SINGULAR** add an extra equation.
+Optimized fill of pressure matrix: nzzEst=63660, nzz=72231
+ab2: t=1.000e-01 step=   459 dt=2.179e-04 err-[u,v,p]=[3.55e-15,1.55e-15,2.29e-12] div/grad= 9.68e-15, cpu= 3.98e+00(s)
+ab2: t=1.00e-01: Nx=100 Ny=100 Nt=  459 dt=2.18e-04 max-Err(p,u,v)=(2.29e-12,3.55e-15,1.55e-15) cpu=3.98e+00(s)
+  ------------- TIMINGS ab2 Nx=100 Ny=100 Nt=  459 --------------------
+                  cpu (s)     %   
+Total             3.98e+00  100.0
+  setup           1.10e-01    2.8
+  getUt           3.50e-01    8.8
+  implicit solve  0.00e+00    0.0
+  implicit factor 0.00e+00    0.0
+  pressure solve  3.29e+00   82.7
+  bc              1.50e-01    3.8
+  plotting        0.00e+00    0.0
+wrote checkFile=[ins.check]

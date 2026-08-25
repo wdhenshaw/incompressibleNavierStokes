@@ -52,7 +52,7 @@ function outPar = ins(varargin)
   par.figDir    = 'fig';           % figure directory
   par.plotName  = 'ins';           % for plot name 
 
-  par.map = 'Cartesian';           % 'Cartesian', 'Rectangle', 'Annulus', ...
+  par.map = 'Cartesian';           % 'Cartesian', 'Rectangle', 'Annulus', 'TFI', ...
 
 
   par.checkFileName = 'ins.check'; % name of the check file
@@ -139,7 +139,7 @@ function outPar = ins(varargin)
     fprintf('Usage\n');
     fprintf(' ins -nu=<f> -tf=<f> -tp=<f> -ts=[ab2|pc2|im2] -cfl=<f> -bcs=<s> -ms=[none|poly|trig] -ic=[default|constant] ...\n');
     fprintf('     -idebug=<i> -known=[none|Poiseuille|TaylorGreen] -plotOption=<i> -kx=<f> -ky=<f> -kt=<f} -degreex=<i> -degreet=<i> ...\n');
-    fprintf('     -ad=<i> -ad21=<f> -ad22=<f> -movieMode=[0|1] -savePlots=[0|1] -checkFileName=<s> -map=[Cartesian|Rectangle|Annulus] \n')
+    fprintf('     -ad=<i> -ad21=<f> -ad22=<f> -movieMode=[0|1] -savePlots=[0|1] -checkFileName=<s> -map=[Cartesian|Rectangle|Annulus|TFI] \n')
     fprintf('where:')
     fprintf(' bcs : list of four letters, d=Dirichlet, n=no-slip wall, s=slip wall, i=inflow, I=pressure inflow, o=outflow\n');
     fprintf('     : examples -bcs=ions : left=i, right=o, bottom=n, top=s\n');

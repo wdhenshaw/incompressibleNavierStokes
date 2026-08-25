@@ -23,6 +23,8 @@ function runGridConvergence( varargin )
  par.knownSolution='none';
  par.tf=0.25;
  par.idebug=0; 
+ par.map = 'Cartesian';           % 'Cartesian', 'Rectangle', 'Annulus', 'TFI', ...
+ par.bcs='nnnn'; 
  
 
  par.echo = 0;
@@ -41,15 +43,15 @@ function runGridConvergence( varargin )
 
     Nx= par.N0*2^(ires-1); 
 
-    cmd = sprintf('ins -ts=%s -tzScale=1 -tf=%g -ms=%s -knownSolution=%s -idebug=%d -nu=0.1 -bcs=nnnn -N0=%d -plotOption=-1;',...
-              par.ts,par.tf,par.ms,par.knownSolution, par.idebug,Nx);
+    cmd = sprintf('ins -ts=%s -tzScale=1 -tf=%g -ms=%s -knownSolution=%s -idebug=%d -nu=0.1 -bcs=%s -N0=%d -map=%s -plotOption=-1;',...
+              par.ts,par.tf,par.ms,par.knownSolution, par.idebug,par.bcs, Nx, par.map);
     % cmd = sprintf('ins -ts=ab2 -tzScale=1 -tf=.1 -ms=poly -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bc1=noSlipWall -bc2=dirichlet  -bc3=noSlipWall -bc4=dirichlet -plotOption=0 -N0=%d;',Nx);
     % fprintf('Running [%s]\n',cmd);
     eval(cmd); 
 
     % output results from the run are found here:
     Nv(ires) = Nx;
-    % fprintf(' ires=%d: maxErr=[%9.2e,%9.2e,%9.2e,%9.2e]\n',ires,ans.maxErr(1),ans.maxErr(2),ans.maxErr(3),ans.maxErr(4));
+    fprintf(' ires=%d: Nx=%d maxErr=[%9.2e,%9.2e,%9.2e,%9.2e]\n',ires,Nx,ans.maxErr(1),ans.maxErr(2),ans.maxErr(3),ans.maxErr(4));
     maxErr(1:4,ires) = ans.maxErr(1:4);
 
     cpuv(ires) = ans.cpu;

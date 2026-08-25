@@ -88,8 +88,8 @@ function par = formImplicitTimeSteppingMatrix( dt, par )
     
     else
 
-      for( i1=I1 )
-      for( i2=I2 )
+      for( i1=I1a )
+      for( i2=I2a )
         ie = eqn(i1,i2) ; % eqn number for pt (i1,i2) 
         rx = par.rx(i1,i2,1,1);
         ry = par.rx(i1,i2,1,2);
@@ -127,9 +127,9 @@ function par = formImplicitTimeSteppingMatrix( dt, par )
         setValue( ie,eqn(i1-1,i2+1),    - (.5*nu*dt)*(                            -c11  ) );
         setValue( ie,eqn(i1  ,i2+1),    - (.5*nu*dt)*(            c02       +c01        ) );
         setValue( ie,eqn(i1+1,i2+1),    - (.5*nu*dt)*(                            +c11  ) );        
-        if( isSingular==1 ) 
-          setValue(ie,Ngs,1.);
-        end 
+        % if( isSingular==1 ) 
+        %   setValue(ie,Ngs,1.);
+        % end 
       end
       end      
 

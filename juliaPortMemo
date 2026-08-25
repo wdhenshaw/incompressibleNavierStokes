@@ -1,0 +1,21 @@
+
+❯ where is the session output recorded
+
+The full session transcript is recorded at:
+
+/Users/henshaw/.claude/projects/-Users-henshaw-Dropbox-research-incompressibleNavierStokes/00bcaf15-8e1e-4352-929b-8f8a9612b681.jsonl
+
+That's the path the summary referred to when it said "read the full transcript" for details lost during compaction.
+
+
+
+Second-order convergence ratios (~4x) for all three schemes. Now generate the check files and run the regression suite:
+
+  Ran 1 shell command
+
+All 7 regression tests pass. The root cause was a single wrong formula in the pressure Neumann BC: v.y (first derivative) was used instead of v.xy (mixed second derivative). The correct physics is p.n = -nu*v.xy on a vertical no-slip wall (and -nu*u.xy on a horizontal wall), derived from the momentum equation + incompressibility.
+
+Everything is working now:
+- Machine precision errors for polynomial manufactured solutions (all three time-steppers)
+- ~4x error reduction per grid doubling (second-order convergence confirmed)
+- All 7 regression check files generated and passing

@@ -1,7 +1,7 @@
 %
 % Compute the RHS to the momentum equations
 %
-function [ ut,vt,par ] = getUt( t,un,vn,pn,nuScaleFactor,par )
+function [ ut,vt,par,uLap,vLap ] = getUt( t,un,vn,pn,nuScaleFactor,par )
 
   cpu0 = cputime;
 
@@ -43,6 +43,9 @@ function [ ut,vt,par ] = getUt( t,un,vn,pn,nuScaleFactor,par )
   vx = zeros(par.Ngx,par.Ngy);
   vy = zeros(par.Ngx,par.Ngy);
 
+  uLap = zeros(par.Ngx,par.Ngy);
+  uLap = zeros(par.Ngx,par.Ngy);
+
   % precompute forcing at all points (This is much faster)
   uf = zeros(par.Ngx,par.Ngy);
   vf = zeros(par.Ngx,par.Ngy);
@@ -61,16 +64,16 @@ function [ ut,vt,par ] = getUt( t,un,vn,pn,nuScaleFactor,par )
     vx(I1,I2) = Dzx(vn,I1,I2);
     vy(I1,I2) = Dzy(vn,I1,I2);
 
-    if( nuScaleFactor~=0 )
-      ut(I1,I2) = -( un(I1,I2).*ux(I1,I2) + vn(I1,I2).*uy(I1,I2) + Dzx(pn,I1,I2) ) ...
-    	            + nu*( DpxDmx(un,I1,I2) + DpyDmy(un,I1,I2) ) + uf(I1,I2);
+    uLap(I1,I2) = DpxDmx(un,I1,I2) + DpyDmy(un,I1,I2);
+    vLap(I1,I2) = DpxDmx(vn,I1,I2) + DpyDmy(vn,I1,I2);
 
-      vt(I1,I2) = -( un(I1,I2).*vx(I1,I2) + vn(I1,I2).*vy(I1,I2) + Dzy(pn,I1,I2) ) ...
-    	            + nu*( DpxDmx(vn,I1,I2) + DpyDmy(vn,I1,I2) ) + vf(I1,I2);
+    if( nuScaleFactor~=0 )
+      ut(I1,I2) = -( un(I1,I2).*ux(I1,I2) + vn(I1,I2).*uy(I1,I2) + Dzx(pn,I1,I2) ) + nu*uLap(I1,I2) + uf(I1,I2);
+      vt(I1,I2) = -( un(I1,I2).*vx(I1,I2) + vn(I1,I2).*vy(I1,I2) + Dzy(pn,I1,I2) ) + nu*vLap(I1,I2) + vf(I1,I2);
 
     else
+      % leave off viscous terms 
       ut(I1,I2) = -( un(I1,I2).*ux(I1,I2) + vn(I1,I2).*uy(I1,I2) + Dzx(pn,I1,I2) ) + uf(I1,I2);
-
       vt(I1,I2) = -( un(I1,I2).*vx(I1,I2) + vn(I1,I2).*vy(I1,I2) + Dzy(pn,I1,I2) ) + vf(I1,I2);
 
     end
@@ -78,8 +81,6 @@ function [ ut,vt,par ] = getUt( t,un,vn,pn,nuScaleFactor,par )
   else
 
     % --- curvilinear ---
-
-
 
     for( i1=I1 )
     for( i2=I2 ) 
@@ -118,13 +119,18 @@ function [ ut,vt,par ] = getUt( t,un,vn,pn,nuScaleFactor,par )
       vy(i1,i2) = ry*vr + sy*vs;
       py        = ry*pr + sy*ps;
 
-      uLap = (rx^2+ry^2)*urr + 2*(rx*sx+ry*sy)*urs + (sx^2+sy^2)*uss + (rxx+ryy)*ur + (sxx+syy)*us;
-      vLap = (rx^2+ry^2)*vrr + 2*(rx*sx+ry*sy)*vrs + (sx^2+sy^2)*vss + (rxx+ryy)*vr + (sxx+syy)*vs;
+      uLap(i1,i2) = (rx^2+ry^2)*urr + 2*(rx*sx+ry*sy)*urs + (sx^2+sy^2)*uss + (rxx+ryy)*ur + (sxx+syy)*us;
+      vLap(i1,i2) = (rx^2+ry^2)*vrr + 2*(rx*sx+ry*sy)*vrs + (sx^2+sy^2)*vss + (rxx+ryy)*vr + (sxx+syy)*vs;
 
       % ut(i1,i2) = -( un(i1,i2)*ux(i1,i2) + vn(i1,i2)*uy(i1,i2) + px ) + nu*uLap + par.ufe(par.x(i1,i2,1),par.x(i1,i2,2),t);
-      ut(i1,i2) = -( un(i1,i2)*ux(i1,i2) + vn(i1,i2)*uy(i1,i2) + px ) + nu*uLap + uf(i1,i2);
-
-      vt(i1,i2) = -( un(i1,i2)*vx(i1,i2) + vn(i1,i2)*vy(i1,i2) + py ) + nu*vLap + vf(i1,i2);
+      if( nuScaleFactor~=0 )
+        ut(i1,i2) = -( un(i1,i2)*ux(i1,i2) + vn(i1,i2)*uy(i1,i2) + px ) + nu*uLap(i1,i2) + uf(i1,i2);
+        vt(i1,i2) = -( un(i1,i2)*vx(i1,i2) + vn(i1,i2)*vy(i1,i2) + py ) + nu*vLap(i1,i2) + vf(i1,i2);
+      else
+        % leave off viscous terms 
+        ut(i1,i2) = -( un(i1,i2)*ux(i1,i2) + vn(i1,i2)*uy(i1,i2) + px ) + uf(i1,i2);
+        vt(i1,i2) = -( un(i1,i2)*vx(i1,i2) + vn(i1,i2)*vy(i1,i2) + py ) + vf(i1,i2);
+      end
 
 
     end

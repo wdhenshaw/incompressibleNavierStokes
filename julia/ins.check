@@ -1,0 +1,7 @@
+--------------------- INS Check File --------------------------
+ms=none, ts=pc2, bcs=ppnn, knownSolution=none
+nu= 5.00e-04, cfl= 9.50e-01, tFinal= 2.00e+00, cdv= 1.00e+00
+ad=1, ad21= 1.00e-01, ad22= 1.00e-01
+Nx=500 Ny=500 Nt=609 dt=2.61e-03
+uNorm=1.32e+00, vNorm=8.36e-01, pNorm=1.52e+00
+maxDivU=1.19e-03, maxGradU=2.10e+01

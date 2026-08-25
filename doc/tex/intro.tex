@@ -1,3 +1,4 @@
+%!TEX root = ../insDoc.tex
 \section{Introduction, governing equations, boundary conditions} \label{sec:introduction}
 
 
@@ -8,7 +9,7 @@ The \texttt{ins.m} Matlab code solves the incompressible Navier-Stokes equations
 \bse
 \bat
   & \p_t \uv + (\uv\cdot\grad) \uv + \f{1}{\rho} \grad p = \nu \Delta \uv,   \quad && \xv\in\Omega, ~t>0,   \\
-  & \Delta p = - \grad\uv:\grad\uv,                                          \quad && \xv\in\Omega, ~t>0,  \\
+  &  \f{1}{\rho} \Delta p = - \grad\uv:\grad\uv,                                          \quad && \xv\in\Omega, ~t>0,  \\
   & \uv(\xv,0) = \uv_0(\xv)                                                  \quad && \xv\in\Omega,\\
   & \grad\cdot\uv(\xv,0) = 0                                                \quad && \xv\in\p\Omega,
 \eat

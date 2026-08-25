@@ -69,6 +69,19 @@ function check( varargin )
   checkFileName{numChecks}='insIM2TaylorGreen.check';
   cmd{numChecks}='ins -ts=im2 -tf=.2 -ms=none -knownSolution=TaylorGreen -nu=0.1  -bcs=nnnn -N0=20 -idebug=0 -plotOption=-1';
 
+
+  % AB2 -- map=TFI 
+  numChecks=numChecks+1;
+  checkFileName{numChecks}='insAB2TrigTFI.check';
+  cmd{numChecks}='ins -ts=ab2 -tf=.2 -ms=trig -knownSolution=none -nu=0.1  -bcs=nnnn -N0=20 -idebug=0 -map=TFI -plotOption=-1';
+
+  % IM2 -- map=TFI 
+  numChecks=numChecks+1;
+  checkFileName{numChecks}='insIM2TrigTFI.check';
+  cmd{numChecks}='ins -ts=im2 -tf=.2 -ms=trig -knownSolution=none -nu=0.1  -bcs=nnnn -N0=20 -idebug=0 -map=TFI -plotOption=-1';
+
+
+
    numFailed=0; 
   for icheck=1:numChecks
 
