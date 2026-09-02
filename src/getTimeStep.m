@@ -1,7 +1,7 @@
 %
 %  Compute the time-step dt 
 %
-function [dt,par] = getTimeStep( step,un,vn, par)
+function [dt,par] = getTimeStep( step,un,vn, gf,cur, par)
 
   dx = par.dx;
   dy = par.dy;
@@ -60,25 +60,26 @@ function [dt,par] = getTimeStep( step,un,vn, par)
 
     for( i1=I1 )
     for( i2=I2 ) 
-      rx = par.rx(i1,i2,1,1);
-      ry = par.rx(i1,i2,1,2);
-      sx = par.rx(i1,i2,2,1);
-      sy = par.rx(i1,i2,2,2);
+      rx = gf{cur}.rx(i1,i2,1,1);
+      ry = gf{cur}.rx(i1,i2,1,2);
+      sx = gf{cur}.rx(i1,i2,2,1);
+      sy = gf{cur}.rx(i1,i2,2,2);
 
+      % grid velocity 
+      gv(1) = gf{cur}.gv(i1,i2,1); 
+      gv(2) = gf{cur}.gv(i1,i2,2); 
 
       % u*u.x + v*u.y = u (rx*ur + sx*us) + v ( ry*ur + sy*us ) = (u*rx + v*ry) u.r + (u.rx + v*ry)* u.s
-      im = abs( un(i1,i2)*rx + vn(i1,i2)*ry )/dr + abs( un(i1,i2)*sx + vn(i1,i2)*sy )/ds;
+      im = abs( (un(i1,i2)-gv(1))*rx + (vn(i1,i2)-gv(2))*ry )/dr + abs( (un(i1,i2)-gv(1))*sx + (vn(i1,i2)-gv(2))*sy )/ds;
 
-
-
-      rxr = DJzr(par.rx,i1,i2,1,1);
-      rxs = DJzs(par.rx,i1,i2,1,1);
-      ryr = DJzr(par.rx,i1,i2,1,2);
-      rys = DJzs(par.rx,i1,i2,1,2);
-      sxr = DJzr(par.rx,i1,i2,2,1);
-      sxs = DJzs(par.rx,i1,i2,2,1);
-      syr = DJzr(par.rx,i1,i2,2,2);
-      sys = DJzs(par.rx,i1,i2,2,2);        
+      rxr = DJzr(gf{cur}.rx,i1,i2,1,1);
+      rxs = DJzs(gf{cur}.rx,i1,i2,1,1);
+      ryr = DJzr(gf{cur}.rx,i1,i2,1,2);
+      rys = DJzs(gf{cur}.rx,i1,i2,1,2);
+      sxr = DJzr(gf{cur}.rx,i1,i2,2,1);
+      sxs = DJzs(gf{cur}.rx,i1,i2,2,1);
+      syr = DJzr(gf{cur}.rx,i1,i2,2,2);
+      sys = DJzs(gf{cur}.rx,i1,i2,2,2);        
 
       rxx = rx*rxr + sx*rxs;
       ryy = ry*ryr + sy*rys;
@@ -103,8 +104,8 @@ function [dt,par] = getTimeStep( step,un,vn, par)
       % pause
 
       % estimate grid spacings in r and s directions
-      ds1 = sqrt( (par.x(i1+1,i2,1)-par.x(i1,i2,1))^2 + (par.x(i1+1,i2,2)-par.x(i1,i2,2))^2 );
-      ds2 = sqrt( (par.x(i1,i2+1,1)-par.x(i1,i2,1))^2 + (par.x(i1,i2+1,2)-par.x(i1,i2,2))^2 );
+      ds1 = sqrt( (gf{cur}.x(i1+1,i2,1)-gf{cur}.x(i1,i2,1))^2 + (gf{cur}.x(i1+1,i2,2)-gf{cur}.x(i1,i2,2))^2 );
+      ds2 = sqrt( (gf{cur}.x(i1,i2+1,1)-gf{cur}.x(i1,i2,1))^2 + (gf{cur}.x(i1,i2+1,2)-gf{cur}.x(i1,i2,2))^2 );
 
       ds1Min = min(ds1Min,ds1); ds2Min = min(ds2Min,ds2);
       ds1Max = max(ds1Max,ds1); ds2Max = max(ds2Max,ds2);
@@ -156,5 +157,6 @@ function [dt,par] = getTimeStep( step,un,vn, par)
   end
 
   par.dtOld = dt;
+ 
 
 end

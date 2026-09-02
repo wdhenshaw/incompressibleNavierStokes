@@ -22,6 +22,350 @@ ins -ts=pc2 -tzScale=1 -tf=2 -tp=0.1 -ms=none -knownSolution=none -idebug=1 -nu=
 ins -ts=pc2 -tzScale=1 -tf=2 -tp=.05 -ms=none -knownSolution=none -idebug=1 -nu=.0005 -ya=-.5 -yb=1.5 -xb=2 -bcs=ppnn -N0=300 -ic=shear -movieMode=1 -plotOption=3 -plotErrors=0 -kx=1 -checkTimeStep=20 -ad=1 -ad21=.1 -ad22=.1 -cfl=0.95 -numThreads=1;
 
 
+***************************************
+***** Wed Sept 2, 2026
+
+FIX SLIP WALL FOR CURVILINEAR
+
+**TO-DO** ADD REGRESSION TESTS FOR TRACTION AND SLIP WALL
+
+IM2 
+ins -ts=im2 -tf=1 -ms=poly -degreex=2 -degreet=1 -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -cdv=0 -bcs=stnn -idebug=1  -motion=none -plotOption=1 -combinedImplicitSolverNeeded=1 -map=rotatedSquare -N0=5
+
+PC2: 
+ins -ts=pc2 -tf=1 -ms=poly -degreex=2 -degreet=2 -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -cdv=0 -bcs=stsn -idebug=1  -motion=none -plotOption=1 -combinedImplicitSolverNeeded=1 -map=rotatedSquare -N0=5
+
+bcs=tdtd ** BAD ** TRACTION-TRACION CORNER ** FIX ME 
+bcs=stst broken NAN's 
+
+
+IM2 - SLIP WALL rotatedSquare -- exact 
+ins -ts=im2 -tf=1 -ms=poly -degreex=2 -degreet=1 -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -cdv=0 -bcs=sddd -idebug=1 -plotEveryStep=1 -motion=none -plotOption=1 -combinedImplicitSolverNeeded=1 -map=rotatedSquare -N0=5
+
+im2: t=1.053e-01 step=     2 Nx=  5 dt=5.263e-02 err-[p,u,v]=[1.33e-15,8.88e-16,8.88e-16] div/grad= 9.04e-16, cpu= 1.07e+00(s)
+im2: t=1.579e-01 step=     3 Nx=  5 dt=5.263e-02 err-[p,u,v]=[1.33e-15,1.33e-15,8.88e-16] div/grad= 8.82e-16, cpu= 1.71e+00(s)
+
+
+Rectangle : Ok 
+ins -ts=im2 -tf=1 -ms=poly -degreex=2 -degreet=1 -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -cdv=0 -bcs=sddd -idebug=1 -plotEveryStep=1 -motion=none -plotOption=1 -combinedImplicitSolverNeeded=1 -map=Rectangle -N0=5 
+
+Cartesian : TROUBLE ... PUNT for NOW -- add check and fail in this case
+ins -ts=im2 -tf=1 -ms=poly -degreex=2 -degreet=1 -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -cdv=0 -bcs=sddd -idebug=1 -plotEveryStep=1 -motion=none -plotOption=1 -combinedImplicitSolverNeeded=1 -map=Cartesian -N0=5
+
+Cartesian : useCombined=FALSE : Ok 
+ins -ts=im2 -tf=1 -ms=poly -degreex=2 -degreet=1 -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -cdv=0 -bcs=sddd -idebug=1 -plotEveryStep=1 -motion=none -plotOption=1 -combinedImplicitSolverNeeded=0 -map=Cartesian -N0=5
+
+
+
+ABC - SLIP WALL  rotated square, EXACT
+ins -ts=ab2 -tf=1 -ms=poly -degreex=2 -degreet=2 -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -cdv=0 -bcs=sddd -idebug=1 -plotEveryStep=1 -motion=none -plotOption=1 -combinedImplicitSolverNeeded=1 -map=rotatedSquare -N0=5
+
+ab2: t=1.190e-01 step=     5 Nx=  5 dt=2.381e-02 err-[p,u,v]=[1.42e-14,1.87e-14,4.44e-15] div/grad= 1.92e-16, cpu= 2.69e+00(s)
+
+***************************************
+***** Tues Sept 1, 2026
+
+>> START ON COMBINED IMPLICIT MATRIX
+
+FIXED PERIOIDIC BOUNDARIES in applyBoundaryConditions and pressureEquation and formImplicitCombined and formImplicit
+
+>>> PC2 + DOUBLY PERIODIC  -- looks OK
+ins -ts=pc2 -tf=1 -ms=trig -kx=1 -ky=1 -knownSolution=none -nu=0.05 -bcs=pppp -idebug=1 -plotEveryStep=0 -plotGrid=0 -map=Cartesian -plotSolutionOnGhost=1 -N0=40;
+
+
+
+>>> IM2 + DOUBLY PERIODIC  -- looks OK
+ins -ts=im2 -tf=1 -ms=trig -kx=1 -ky=1 -knownSolution=none -nu=0.05 -bcs=pppp -idebug=1 -plotEveryStep=0 -plotGrid=0 -map=Cartesian -plotSolutionOnGhost=1 -N0=40;
+
+im2: t=1.00e+00: Nx= 40 Ny= 40 Nt=   19 dt=5.26e-02 max-Err(p,u,v)=(4.79e-03,7.00e-04,7.00e-04) cpu=1.04e+01(s)
+
+
+>>> IM2 + TRACTION + ANNULUS 
+ins -ts=im2 -tf=1 -ms=trig -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -bcs=ppdt -idebug=1 -plotEveryStep=0 -plotGrid=0 -map=Annulus -plotSolutionOnGhost=1 -N0=10;
+
+im2: t=1.00e+00: Nx= 79 Ny= 10 Nt=   14 dt=7.14e-02 max-Err(p,u,v)=(4.47e-03,1.57e-02,1.01e-02) cpu=1.29e+00(s)
+im2: t=1.00e+00: Nx=158 Ny= 20 Nt=   28 dt=3.57e-02 max-Err(p,u,v)=(1.13e-03,3.82e-03,2.46e-03) cpu=1.62e+00(s)
+<<<
+
+
+IM2 - Annulus + traction TROUBLE AT PERIODIC-TRACTION CORNER
+    NOTE: AB2 has trouble too
+ins -ts=im2 -tf=1 -ms=trig -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -bcs=ppdt -idebug=1 -plotEveryStep=1 -plotGrid=1 -map=Annulus -plotSolutionOnGhost=1 -N0=10;
+
+ins -ts=ab2 -tf=1 -ms=trig -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -bcs=ppdt -idebug=1 -plotEveryStep=1 -plotGrid=1 -map=Annulus -plotSolutionOnGhost=1 -N0=20;
+
+im2: t=1.00e+00: Nx= 79 Ny= 10 Nt=   14 dt=7.14e-02 max-Err(p,u,v)=(5.46e-03,1.53e-02,1.07e-02) cpu=8.28e+00(s)
+
+
+IM2 square - TRACTION : OK 
+ins -ts=im2 -tf=1 -ms=poly -degreex=2 -degreet=1 -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -cdv=0 -bcs=tddd -idebug=1 -plotEveryStep=1 -plotGrid=1 -motion=none -plotOption=1 -combinedImplicitSolverNeeded=1  -N0=5
+
+im2: t=3.704e-02 step=     1 Nx=  5 dt=3.704e-02 err-[p,u,v]=[8.88e-16,8.88e-16,2.22e-16] div/grad= 7.43e-16, cpu= 1.07e+00(s)
+im2: t=7.407e-02 step=     2 Nx=  5 dt=3.704e-02 err-[p,u,v]=[1.11e-15,2.66e-15,6.66e-16] div/grad= 1.91e-15, cpu= 1.86e+00(s)
+im2: t=1.111e-01 step=     3 Nx=  5 dt=3.704e-02 err-[p,u,v]=[8.88e-16,2.66e-15,6.66e-16] div/grad= 1.60e-15, cpu= 2.49e+00(s)
+im2: t=1.481e-01 step=     4 Nx=  5 dt=3.704e-02 err-[p,u,v]=[8.88e-16,3.55e-15,5.55e-16] div/grad= 1.84e-15, cpu= 3.18e+00(s)
+
+
+IM2 rotatedSquare - TRACTION -- starts to work
+ins -ts=im2 -tf=1 -ms=poly -degreex=2 -degreet=1 -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -cdv=0 -bcs=tddd -idebug=1 -plotEveryStep=1 -plotGrid=1 -motion=none -plotOption=1 -combinedImplicitSolverNeeded=1 -map=rotatedSquare -N0=5
+
+im2: t=5.263e-02 step=     1 Nx=  5 dt=5.263e-02 err-[p,u,v]=[1.33e-15,8.88e-16,4.44e-16] div/grad= 1.19e-15, cpu= 1.42e+00(s)
+im2: t=1.053e-01 step=     2 Nx=  5 dt=5.263e-02 err-[p,u,v]=[4.44e-16,8.88e-16,1.33e-15] div/grad= 9.04e-16, cpu= 2.32e+00(s)
+im2: t=1.579e-01 step=     3 Nx=  5 dt=5.263e-02 err-[p,u,v]=[8.88e-16,8.88e-16,1.33e-15] div/grad= 8.82e-16, cpu= 3.21e+00(s)
+
+
+IM2 rotatedSquare - exact
+ins -ts=im2 -tf=1 -ms=poly -degreex=2 -degreet=1 -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -cdv=0 -bcs=ndnd -idebug=1 -plotEveryStep=1 -plotGrid=1 -motion=none -plotOption=1 -combinedImplicitSolverNeeded=1 -map=rotatedSquare -N0=5
+
+
+IM2 exact degree=(2,1)
+ins -ts=im2 -tf=0.1 -ms=poly -degreex=2 -degreet=1 -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -cdv=0 -bcs=ndnd -idebug=1 -plotEveryStep=1 -plotGrid=1 -motion=none -plotOption=1 -combinedImplicitSolverNeeded=1 -N0=5
+
+***************************************
+***** Sat Aug 30, 2026
+
+
+>>> START ADD A TRACTION BC 
+
+--- CURVLINEAR CASE
+
+TRACTION TEST TFI .. looks ok 
+ins -ts=ab2 -tf=.1 -ms=trig -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -bcs=ddtt -idebug=1 -plotEveryStep=0 -plotGrid=1 -map=TFI -N0=10;
+
+ab2: t=1.00e-01: Nx= 10 Ny= 10 Nt=   17 dt=5.88e-03 max-Err(p,u,v)=(2.74e-02,1.28e-02,7.78e-03) cpu=2.30e-01(s)
+ab2: t=1.00e-01: Nx= 20 Ny= 20 Nt=   66 dt=1.52e-03 max-Err(p,u,v)=(7.93e-03,3.47e-03,2.00e-03) cpu=4.80e-01(s)
+ab2: t=1.00e-01: Nx= 40 Ny= 40 Nt=  264 dt=3.79e-04 max-Err(p,u,v)=(1.99e-03,8.18e-04,5.02e-04) cpu=2.58e+00(s)
+
+TRACTION: test Annulus .. looks OK 
+ins -ts=ab2 -tf=.1 -ms=trig -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -bcs=pptt -idebug=1 -plotEveryStep=0 -plotGrid=1 -map=Annulus -N0=10;
+
+ab2: t=1.00e-01: Nx= 79 Ny= 10 Nt=   24 dt=4.17e-03 max-Err(p,u,v)=(3.05e-03,6.20e-03,4.17e-03) cpu=4.50e-01(s)
+ab2: t=1.00e-01: Nx=158 Ny= 20 Nt=   92 dt=1.09e-03 max-Err(p,u,v)=(7.71e-04,1.63e-03,9.26e-04) cpu=1.90e+00(s)
+
+TRACTION: rotatedSquare: exact 
+   bcs=tddd ttdd tttd tttt
+ins -ts=ab2 -tf=0.1 -ms=poly -degreex=2 -degreet=2 -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -cdv=0 -bcs=tddd -idebug=1 -plotEveryStep=1 -plotGrid=1 -motion=none -map=rotatedSquare -plotOption=1 -N0=10
+
+
+-- CARTESIAN CASE: 
+
+bcs=tttt: EXACT 
+ins -ts=ab2 -tf=0.1 -ms=poly -degreex=2 -degreet=2 -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -cdv=0 -bcs=dtdd -idebug=1 -plotEveryStep=1 -plotGrid=1 -motion=none -plotOption=1 -N0=10
+
+EXACT: 
+ins -ts=ab2 -tf=0.1 -ms=poly -degreex=2 -degreet=2 -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -cdv=0 -bcs=tddd -idebug=1 -plotEveryStep=1 -plotGrid=1 -motion=none -plotOption=1 -N0=10
+
+
+
+***************************************
+***** Sat Aug 29, 2026
+
+
+>>> START ON map=freeSurface : define top surface from a set of data points 
+
+ins -ts=im2 -tf=1 -tp=0.05 -ms=trig -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -cdv=0 -bcs=nnnn -idebug=1 -movieMode=1 -plotGrid=1 -map=freeSurface -motion=deform -plotOption=1 -N0=40;
+
+im2: t=1.00e+00: Nx= 40 Ny= 40 Nt=   64 dt=1.56e-02 max-Err(p,u,v)=(4.24e-02,1.09e-02,3.77e-03) cpu=1.21e+01(s)
+im2: t=1.00e+00: Nx= 80 Ny= 80 Nt=  128 dt=7.81e-03 max-Err(p,u,v)=(1.30e-02,2.84e-03,1.15e-03) cpu=3.21e+01(s)
+
+ins -ts=im2 -tf=0.1 -tp=0.05 -ms=trig -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -cdv=0 -bcs=nnnn -idebug=1 -plotEveryStep=1 -plotGrid=1 -map=freeSurface -motion=deform -plotOption=1 -N0=20
+
+im2: t=1.00e-01: Nx= 20 Ny= 20 Nt=    4 dt=2.50e-02 max-Err(p,u,v)=(6.40e-02,1.20e-02,9.40e-03) cpu=2.16e+00(s)
+im2: t=1.00e-01: Nx= 40 Ny= 40 Nt=    7 dt=1.43e-02 max-Err(p,u,v)=(1.64e-02,3.11e-03,2.47e-03) cpu=3.80e+00(s)
+
+>>>> ADD more checks
+
+ROTATE:
+ins -ts=im2 -tf=.2 -ms=trig -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -cdv=0 -bcs=nnnn -idebug=1 -plotEveryStep=0 -plotGrid=1 -motion=rotate -movieMode=1 -N0=20
+
+
+IM2 TEST DEFORM TFI -- look OK
+ins -ts=im2 -tf=1 -tp=0.05 -ms=trig -degreex=1 -degreet=1 -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -cdv=0 -bcs=nnnn -idebug=1 -movieMode=1 -plotGrid=1 -map=TFI -motion=deform -plotOption=1 -N0=20;
+
+
+
+***************************************
+***** Fri Aug 28 26, 2026
+
+
+MISTAKE FOUND --- rx wrong in the rotation
+
+FIXED : getBoundaryNormal , getDerivatives 
+
+
+IM2 TEST DEFORM TFI -- look OK
+ins -ts=im2 -tf=0.5 -ms=trig -degreex=1 -degreet=1 -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -cdv=0 -bcs=nnnn -idebug=1 -plotEveryStep=1 -plotGrid=1 -map=TFI -motion=deform -plotOption=1 -N0=20
+
+im2: t=5.00e-01: Nx= 20 Ny= 20 Nt=   11 dt=4.55e-02 max-Err(p,u,v)=(1.90e-03,3.90e-03,1.67e-03) cpu=4.75e+00(s)
+im2: t=5.00e-01: Nx= 40 Ny= 40 Nt=   22 dt=2.27e-02 max-Err(p,u,v)=(5.33e-04,9.42e-04,4.20e-04) cpu=1.04e+01(s)
+
+
+-- GRID CONVERGENCE 
+runGridConvergence -ts=ab2 -tf=.25 -ms=trig -motion=rotate -numResolutions=3
+
+ N     p-err  ratio   u-err  ratio   v-err ratio    div  ratio    cpu(s)  ratio
+ --------------------------------------------------------------------------------- 
+  10  5.92e-02       1.47e-02       1.38e-02       3.17e-02        2.10e-01
+  20  1.53e-02  3.9  3.33e-03  4.4  3.04e-03  4.5  3.66e-03  8.7   6.40e-01  3.0
+  40  4.11e-03  3.7  8.11e-04  4.1  7.34e-04  4.1  5.46e-04  6.7   1.05e+01 16.3
+
+runGridConvergence -ts=pc2 -tf=.25 -ms=trig -motion=rotate -numResolutions=3
+  N     p-err  ratio   u-err  ratio   v-err ratio    div  ratio    cpu(s)  ratio
+ --------------------------------------------------------------------------------- 
+  10  5.76e-02       1.52e-02       1.47e-02       4.67e-02        3.70e-01
+  20  1.47e-02  3.9  3.36e-03  4.5  3.10e-03  4.7  5.51e-03  8.5   8.80e-01  2.4
+  40  4.04e-03  3.6  8.13e-04  4.1  7.37e-04  4.2  7.79e-04  7.1   7.97e+00  9.1
+
+runGridConvergence -ts=im2 -tf=.25 -ms=trig -motion=rotate -numResolutions=3
+
+  N     p-err  ratio   u-err  ratio   v-err ratio    div  ratio    cpu(s)  ratio
+ --------------------------------------------------------------------------------- 
+  10  7.83e-02       2.06e-02       1.98e-02       1.09e-01        7.00e-02
+  20  1.57e-02  5.0  3.99e-03  5.2  3.83e-03  5.2  2.23e-02  4.9   1.70e-01  2.4
+  40  3.31e-03  4.7  9.05e-04  4.4  8.32e-04  4.6  3.45e-03  6.5   7.00e-01  4.1
+  80  9.20e-04  3.6  2.18e-04  4.2  1.98e-04  4.2  7.47e-04  4.6   5.25e+00  7.5
+
+
+TEST IM2:
+ins -ts=im2 -tf=1 -tp=0.1 -ms=trig -degreex=1 -degreet=1 -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -cdv=0 -bcs=nnnn -idebug=1 -plotEveryStep=0 -plotGrid=1 -motion=rotate -movieMode=1 -N0=20
+
+
+ins -ts=im2 -tf=0.1 -ms=trig -degreex=1 -degreet=1 -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -cdv=0 -bcs=nnnn -idebug=1 -plotEveryStep=1 -plotGrid=1 -motion=rotate -plotOption=1 -N0=20
+
+im2: t=1.00e-01: Nx= 20 Ny= 20 Nt=    4 dt=2.50e-02 max-Err(p,u,v)=(3.46e-03,1.61e-03,1.03e-03) cpu=2.28e+00(s)
+im2: t=1.00e-01: Nx= 40 Ny= 40 Nt=    8 dt=1.25e-02 max-Err(p,u,v)=(9.01e-04,4.26e-04,2.68e-04) cpu=4.20e+00(s)
+
+TEST PC2 -- looks ok 
+ins -ts=pc2 -tf=0.1 -ms=trig -degreex=1 -degreet=1 -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -cdv=0 -bcs=nnnn -idebug=1 -plotEveryStep=1 -plotGrid=1 -motion=rotate -plotOption=1 -N0=20
+
+pc2: t=1.00e-01: Nx= 20 Ny= 20 Nt=   12 dt=8.33e-03 max-Err(p,u,v)=(3.39e-03,1.37e-03,8.53e-04) cpu=5.71e+00(s)
+pc2: t=1.00e-01: Nx= 40 Ny= 40 Nt=   42 dt=2.38e-03 max-Err(p,u,v)=(8.86e-04,3.59e-04,2.14e-04) cpu=1.25e+00(s)
+
+TEST ROTATION + No-Slip **TROUBLE** ... FIXED ...
+ins -ts=ab2 -tf=0.1 -ms=trig -degreex=1 -degreet=1 -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -cdv=0 -bcs=nnnn -idebug=1 -plotEveryStep=1 -plotGrid=1 -motion=rotate -plotOption=1 -N0=20
+
+ab2: t=1.00e-01: Nx= 20 Ny= 20 Nt=   20 dt=5.00e-03 max-Err(p,u,v)=(3.39e-03,1.31e-03,7.97e-04) cpu=3.30e-01(s)
+ab2: t=1.00e-01: Nx= 40 Ny= 40 Nt=   73 dt=1.37e-03 max-Err(p,u,v)=(8.86e-04,3.54e-04,2.10e-04) cpu=6.06e+00(s)
+
+
+
+
+ins -ts=ab2 -tf=0.5 -tp=.05  -ms=trig -degreex=1 -degreet=1 -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -cdv=0 -bcs=dddd -idebug=1 -plotEveryStep=0 -plotGrid=1 -motion=rotate -plotOption=1 -N0=20
+
+
+
+TRIG -- LOOKS OK 
+ins -ts=ab2 -tf=0.1 -ms=trig -degreex=1 -degreet=1 -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -cdv=0 -bcs=dddd -idebug=1 -plotEveryStep=0 -plotGrid=1 -motion=rotate -plotOption=1 -N0=20
+
+ab2: t=1.00e-01: Nx= 20 Ny= 20 Nt=   20 dt=5.00e-03 max-Err(p,u,v)=(1.76e-03,1.16e-03,8.42e-04) cpu=5.70e-01(s)
+ab2: t=1.00e-01: Nx= 40 Ny= 40 Nt=   73 dt=1.37e-03 max-Err(p,u,v)=(4.43e-04,3.01e-04,2.17e-04) cpu=2.48e+00(s)
+
+ins -ts=ab2 -tf=0.1 -ms=trig -degreex=1 -degreet=1 -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -cdv=0 -bcs=dddd -idebug=1 -plotEveryStep=1 -plotGrid=1 -motion=rotate -plotOption=1 -N0=20
+
+
+
+ADD ROTATED SQUARE MAP
+ins -ts=ab2 -tf=0.5 -tp=0.1 -ms=poly -degreex=2 -degreet=2 -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -cdv=0 -bcs=dddd -idebug=1 -plotEveryStep=0 -plotGrid=1 -map=rotatedSquare -plotOption=1 -N0=10;
+
+ab2: t=5.00e-01: Nx= 10 Ny= 10 Nt=   46 dt=1.09e-02 max-Err(p,u,v)=(1.33e-15,2.66e-15,1.78e-15) cpu=4.30e-01(s)
+
+
+EXACT (u,v) NO GOOD
+ins -ts=ab2 -tf=0.1 -ms=trig -degreex=1 -degreet=1 -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -cdv=0 -bcs=dddd -idebug=1 -plotEveryStep=0 -plotGrid=1 -motion=rotate -plotOption=1 -N0=20
+
+ab2: t=1.00e-01: Nx= 20 Ny= 20 Nt=   20 dt=5.00e-03 max-Err(p,u,v)=(1.53e-02,0.00e+00,0.00e+00) cpu=4.20e-01(s)
+ab2: t=1.00e-01: Nx= 40 Ny= 40 Nt=   73 dt=1.37e-03 max-Err(p,u,v)=(1.42e-02,0.00e+00,0.00e+00) cpu=2.54e+00(s)
+
+
+
+**TROUBLE HERE ??
+ins -ts=ab2 -tf=0.1 -ms=trig -degreex=1 -degreet=1 -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -cdv=0 -bcs=dddd -idebug=1 -plotEveryStep=0 -plotGrid=1 -motion=rotate -plotOption=1 -N0=20
+
+ab2: t=1.00e-01: Nx= 20 Ny= 20 Nt=   20 dt=5.00e-03 max-Err(p,u,v)=(2.13e-02,3.67e-02,3.01e-02) cpu=3.30e-01(s)
+ab2: t=1.00e-01: Nx= 40 Ny= 40 Nt=   73 dt=1.37e-03 max-Err(p,u,v)=(2.03e-02,3.68e-02,3.03e-02) cpu=2.16e+00(s)
+ab2: t=1.00e-01: Nx= 80 Ny= 80 Nt=  287 dt=3.48e-04 max-Err(p,u,v)=(2.00e-02,3.68e-02,3.03e-02) cpu=2.24e+01(s)
+
+
+TRIG : integrate t=0.1 : **TROUBLE**
+ins -ts=ab2 -tf=0.1 -ms=trig -degreex=1 -degreet=1 -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -cdv=0 -bcs=dddd -idebug=1 -plotEveryStep=1 -plotGrid=1 -motion=rotate -plotOption=3 -N0=20
+
+ab2: t=1.00e-01: Nx= 20 Ny= 20 Nt=   20 dt=5.00e-03 max-Err(p,u,v)=(2.13e-02,3.67e-02,3.01e-02) cpu=9.49e+00(s)
+ab2: t=1.00e-01: Nx= 40 Ny= 40 Nt=   73 dt=1.37e-03 max-Err(p,u,v)=(2.03e-02,3.68e-02,3.03e-02) cpu=3.38e+01(s)
+
+
+
+TRIG : looks ok
+ins -ts=ab2 -tf=0.5 -ms=trig -degreex=1 -degreet=1 -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -cdv=0 -bcs=dddd -idebug=1 -plotEveryStep=1 -plotGrid=1 -motion=rotate -plotOption=3 -N0=20
+
+ab2: t=5.155e-02 step=    10 Nx= 20 dt=5.155e-03 err-[u,v,p]=[1.12e-02,8.41e-03,6.97e-03] div/grad= 9.77e-02, cpu= 8.23e+00(s)
+ab2: t=2.747e-02 step=    20 Nx= 40 dt=1.374e-03 err-[u,v,p]=[3.35e-03,2.44e-03,1.90e-03] div/grad= 4.79e-02, cpu= 1.45e+01(s)
+
+TRIG : exact first 2 steps  ... Looks OK 
+ins -ts=ab2 -tf=0.5 -ms=trig -degreex=1 -degreet=1 -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -cdv=0 -bcs=dddd -idebug=1 -plotEveryStep=1 -plotGrid=1 -motion=rotate -plotOption=3 -N0=20
+
+ab2: t=5.155e-02 step=    10 Nx=20  dt=5.155e-03 err-[u,v,p]=[1.07e-02,8.08e-03,6.90e-03] div/grad= 9.54e-02, cpu= 8.97e+00(s)
+ab2: t=2.747e-02 step=    20 Nx=40  dt=1.374e-03 err-[u,v,p]=[3.31e-03,2.41e-03,1.90e-03] div/grad= 4.77e-02, cpu= 1.74e+01(s)
+ab2: t=1.398e-02 step=    40 Nx= 80 dt=3.494e-04 err-[u,v,p]=[8.81e-04,6.35e-04,4.81e-04] div/grad= 2.12e-02, cpu= 3.48e+01(s)
+
+
+TRIG : exact (u,v) : check pressure -- looks OK
+ins -ts=ab2 -tf=0.5 -ms=trig -degreex=1 -degreet=1 -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -cdv=0 -bcs=dddd -idebug=1 -plotEveryStep=1 -plotGrid=1 -motion=rotate -plotOption=3 -N0=20
+
+N=20
+ab2: t=5.155e-02 step=    10 dt=5.155e-03 err-[u,v,p]=[0.00e+00,0.00e+00,5.11e-03] div/grad= 4.92e-02, cpu= 1.82e+01(s)
+
+N=40
+ab2: t=2.747e-02 step=    20 dt=1.374e-03 err-[u,v,p]=[0.00e+00,0.00e+00,1.38e-03] div/grad= 2.68e-02, cpu= 1.86e+01(s)
+
+***************************************
+***** Wed Aug 26, 2026
+
+**BUG** DO NOT ADJUST THE TZ FORCING FOR THE GRID VELOCITY
+
+CONT on MOVING GRIDS
+
+ADD A ROTATION:
+
+ins -ts=ab2 -tf=0.5 -ms=trig -degreex=1 -degreet=1 -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -cdv=0 -bcs=dddd -idebug=1 -plotEveryStep=1 -plotGrid=1 -motion=rotate -plotOption=3 -N0=20
+
+POLY + ROTATE
+ins -ts=ab2 -tf=0.5 -ms=poly -degreex=1 -degreet=1 -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -cdv=0 -bcs=dddd -idebug=1 -plotEveryStep=1 -plotGrid=1 -motion=rotate -plotOption=3 -N0=20;
+
+
+ADAMS: TRIG + TRANS 
+ins -ts=ab2 -tf=0.5 -ms=trig -degreex=1 -degreet=1 -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -cdv=0 -bcs=dddd -idebug=1 -plotEveryStep=1 -plotGrid=1 -motion=translate -plotOption=3 -N0=20
+
+ADAMS :  TEST TRANSLATE: EXACT degree=[1,1]
+ins -ts=ab2 -tf=0.5 -ms=poly -degreex=1 -degreet=1 -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -cdv=0 -bcs=dddd -idebug=1 -plotEveryStep=1 -plotGrid=1 -motion=translate -plotOption=3 -N0=5;
+
+ab2: t=5.00e-01: Nx=  5 Ny=  5 Nt=   10 dt=5.00e-02 max-Err(p,u,v)=(4.44e-16,4.44e-16,6.66e-16) cpu=1.32e+01(s)
+
+
+***************************************
+***** Wed Aug 26, 2026
+
+START on MOVING GRIDS
+
+RE-ORGANIZE -- USE grid functions
+
+
+START TEST TRANSLATE:
+ins -ts=ab2 -tf=0.1 -ms=poly -degreex=1 -degreet=1 -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05  -bcs=dddd -idebug=1 -plotEveryStep=1 -plotGrid=1 -motion=translate -plotOption=3 -N0=10;
+
+
+
+
+USE GRID FUNCTIONS
+ins -ts=ab2 -tf=0.1 -ms=trig -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -degreex=2 -degreet=2 -bcs=nnnn -idebug=1 -plotEveryStep=1 -plotGrid=1 -map=TFI  -N0=20;
+
+OLD WAY: 
+ins -ts=ab2 -tf=.1 -ms=trig -kx=0.5 -ky=0.5 -knownSolution=none -nu=0.05 -degreex=2 -degreet=2 -bcs=nnnn -idebug=1 -plotEveryStep=1 -plotGrid=1 -map=TFI -useGridFunctions=0 -N0=20;
+
+ab2: t=1.515e-03 step=     1 dt=1.515e-03 err-[u,v,p]=[9.07e-05,4.44e-05,1.07e-02] div/grad= 7.71e-03, cpu= 8.40e-01(s)
+ab2: t=3.030e-03 step=     2 dt=1.515e-03 err-[u,v,p]=[1.58e-04,6.27e-05,1.08e-02] div/grad= 7.57e-03, cpu= 1.63e+00(s)
+ab2: t=4.545e-03 step=     3 dt=1.515e-03 err-[u,v,p]=[2.23e-04,8.95e-05,1.07e-02] div/grad= 7.57e-03, cpu= 2.35e+00(s)
+ab2: t=6.061e-03 step=     4 dt=1.515e-03 err-[u,v,p]=[2.88e-04,1.15e-04,1.07e-02] div/grad= 7.56e-03, cpu= 3.13e+00(s)
+ab2: t=7.576e-03 step=     5 dt=1.515e-03 err-[u,v,p]=[3.52e-04,1.39e-04,1.07e-02] div/grad= 7.56e-03, cpu= 3.92e+00(s)
 
 ***************************************
 ***** Tues Aug 25, 2026

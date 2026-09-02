@@ -1,5 +1,14 @@
-function par = formImplicitTimeSteppingMatrix( dt, par )
+%
+% Form the implicit time-stepping matrix 
+%
+function par = formImplicitTimeSteppingMatrix( t,dt, gf,cur, par )
 
+
+  if( par.combinedImplicitSolverNeeded )
+    % The next function handles the case when the velcoity components are coupled
+    par = formImplicitTimeSteppingMatrixCombined( t,dt, gf,cur, par );
+    return 
+  end
 
   cpu0=cputime;
 
@@ -31,14 +40,12 @@ function par = formImplicitTimeSteppingMatrix( dt, par )
   % Dr2 = @(u,I1,I2) ( u(I1+1,I2) -u(I1-1,I2) )/(2.*dr);   % u.r
   % Ds2 = @(u,I1,I2) ( u(I1,I2+1) -u(I1,I2-1) )/(2.*ds);   % u.s  
 
-  % convert (i1,i2) to equation number in the matrix:  
-  eqn = @(i1,i2)  1 + i1-1 + Ngx*( i2-1 );
-  
+ 
   Ng = Ngx*Ngy; % total number of grid points
 
 
-  if( mod(floor(par.idebug/2),2)==1 )
-    fprintf('...FORM the IMPLICIT TIME-STEPPING MATRIX: Ng=%d\n',Ng); 
+  if(  par.plotOption>=0 &&  ( mod(floor(par.idebug/2),2)==1 || (par.gridMotion~=par.noMotion && t<=2*dt) ) )
+    fprintf('...FORM the IMPLICIT TIME-STEPPING MATRIX: Ng=%d t=%9.3e cur=%d\n',Ng,t,cur); 
   end 
 
   if( par.multipleImplicitSolversNeeded )
@@ -49,7 +56,10 @@ function par = formImplicitTimeSteppingMatrix( dt, par )
   else
     numImplicitSolvers=1;
   end
-  
+
+
+  % convert (i1,i2) to equation number in the matrix:  
+  eqn = @(i1,i2)  1 + i1-1 + Ngx*( i2-1 );
 
   for( iuv=1:numImplicitSolvers )
 
@@ -91,19 +101,19 @@ function par = formImplicitTimeSteppingMatrix( dt, par )
       for( i1=I1a )
       for( i2=I2a )
         ie = eqn(i1,i2) ; % eqn number for pt (i1,i2) 
-        rx = par.rx(i1,i2,1,1);
-        ry = par.rx(i1,i2,1,2);
-        sx = par.rx(i1,i2,2,1);
-        sy = par.rx(i1,i2,2,2);
+        rx = gf{cur}.rx(i1,i2,1,1);
+        ry = gf{cur}.rx(i1,i2,1,2);
+        sx = gf{cur}.rx(i1,i2,2,1);
+        sy = gf{cur}.rx(i1,i2,2,2);
 
-        rxr = DJzr(par.rx,i1,i2,1,1);
-        rxs = DJzs(par.rx,i1,i2,1,1);
-        ryr = DJzr(par.rx,i1,i2,1,2);
-        rys = DJzs(par.rx,i1,i2,1,2);
-        sxr = DJzr(par.rx,i1,i2,2,1);
-        sxs = DJzs(par.rx,i1,i2,2,1);
-        syr = DJzr(par.rx,i1,i2,2,2);
-        sys = DJzs(par.rx,i1,i2,2,2);        
+        rxr = DJzr(gf{cur}.rx,i1,i2,1,1);
+        rxs = DJzs(gf{cur}.rx,i1,i2,1,1);
+        ryr = DJzr(gf{cur}.rx,i1,i2,1,2);
+        rys = DJzs(gf{cur}.rx,i1,i2,1,2);
+        sxr = DJzr(gf{cur}.rx,i1,i2,2,1);
+        sxs = DJzs(gf{cur}.rx,i1,i2,2,1);
+        syr = DJzr(gf{cur}.rx,i1,i2,2,2);
+        sys = DJzs(gf{cur}.rx,i1,i2,2,2);        
 
         rxx = rx*rxr + sx*rxs;
         ryy = ry*ryr + sy*rys;
@@ -264,22 +274,51 @@ function par = formImplicitTimeSteppingMatrix( dt, par )
           setValue(ie,eqn(i1+  is1,i2+  is2), 3.);  
           setValue(ie,eqn(i1+2*is1,i2+2*is2),-1.); 
         end
-        end            
+        end  
+
+      elseif( par.bc(side,axis)==par.traction )
+
+        fprintf('fillImpMat: finish me for traction bc\n');
+        error('error');
+
 
       elseif( par.bc(side,axis)==par.periodic )
-        for i2=I2b
-        for i1=I1b   
-          % Periodic: u(iax-1,.) = u(ibx-1,.) ...
-          ie=eqn(i1-is1,i2-is2); % ghost point
-          setValue(ie,ie                                            , 1.); 
-          setValue(ie,eqn(i1+(ibx-iax)*is1-is1,i2+(iby-iay)*is2-is2),-1.);             
-        end
-        end
+        % done below 
+        % for i2=I2b
+        % for i1=I1b   
+        %   % Periodic: u(iax-1,.) = u(ibx-1,.) ...
+        %   ie=eqn(i1-is1,i2-is2); % ghost point
+        %   setValue(ie,ie                                            , 1.); 
+        %   setValue(ie,eqn(i1+(ibx-iax)*is1-is1,i2+(iby-iay)*is2-is2),-1.);             
+        % end
+        % end
 
       else 
         fprintf('formImplicitTimeSteppingMatrix: Error: unknown bc=%d\n',par.bc(side,axis));
         pause
-      end         
+      end  
+
+      if( par.bc(side,axis)==par.periodic )
+        % ---- periodic boundary conditions ---
+        %  include ghost points 
+        if( par.bc(side,axis)==par.periodic )
+          if( axis==1 )
+            I1b=par.gid(side,axis);
+            I2b=par.dim(1,2):par.dim(2,2);
+          elseif( axis==2 )
+            I1b=par.dim(1,1):par.dim(2,1);  
+            I2b=par.gid(side,axis);
+          end        
+          for i2=I2b
+            for i1=I1b   
+              % Periodic: u(iax-1,.) = u(ibx-1,.) ...
+              ie=eqn(i1-is1,i2-is2); % ghost point
+              setValue(ie,ie                                            , 1.); 
+              setValue(ie,eqn(i1+(ibx-iax)*is1-is1,i2+(iby-iay)*is2-is2),-1.);             
+            end
+          end
+        end
+      end              
 
     end % end for axis
     end % end for side
@@ -287,7 +326,7 @@ function par = formImplicitTimeSteppingMatrix( dt, par )
 
 
     % ----- CORNERS ---
-    if( par.bc(1,1)~=par.periodic ||  par.bc(1,2)~=par.periodic )
+    if( par.bc(1,1)~=par.periodic &&  par.bc(1,2)~=par.periodic )
       % extrapolate corners along the diagonal 
       for( side1=0:1 )
         for( side2=0:1 )
@@ -301,18 +340,18 @@ function par = formImplicitTimeSteppingMatrix( dt, par )
           setValue(ie,eqn(i1+3*is1,i2+3*is2),-1.); 
         end
       end 
-    else
-      % par.periodic in both x and y 
-      for( side1=0:1 )
-        for( side2=0:1 )
-          is1 = 1-2*side1;
-          is2 = 1-2*side2;
-          i1=par.gid(side1+1,1)-is1; i2=par.gid(side2+1,2)-is2; % corner ghost point
-          ie=eqn(i1,i2);  
-          setValue(ie,ie                                    , 1.); 
-          setValue(ie,eqn(i1+(ibx-iax)*is1,i2+(iby-iay)*is2),-1.); 
-        end
-      end 
+    % else
+    %   % par.periodic in both x and y 
+    %   for( side1=0:1 )
+    %     for( side2=0:1 )
+    %       is1 = 1-2*side1;
+    %       is2 = 1-2*side2;
+    %       i1=par.gid(side1+1,1)-is1; i2=par.gid(side2+1,2)-is2; % corner ghost point
+    %       ie=eqn(i1,i2);  
+    %       setValue(ie,ie                                    , 1.); 
+    %       setValue(ie,eqn(i1+(ibx-iax)*is1,i2+(iby-iay)*is2),-1.); 
+    %     end
+    %   end 
     end 
 
     %
@@ -332,9 +371,11 @@ function par = formImplicitTimeSteppingMatrix( dt, par )
     end
     end 
 
-    if( par.idebug>0 )
+    if(  par.plotOption>=0 && ( mod(floor(par.idebug/2),2)==1 || (par.gridMotion~=par.noMotion && t<=2*dt) ) )
       fprintf('Optimized fill of implicit time-stepping matrix: nzzEst=%d, nzz=%d\n',nzzEst,nzz);
     end
+
+
 
     AA = sparse(ia(1:nzz), ja(1:nzz), aa(1:nzz), Ng, Ng); % Creates the sparse matrix     
 
@@ -381,7 +422,7 @@ function par = formImplicitTimeSteppingMatrix( dt, par )
     cpuFactor = cputime-cpu0;
     par.cpuFactorImpMatrix = par.cpuFactorImpMatrix + cpuFactor;
 
-    if( par.idebug>0 )
+    if( par.plotOption>=0 && (mod(floor(par.idebug/2),2)==1 || (par.gridMotion~=par.noMotion && t<=2*dt) ) )
       fprintf('formImplicitMatrix: time to fill matrix = %8.2e(s), factor matrix = %8.2e(s)\n',cpuFillImpMatrix,cpuFactor);
     end
 

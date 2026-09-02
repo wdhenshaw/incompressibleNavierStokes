@@ -22,9 +22,25 @@ with appropriate boundary conditions as discussed below.
 
 Let $\nv(\xv)$ denote the outward unit normal vector to a point $\xv$ on a boundary.
 Let $\tv$ denote the corresponding unit tangent vector.
+The stress tensor is $\sigmav = -p \Iv + \tauv$ with $\tauv=\mu( \grad\uv + (\grad\uv)^T )$. They have components
+\bse
+\ba
+   & \sigma_{ij} = - p \delta_{ij} + \mu ( \p_{x_j} u_i + \p_{x_i} u_j ), \\
+   & \tau_{ij} =  \mu ( \p_{x_j} u_i + \p_{x_i} u_j ) . 
+\ea
+\ese
+In two dimensions,
+\ba
+   \sigmav = \begin{bmatrix}
+                 -p + 2 \mu u_x  & \mu( u_y + v_x ) \\
+                  \mu( u_y + v_x ) &  -p + 2 \mu v_y
+            \end{bmatrix}
+\ea
+
+\mni
 Here are the physical boundary conditions. Numerically, additional compatibility conditions will be used.
 
-\paragraph{No-slip wall or inflow}
+\paragraph{\textbf{No-slip wall or inflow}}
 \bse
 \bat
    & \uv(\xv,t) = \gv(\xv,t),      \quad && \xv\in\p\Omega,  ~t>0, \\
@@ -33,17 +49,32 @@ Here are the physical boundary conditions. Numerically, additional compatibility
 \ese
 
 
-\paragraph{Slip wall}
+\paragraph{\textbf{Slip wall}}
 \bse
 \bat
-   & \nv\cdot\uv(\xv,t) = 0       \quad && \xv\in\p\Omega,  ~t>0, \\
-   & \p_n( \tv\cdot\uv) = 0 ,     \quad && \xv\in\p\Omega,  ~t>0, \\
-   & \grad\cdot\uv(\xv,t) = 0     \quad && \xv\in\p\Omega, ~t>0.
+   & \nv^T\uv(\xv,t) = 0          \quad && \xv\in\p\Omega,  ~t>0, \label{eq:slipWall1} \\
+   & \tv^T\sigmav\nv = 0 ,        \quad && \xv\in\p\Omega,  ~t>0, \label{eq:slipWall2} \\
+   & \grad\cdot\uv(\xv,t) = 0     \quad && \xv\in\p\Omega, ~t>0.  \label{eq:slipWall3}
 \eat
 \ese
+With explicit time-stepping, the slipwall condition~\eqref{eq:slipWall1} can be imposed by first updating the values on the boundary
+using the interior PDE and then using~\eqref{eq:slipWall1} to set the normal component to zero,
+\ba
+    \uv \leftarrow \uv - (\nv^T\uv) \nv .
+\ea
+With implicit time-stepping, the slipwall condition~\eqref{eq:slipWall1} can be combined with the interior PDE to give the two equations
+(thought of as determining the boundary points)
+\ba
+   \nv \nv^T \uv(\xv,t)  + (I-\nv\nv^T) ( \textrm{PDE} ) = 0 .
+\ea
+The slipWall conditions~\eqref{eq:slipWall2} and~\eqref{eq:slipWall2} can be written as (see comments below for traction BC)
+\ba
+   (\grad\cdot\uv(\xv,t)) \nv + (I-\nv\nv^T) \sigmav\nv = 0.
+\ea
+which re thought of as determining the ghost points.
 
 
-\paragraph{Outflow}
+\paragraph{\textbf{Outflow}}
 \bse
 \bat
    & a_0 p(\xv,t) + a_1 \p_n p(\xv,t) = g(\xv,t),    \quad && \xv\in\p\Omega,  ~t>0, \\
@@ -52,7 +83,7 @@ Here are the physical boundary conditions. Numerically, additional compatibility
 \eat
 \ese
 
-\paragraph{Pressure inflow}
+\paragraph{\textbf{Pressure inflow}}
 \bse
 \bat
    & p(\xv,t) = g_1(\xv,t),            \quad && \xv\in\p\Omega, ~t>0, \\
@@ -60,4 +91,49 @@ Here are the physical boundary conditions. Numerically, additional compatibility
    & \grad\cdot\uv(\xv,t) = 0          \quad && \xv\in\p\Omega, ~t>0 .
 \eat
 \ese
+
+\paragraph{\textbf{Traction (or free surface)}}
+The traction (or free surface) boundary condition is 
+\bse
+\bat
+   & \sigmav\nv = \gamma \kappa(\xv) \nv  ,             \quad && \xv\in\p\Omega,  ~t>0,   \label{eq:tractionBC}\\
+   & \grad\cdot\uv(\xv,t) = 0     \quad && \xv\in\p\Omega, ~t>0.
+\eat
+where $\gamma$ is the coefficient of surface tension and $\kappa$ is the curvature.
+For a surface in 3D parameterized as $\yv(r,s)$, the curvature is 
+\ba
+   \kappa = \f{ \Big(\| \yv_r\|^2 \yv_{ss} -2 (\yv_r\cdot\yv_s)\yv_{rs} + \| \yv_s\|^2 \yv_{rr}\Big)\cdot\nv }{ \| \yv_r\|^2 \| \yv_s\|^2 -  (\yv_r\cdot\yv_s)^2 }.
+\ea
+For a curve $\yv(r)$ in 2D this reduces to
+\ba
+   \kappa = \f{ \yv_{rr} \cdot\nv }{ \| \yv_r\|^2  }.
+\ea
+The boundary condition $\sigmav\nv =  \gamma \kappa(\xv) \nv $ consist of the scalar equations $\nv^T\sigmav\nv=\gamma \kappa(\xv)$ and $\tv^T\sigmav\nv=0$ which are (with summation convection)
+\bat  
+   & -p + n_i \mu ( \p_{x_j} u_i + \p_{x_i} u_j ) n_j  = \gamma \kappa(\xv),       \quad && \xv\in\p\Omega,  ~t>0, \\
+   &  \mu \, t_i  ( \p_{x_j} u_i + \p_{x_i} u_j ) n_j  = 0,                        \quad && \xv\in\p\Omega,  ~t>0.
+\eat
+\ese
+
+The boundary condition for the pressure on a traction boundary comes from the normal component of~\eqref{eq:tractionBC},
+\ba
+  \nv^T \sigmav \nv = \gamma \kappa(\xv).
+\ea
+In two dimensions
+\ba
+   \nv^T \sigmav \nv = - p + 2\mu\Big( u_x n_1^2 + v_y n_2^2 + (u_y + v_x)n_1 n_2 \Big).
+\ea
+
+
+The boundary conditions used for the velocity on a traction boundary are $\grad\cdot\uv=0$ and $\tv^T\tauv\nv=0$. These can be combined as
+\ba
+     (\grad\cdot\uv) \nv + \tv (\tv^T \tauv\nv)=0. \label{eq:tractionVelocityBCI}
+\ea
+From $I= \nv\nv^T + \tv\tv^T$, it follows that $\tv\tv^T = I - \nv\nv^T$ and thus~\eqref{eq:tractionVelocityBCI} can be written as 
+\ba
+     (\grad\cdot\uv) \nv + (I-\nv\nv^T) \tauv\nv=0 . \label{eq:tractionVelocityBC}
+\ea
+The form in~\eqref{eq:tractionVelocityBC} is convenient since it does not require forming tangent vectors. In addition, it is a good form to use when constucting 
+the implicit time-stepping matrix to ensure that the matrix has non-zero diagonal entries.
+
 

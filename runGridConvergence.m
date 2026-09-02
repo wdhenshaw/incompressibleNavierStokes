@@ -25,6 +25,7 @@ function runGridConvergence( varargin )
  par.idebug=0; 
  par.map = 'Cartesian';           % 'Cartesian', 'Rectangle', 'Annulus', 'TFI', ...
  par.bcs='nnnn'; 
+ par.motion='none';
  
 
  par.echo = 0;
@@ -43,8 +44,8 @@ function runGridConvergence( varargin )
 
     Nx= par.N0*2^(ires-1); 
 
-    cmd = sprintf('ins -ts=%s -tzScale=1 -tf=%g -ms=%s -knownSolution=%s -idebug=%d -nu=0.1 -bcs=%s -N0=%d -map=%s -plotOption=-1;',...
-              par.ts,par.tf,par.ms,par.knownSolution, par.idebug,par.bcs, Nx, par.map);
+    cmd = sprintf('ins -ts=%s -tzScale=1 -tf=%g -ms=%s -knownSolution=%s -idebug=%d -nu=0.1 -bcs=%s -N0=%d -map=%s -motion=%s -plotOption=-1;',...
+              par.ts,par.tf,par.ms,par.knownSolution, par.idebug,par.bcs, Nx, par.map, par.motion);
     % cmd = sprintf('ins -ts=ab2 -tzScale=1 -tf=.1 -ms=poly -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bc1=noSlipWall -bc2=dirichlet  -bc3=noSlipWall -bc4=dirichlet -plotOption=0 -N0=%d;',Nx);
     % fprintf('Running [%s]\n',cmd);
     eval(cmd); 
@@ -59,7 +60,7 @@ function runGridConvergence( varargin )
 
   end 
 
-  fprintf('  N     p-err  ratio   u-err  ratio   v-err ratio    div  ratio    cpu(s)  ratio\n');
+  fprintf('  N     p-err  ratio   u-err  ratio   v-err  ratio    div  ratio    cpu(s)  ratio\n');
   fprintf(' --------------------------------------------------------------------------------- \n');
   for ires=1:par.numResolutions
     if ires==1 

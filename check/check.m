@@ -81,6 +81,26 @@ function check( varargin )
   cmd{numChecks}='ins -ts=im2 -tf=.2 -ms=trig -knownSolution=none -nu=0.1  -bcs=nnnn -N0=20 -idebug=0 -map=TFI -plotOption=-1';
 
 
+  % IM2 ROTATE
+  numChecks=numChecks+1;
+  checkFileName{numChecks}='insIM2TrigRotate.check';
+  cmd{numChecks}='ins -ts=im2 -tf=.2 -ms=trig -knownSolution=none -nu=0.1  -bcs=nnnn -N0=10 -idebug=0 -motion=rotate -plotOption=-1';  
+
+  % PC2 ROTATE
+  numChecks=numChecks+1;
+  checkFileName{numChecks}='insPC2TrigRotate.check';
+  cmd{numChecks}='ins -ts=pc2 -tf=.2 -ms=trig -knownSolution=none -nu=0.1  -bcs=nnnn -N0=10 -idebug=0 -motion=rotate -plotOption=-1';  
+
+  % PC2 with traction and slip wall BC 
+  numChecks=numChecks+1;
+  checkFileName{numChecks}='insPC2PolyRotatedSquareTraction.check';
+  cmd{numChecks}='ins -ts=pc2 -tf=1 -ms=poly -degreex=2 -degreet=2 -knownSolution=none -nu=0.05 -cdv=0 -bcs=stsn -idebug=0 -map=rotatedSquare -N0=5 -plotOption=-1';
+
+  % IM2 + traction BC + combined implicit
+  numChecks=numChecks+1;
+  checkFileName{numChecks}='insIM2PolyRotatedSquareTraction.check';
+  cmd{numChecks}='ins -ts=im2 -tf=1 -ms=poly -degreex=2 -degreet=1 -knownSolution=none -nu=0.05 -cdv=0 -bcs=stnn -idebug=0 -map=rotatedSquare -N0=5 -plotOption=-1';
+
 
    numFailed=0; 
   for icheck=1:numChecks
@@ -122,11 +142,11 @@ function check( varargin )
   fprintf('\n ----- check SUMMARY ----\n');
   for icheck=1:numChecks
     if( rt(icheck)==0 )
-      fprintf('Test %2d: %-30s : success.\n',icheck,checkFileName{icheck});
+      fprintf('Test %2d: %-40s : success.\n',icheck,checkFileName{icheck});
     elseif( rt(icheck)==12345 )
-      fprintf('Test %2d: %-30s : new file created.\n',icheck,checkFileName{icheck});
+      fprintf('Test %2d: %-40s : new file created.\n',icheck,checkFileName{icheck});
     else
-      fprintf('Test %2d: %-30s : failed.\n',icheck,checkFileName{icheck});
+      fprintf('Test %2d: %-40s : failed.\n',icheck,checkFileName{icheck});
     end
 
   end

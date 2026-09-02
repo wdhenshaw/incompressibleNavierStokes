@@ -2,12 +2,13 @@
 \contentsline {section}{\numberline {1}Matlab files}{2}{section.1}%
 \contentsline {section}{\numberline {2}Introduction, governing equations, boundary conditions}{2}{section.2}%
 \contentsline {subsection}{\numberline {2.1}Boundary conditions}{2}{subsection.2.1}%
-\contentsline {paragraph}{No-slip wall or inflow}{2}{equation.2.2}%
-\contentsline {paragraph}{Slip wall}{2}{equation.2.3}%
-\contentsline {paragraph}{Outflow}{2}{equation.2.4}%
-\contentsline {paragraph}{Pressure inflow}{3}{equation.2.5}%
-\contentsline {section}{\numberline {3}Discrete approximations}{4}{section.3}%
-\contentsline {section}{\numberline {4}Grid convergence tests}{4}{section.4}%
-\contentsline {section}{\numberline {5}Numerical Results}{4}{section.5}%
-\contentsline {subsection}{\numberline {5.1}Taylor Green vortex}{5}{subsection.5.1}%
-\contentsline {subsection}{\numberline {5.2}Shear flow in a periodic channel}{6}{subsection.5.2}%
+\contentsline {paragraph}{\textbf {No-slip wall or inflow}}{2}{equation.2.4}%
+\contentsline {paragraph}{\textbf {Slip wall}}{2}{equation.2.5}%
+\contentsline {paragraph}{\textbf {Outflow}}{3}{equation.2.9}%
+\contentsline {paragraph}{\textbf {Pressure inflow}}{3}{equation.2.10}%
+\contentsline {paragraph}{\textbf {Traction (or free surface)}}{3}{section*.6}%
+\contentsline {section}{\numberline {3}Discrete approximations}{5}{section.3}%
+\contentsline {section}{\numberline {4}Grid convergence tests}{5}{section.4}%
+\contentsline {section}{\numberline {5}Numerical Results}{5}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Taylor Green vortex}{6}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}Shear flow in a periodic channel}{7}{subsection.5.2}%

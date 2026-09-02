@@ -20,7 +20,7 @@ function [I1b,I2b] = getAdjustedBoundaryIndex(side,axis,par)
   	dirichletType = 1; % full Dirichlet
   elseif( par.bc(side,axis)==par.slipWall || par.bc(side,axis)==par.pressureInflow )
   	dirichletType = 2; % partial dirichlet 
-  elseif( par.bc(side,axis)==par.outflow )
+  elseif( par.bc(side,axis)==par.outflow || par.bc(side,axis)==par.traction )
   	dirichletType = 0 ;
   else
   	fprintf('getAdjustedBoundaryIndex:ERROR: unknown bc = %d for (side,axis)=(%d,%d)\n', par.bc(side,axis),side,axis);

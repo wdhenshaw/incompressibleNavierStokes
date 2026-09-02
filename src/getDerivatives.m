@@ -3,7 +3,7 @@
 %   ux(1:2,1:2)      : ux(i,j) = partial u_i / partial x_j
 %   uxx(1:2,1:2,1:2) : uxx(i,j,k) = partial^2 u_i / p_j p_k 
 % 
-function [ux,uxx] = getDerivatives( i1,i2,un,vn,par )
+function [ux,uxx] = getDerivatives( i1,i2,un,vn, gf,cur, par )
 
   dr = par.dr(1);
   ds = par.dr(2);  
@@ -21,20 +21,20 @@ function [ux,uxx] = getDerivatives( i1,i2,un,vn,par )
   Dss2 = @(u,I1,I2) ( u(I1,I2+1) -2*u(I1,I2) +u(I1,I2-1) )/(ds^2);                             % u.ss
   Drs2 = @(u,I1,I2) ( u(I1+1,I2+1) - u(I1-1,I2+1) - u(I1+1,I2-1) + u(I1-1,I2-1) )/(4*dr*ds);   % u.rs
   
-  rx = par.rx(i1,i2,1,1);
-  ry = par.rx(i1,i2,1,2);
-  sx = par.rx(i1,i2,2,1);
-  sy = par.rx(i1,i2,2,2);
+  rx = gf{cur}.rx(i1,i2,1,1);
+  ry = gf{cur}.rx(i1,i2,1,2);
+  sx = gf{cur}.rx(i1,i2,2,1);
+  sy = gf{cur}.rx(i1,i2,2,2);
 
-  rxr = DJzr(par.rx,i1,i2,1,1);
-  ryr = DJzr(par.rx,i1,i2,1,2);
-  sxr = DJzr(par.rx,i1,i2,2,1);
-  syr = DJzr(par.rx,i1,i2,2,2);
+  rxr = DJzr(gf{cur}.rx,i1,i2,1,1);
+  ryr = DJzr(gf{cur}.rx,i1,i2,1,2);
+  sxr = DJzr(gf{cur}.rx,i1,i2,2,1);
+  syr = DJzr(gf{cur}.rx,i1,i2,2,2);
 
-  rxs = DJzs(par.rx,i1,i2,1,1);
-  rys = DJzs(par.rx,i1,i2,1,2);
-  sxs = DJzs(par.rx,i1,i2,2,1);
-  sys = DJzs(par.rx,i1,i2,2,2);        
+  rxs = DJzs(gf{cur}.rx,i1,i2,1,1);
+  rys = DJzs(gf{cur}.rx,i1,i2,1,2);
+  sxs = DJzs(gf{cur}.rx,i1,i2,2,1);
+  sys = DJzs(gf{cur}.rx,i1,i2,2,2);        
 
   rxx = rx*rxr + sx*rxs;
   ryy = ry*ryr + sy*rys;

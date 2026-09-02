@@ -111,9 +111,28 @@ function par = defineManufacturedSolution( par )
       par.peyy = @(x,y,t) 2.*cpyy;
 
     else
-      fprintf('ERROR: unknown manufactured solution: ms=[%s]\n',ms);
+      fprintf('defineManufacturedSolution: ERROR: unknown manufactured solution: ms=[%s]\n',ms);
       pause; pause; 
     end;
+
+    % NOTE: DO NOT ADJUST THE FORCING FOR THE GRID VELOCITY 
+    %       SINCE THIS IS THE FORCING IN THE NON-MOVING FRAME 
+    % par.gvu = @(x,y,t) 0.;
+    % par.gvv = @(x,y,t) 0.;    
+    % par.ufe = @(x,y,t) par.uet(x,y,t) + (par.ue(x,y,t)-par.gvu(x,y,t)).*par.uex(x,y,t) + (par.ve(x,y,t)-par.gvv(x,y,t)).*par.uey(x,y,t) + par.pex(x,y,t) - nu*( par.uexx(x,y,t) + par.ueyy(x,y,t) );
+    % par.vfe = @(x,y,t) par.vet(x,y,t) + (par.ue(x,y,t)-par.gvu(x,y,t)).*par.vex(x,y,t) + (par.ve(x,y,t)-par.gvv(x,y,t)).*par.vey(x,y,t) + par.pey(x,y,t) - nu*( par.vexx(x,y,t) + par.veyy(x,y,t) );
+    % par.pfe = @(x,y,t) par.pexx(x,y,t) + par.peyy(x,y,t) + ( par.uex(x,y,t).*par.uex(x,y,t) + 2.*par.uey(x,y,t).*par.vex(x,y,t) + par.vey(x,y,t).*par.vey(x,y,t) ) ; 
+
+    % if( par.gridMotion==par.noMotion )
+    %   par.gvu = @(x,y,t) 0.;
+    %   par.gvv = @(x,y,t) 0.;
+    % elseif( par.gridMotion==par.translate )
+    %   par.gvu = @(x,y,t) 0.; % par.transVect(1);
+    %   par.gvv = @(x,y,t) 0.; % par.transVect(2);
+    % else
+    %   fprintf('defineManufacturedSolution: ERROR: finish grid velocity\n');
+    %   error();
+    % end
 
     % --- MS FORCING ---
     par.ufe = @(x,y,t) par.uet(x,y,t) + par.ue(x,y,t).*par.uex(x,y,t) + par.ve(x,y,t).*par.uey(x,y,t) + par.pex(x,y,t) - nu*( par.uexx(x,y,t) + par.ueyy(x,y,t) );

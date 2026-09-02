@@ -1,7 +1,7 @@
 %
-% Compute the RHS to the momentum equations
+% Compute the RHS to the momentum equations **NEW VERSION**
 %
-function [ ut,vt,par,uLap,vLap ] = getUt( t,un,vn,pn,nuScaleFactor,par )
+function [ ut,vt,par,uLap,vLap ] = getUt( t,un,vn,pn, gf,cur, nuScaleFactor,par )
 
   cpu0 = cputime;
 
@@ -32,8 +32,8 @@ function [ ut,vt,par,uLap,vLap ] = getUt( t,un,vn,pn,nuScaleFactor,par )
   Dss2 = @(u,I1,I2) ( u(I1,I2+1) -2*u(I1,I2) +u(I1,I2-1) )/(ds^2);                             % u.ss
   Drs2 = @(u,I1,I2) ( u(I1+1,I2+1) - u(I1-1,I2+1) - u(I1+1,I2-1) + u(I1-1,I2-1) )/(4*dr*ds);   % u.rs
 
-  % Dx2 = @(u,I1,I2) par.rx(I1,I2,1,1)*Dr2(u,I1,I2) + par.rx(I1,I2,2,1)*Ds2(u,I1,I2);  % u.x to order 2 
-  % Dy2 = @(u,I1,I2) par.rx(I1,I2,1,2)*Dr2(u,I1,I2) + par.rx(I1,I2,2,2)*Ds2(u,I1,I2);  % u.y to order 2 
+  % Dx2 = @(u,I1,I2) gf{cur}.rx(I1,I2,1,1)*Dr2(u,I1,I2) + gf{cur}.rx(I1,I2,2,1)*Ds2(u,I1,I2);  % u.x to order 2 
+  % Dy2 = @(u,I1,I2) gf{cur}.rx(I1,I2,1,2)*Dr2(u,I1,I2) + gf{cur}.rx(I1,I2,2,2)*Ds2(u,I1,I2);  % u.y to order 2 
 
 
   [I1,I2] = getIndex( par.gid );
@@ -50,12 +50,15 @@ function [ ut,vt,par,uLap,vLap ] = getUt( t,un,vn,pn,nuScaleFactor,par )
   uf = zeros(par.Ngx,par.Ngy);
   vf = zeros(par.Ngx,par.Ngy);
   if( manufacturedSolution )
-    uf(I1,I2) = par.ufe(par.x(I1,I2,1),par.x(I1,I2,2),t);
-    vf(I1,I2) = par.vfe(par.x(I1,I2,1),par.x(I1,I2,2),t);
+    uf(I1,I2) = par.ufe(gf{cur}.x(I1,I2,1),gf{cur}.x(I1,I2,2),t);
+    vf(I1,I2) = par.vfe(gf{cur}.x(I1,I2,1),gf{cur}.x(I1,I2,2),t);
+
+    % FIX ME FOR MOVING GRIDS 
   end
 
 
-  if( par.isCartesian )
+  % Note: moving grids are always treated as non-Cartesian
+  if( par.isCartesian && par.gridMotion==par.noMotion )
 
     % --- Cartesian ---
 
@@ -84,20 +87,20 @@ function [ ut,vt,par,uLap,vLap ] = getUt( t,un,vn,pn,nuScaleFactor,par )
 
     for( i1=I1 )
     for( i2=I2 ) 
-      rx = par.rx(i1,i2,1,1);
-      ry = par.rx(i1,i2,1,2);
-      sx = par.rx(i1,i2,2,1);
-      sy = par.rx(i1,i2,2,2);
+      rx = gf{cur}.rx(i1,i2,1,1);
+      ry = gf{cur}.rx(i1,i2,1,2);
+      sx = gf{cur}.rx(i1,i2,2,1);
+      sy = gf{cur}.rx(i1,i2,2,2);
 
-      rxr = DJzr(par.rx,i1,i2,1,1);
-      ryr = DJzr(par.rx,i1,i2,1,2);
-      sxr = DJzr(par.rx,i1,i2,2,1);
-      syr = DJzr(par.rx,i1,i2,2,2);
+      rxr = DJzr(gf{cur}.rx,i1,i2,1,1);
+      ryr = DJzr(gf{cur}.rx,i1,i2,1,2);
+      sxr = DJzr(gf{cur}.rx,i1,i2,2,1);
+      syr = DJzr(gf{cur}.rx,i1,i2,2,2);
 
-      rxs = DJzs(par.rx,i1,i2,1,1);
-      rys = DJzs(par.rx,i1,i2,1,2);
-      sxs = DJzs(par.rx,i1,i2,2,1);
-      sys = DJzs(par.rx,i1,i2,2,2);        
+      rxs = DJzs(gf{cur}.rx,i1,i2,1,1);
+      rys = DJzs(gf{cur}.rx,i1,i2,1,2);
+      sxs = DJzs(gf{cur}.rx,i1,i2,2,1);
+      sys = DJzs(gf{cur}.rx,i1,i2,2,2);        
 
       rxx = rx*rxr + sx*rxs;
       ryy = ry*ryr + sy*rys;
@@ -122,14 +125,21 @@ function [ ut,vt,par,uLap,vLap ] = getUt( t,un,vn,pn,nuScaleFactor,par )
       uLap(i1,i2) = (rx^2+ry^2)*urr + 2*(rx*sx+ry*sy)*urs + (sx^2+sy^2)*uss + (rxx+ryy)*ur + (sxx+syy)*us;
       vLap(i1,i2) = (rx^2+ry^2)*vrr + 2*(rx*sx+ry*sy)*vrs + (sx^2+sy^2)*vss + (rxx+ryy)*vr + (sxx+syy)*vs;
 
-      % ut(i1,i2) = -( un(i1,i2)*ux(i1,i2) + vn(i1,i2)*uy(i1,i2) + px ) + nu*uLap + par.ufe(par.x(i1,i2,1),par.x(i1,i2,2),t);
+      % grid velocity 
+      gv(1) = gf{cur}.gv(i1,i2,1); 
+      gv(2) = gf{cur}.gv(i1,i2,2); 
+
+      % fprintf('getUt: gv=[%g,%g]\n',gv(1),gv(2));
+      % pause
+
+      % ut(i1,i2) = -( un(i1,i2)*ux(i1,i2) + vn(i1,i2)*uy(i1,i2) + px ) + nu*uLap + par.ufe(gf{cur}.x(i1,i2,1),gf{cur}.x(i1,i2,2),t);
       if( nuScaleFactor~=0 )
-        ut(i1,i2) = -( un(i1,i2)*ux(i1,i2) + vn(i1,i2)*uy(i1,i2) + px ) + nu*uLap(i1,i2) + uf(i1,i2);
-        vt(i1,i2) = -( un(i1,i2)*vx(i1,i2) + vn(i1,i2)*vy(i1,i2) + py ) + nu*vLap(i1,i2) + vf(i1,i2);
+        ut(i1,i2) = -( (un(i1,i2)-gv(1))*ux(i1,i2) + (vn(i1,i2)-gv(2))*uy(i1,i2) + px ) + nu*uLap(i1,i2) + uf(i1,i2);
+        vt(i1,i2) = -( (un(i1,i2)-gv(1))*vx(i1,i2) + (vn(i1,i2)-gv(2))*vy(i1,i2) + py ) + nu*vLap(i1,i2) + vf(i1,i2);
       else
         % leave off viscous terms 
-        ut(i1,i2) = -( un(i1,i2)*ux(i1,i2) + vn(i1,i2)*uy(i1,i2) + px ) + uf(i1,i2);
-        vt(i1,i2) = -( un(i1,i2)*vx(i1,i2) + vn(i1,i2)*vy(i1,i2) + py ) + vf(i1,i2);
+        ut(i1,i2) = -( (un(i1,i2)-gv(1))*ux(i1,i2) + (vn(i1,i2)-gv(2))*uy(i1,i2) + px ) + uf(i1,i2);
+        vt(i1,i2) = -( (un(i1,i2)-gv(1))*vx(i1,i2) + (vn(i1,i2)-gv(2))*vy(i1,i2) + py ) + vf(i1,i2);
       end
 
 

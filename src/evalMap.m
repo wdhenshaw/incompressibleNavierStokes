@@ -27,7 +27,7 @@ function par = evalMap( par )
   par.x  = zeros(par.Ngx,par.Ngy,par.nd);
   par.rx = zeros(par.Ngx,par.Ngy,par.nd,par.nd);
 
-  if( strcmp(par.map,'Rectangle' ) )
+  if( strcmp(par.map,'Rectangle' ) || strcmp(par.map,'Cartesian') )
     
     % for testing make a rectangle that pretends to vbe a more general curvilinear grid
 
@@ -40,6 +40,43 @@ function par = evalMap( par )
       par.rx(i1,i2,1,2) = 0.;
       par.rx(i1,i2,2,1) = 0.;
       par.rx(i1,i2,2,2) = par.dr(2)/par.dy;
+    end
+    end
+
+  elseif( strcmp(par.map,'rotatedSquare' )  )
+    % counter-clockwise rotation about the origin
+    %     xv = R xv0
+    %     R = [ cos(angle) -sin(angle) ]
+    %         [ sin(angle)  cos(angle) ]    
+    
+    angle=pi/4;
+    ca = cos(angle);
+    sa = sin(angle);
+
+    for i2=I2
+    for i1=I1
+      x0 = par.xa + r(i1,i2,1)*(par.xb-par.xa);
+      y0 = par.ya + r(i1,i2,2)*(par.yb-par.ya);
+      xr0 = (par.xb-par.xa);
+      xs0 = 0;
+      yr0 = 0;
+      ys0 = (par.yb-par.ya);
+
+      par.x(i1,i2,1) = ca*x0 - sa*y0;
+      par.x(i1,i2,2) = sa*x0 + ca*y0;
+
+      xr(1,1) = ca*xr0 - sa*yr0;
+      xr(1,2) = ca*xs0 - sa*ys0;
+
+      xr(2,1) = sa*xr0 + ca*yr0; 
+      xr(2,2) = sa*xs0 + ca*ys0; 
+
+      rx = inv(xr);
+
+      par.rx(i1,i2,1,1) = rx(1,1);
+      par.rx(i1,i2,1,2) = rx(1,2);
+      par.rx(i1,i2,2,1) = rx(2,1);
+      par.rx(i1,i2,2,2) = rx(2,2);
     end
     end
 
@@ -121,6 +158,54 @@ function par = evalMap( par )
 
     end
     end
+
+  elseif( strcmp(par.map,'freeSurface') )
+
+    % freeSurface : TFI with top curve defined by data points 
+
+    % --- bottom curve ---
+    cby=-0.5;
+    ampb=0.0;
+    curveb =  @(r) cby + ampb*sin(2*pi*r);
+    curvebr = @(r) (2*pi*ampb)*cos(2*pi*r);
+
+    % --- top curve ---
+    rv = r(:,1,1); 
+    ampt=0.1;
+    yv = ampt*sin(3*pi*rv);
+
+    bcLeft=0; gLeft=0; bcRight=0; gRight=0; % natural BCs
+    coeff = splineCoeff( rv,yv, bcLeft,gLeft, bcRight,gRight );
+
+    % eval spline and derivative at points rv
+    [yv0,yvr] = splineEval( rv,yv,coeff, rv );    
+
+
+    for i2=I2
+    for i1=I1
+      r1 = r(i1,i2,1); 
+      r2 = r(i1,i2,2); 
+
+
+       par.x(i1,i2,1)=r1; 
+       par.x(i1,i2,2)=(1-r2)*curveb(r1) + r2*yv(i1);
+
+       xr(1,1)= 1;
+       xr(2,1)= (1-r2)*curvebr(r1) + r2*yvr(i1);
+       xr(1,2)= 0; 
+       xr(2,2)= -curveb(r1) + yv(i1);
+   
+       rx = inv(xr);
+
+       for m2=1:par.nd
+       for m1=1:par.nd
+         par.rx(i1,i2,m1,m2) = rx(m1,m2);
+       end
+       end
+
+    end
+    end
+
 
 
   else

@@ -34,7 +34,7 @@
     par.v0   = @(x,y) par.ve(x,y,0);    % IC function
 
     % -- Assign function handles for pressure BC's ---
-    if( par.bc(1,1)==par.dirichlet || par.bc(1,1)==par.periodic || par.bc(1,1)==par.pressureInflow )
+    if( par.bc(1,1)==par.dirichlet || par.bc(1,1)==par.periodic || par.bc(1,1)==par.pressureInflow || par.bc(1,1)==par.traction )
       par.pgax = @(x,y,t) par.pe(x,y,t);   % p: Dirichlet BC RHS at x=ax
     elseif( par.bc(1,1)==par.noSlipWall || par.bc(1,1)==par.inflow || par.bc(1,1)==par.slipWall )
       par.pgax = @(x,y,t) -par.pex(x,y,t);  % p: Neumann BC RHS at x=ax
@@ -42,7 +42,7 @@
       fprintf('Define BC forcing: finish me...\n'); pause; 
     end 
 
-    if( par.bc(2,1)==par.dirichlet || par.bc(2,1)==par.periodic || par.bc(2,1)==par.pressureInflow  )
+    if( par.bc(2,1)==par.dirichlet || par.bc(2,1)==par.periodic || par.bc(2,1)==par.pressureInflow || par.bc(2,1)==par.traction  )
       par.pgbx = @(x,y,t) par.pe(x,y,t);   % p: Dirichlet BC RHS at x=bx
     elseif( par.bc(2,1)==par.noSlipWall || par.bc(2,1)==par.inflow || par.bc(2,1)==par.slipWall )
       par.pgbx = @(x,y,t) par.pex(x,y,t);   % p: Neumann BC RHS at x=bx
@@ -52,7 +52,7 @@
       fprintf('Define BC forcing: finish me...\n'); pause; 
     end 
 
-    if( par.bc(1,2)==par.dirichlet || par.bc(1,2)==par.periodic || par.bc(1,2)==par.pressureInflow  )
+    if( par.bc(1,2)==par.dirichlet || par.bc(1,2)==par.periodic || par.bc(1,2)==par.pressureInflow || par.bc(1,2)==par.traction  )
       par.pgay = @(x,y,t) par.pe(x,y,t);   % p: Dirichlet BC RHS at y=ay
     elseif( par.bc(1,2)==par.noSlipWall || par.bc(1,2)==par.inflow || par.bc(1,2)==par.slipWall)
       par.pgay = @(x,y,t) -par.pey(x,y,t);  % p: Neumann BC RHS at y=ay
@@ -60,7 +60,7 @@
       fprintf('Define BC forcing: finish me...\n'); pause; 
     end 
 
-    if( par.bc(2,2)==par.dirichlet || par.bc(2,2)==par.periodic || par.bc(2,2)==par.pressureInflow )
+    if( par.bc(2,2)==par.dirichlet || par.bc(2,2)==par.periodic || par.bc(2,2)==par.pressureInflow || par.bc(2,2)==par.traction )
       par.pgby = @(x,y,t) par.pe(x,y,t);   % p: Dirichlet BC RHS at y=by
     elseif( par.bc(2,2)==par.noSlipWall || par.bc(2,2)==par.inflow || par.bc(2,2)==par.slipWall)
       par.pgby = @(x,y,t) par.pey(x,y,t);   % p: Neumann BC RHS at y=by

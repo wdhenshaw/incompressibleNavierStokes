@@ -20,12 +20,15 @@ function [I1,I2] = getIndexInterior( gid,component,par )
   	isv(axis) = 1-2*(side-1);
   	is = isv(axis);
 
-  	if( par.bc(side,axis)==par.dirichlet )
+  	if(   par.bc(side,axis)==par.dirichlet || ...
+        ( par.bc(side,axis)==par.traction && component==par.pc ) )
   	  % dirichlet: (u,v,p) = given
+      % traction: -p = ...
   		gidi(side,axis)=gidi(side,axis)+is;  % exclude the boundary points
   		
   	elseif( par.bc(side,axis)==par.periodic || ...
-  		      par.bc(side,axis)==par.outflow )
+  		      par.bc(side,axis)==par.outflow  || ...
+            par.bc(side,axis)==par.traction )
   	  % ouflow: p.n + alpha*p = 0 , extrap (u,v)
       % include boundary points 
 	  elseif( par.bc(side,axis)==par.noSlipWall || ...
@@ -36,7 +39,10 @@ function [I1,I2] = getIndexInterior( gid,component,par )
         gidi(side,axis)=gidi(side,axis)+is;  % exclude the boundary points for u,v
       end
     elseif( par.bc(side,axis)==par.slipWall )
-      if(  (axis==1 && component == par.uc) || (axis==2 && component == par.vc)  )
+      if(  (~par.isCartesian && component~=par.pc) ||  (axis==1 && component == par.uc) || (axis==2 && component == par.vc)  )
+        % if( (axis==1 && component == par.uc) || (axis==2 && component == par.vc)  )
+        % Cartesian (2 imp solvers needed)
+        % non-Cartesian : boundary treated specially in the implicit time-stepping matrix
         gidi(side,axis)=gidi(side,axis)+is;  % exclude the boundary points nv.uv 
       end        
 

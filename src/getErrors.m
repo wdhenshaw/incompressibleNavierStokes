@@ -2,7 +2,7 @@
 %  Compute the true solution and the errors
 %
 
-function [maxErr,perr,uerr,verr,div] = getErrors( tn,un,vn,pn,par )
+function [maxErr,perr,uerr,verr,div] = getErrors( tn,un,vn,pn, gf,cur, par )
 
   dx  = par.dx;
   dy  = par.dy;  
@@ -17,9 +17,9 @@ function [maxErr,perr,uerr,verr,div] = getErrors( tn,un,vn,pn,par )
   Dr2 = @(u,I1,I2) ( u(I1+1,I2) -u(I1-1,I2) )/(2.*dr);   % u.r to second order 
   Ds2 = @(u,I1,I2) ( u(I1,I2+1) -u(I1,I2-1) )/(2.*ds);   % u.s   	
 
-	uTrue = par.ue(par.x(:,:,1),par.x(:,:,2),tn);  % eval exact solution
-	vTrue = par.ve(par.x(:,:,1),par.x(:,:,2),tn);  % eval exact solution
-	pTrue = par.pe(par.x(:,:,1),par.x(:,:,2),tn);  % eval exact solution
+	uTrue = par.ue(gf{cur}.x(:,:,1),gf{cur}.x(:,:,2),tn);  % eval exact solution
+	vTrue = par.ve(gf{cur}.x(:,:,1),gf{cur}.x(:,:,2),tn);  % eval exact solution
+	pTrue = par.pe(gf{cur}.x(:,:,1),gf{cur}.x(:,:,2),tn);  % eval exact solution
 	uerr = un-uTrue;
 	verr = vn-vTrue;
 	perr = pn-pTrue;
@@ -39,10 +39,10 @@ function [maxErr,perr,uerr,verr,div] = getErrors( tn,un,vn,pn,par )
 
     for( i1=I1 )
     for( i2=I2 ) 
-      rx = par.rx(i1,i2,1,1);
-      ry = par.rx(i1,i2,1,2);
-      sx = par.rx(i1,i2,2,1);
-      sy = par.rx(i1,i2,2,2);
+      rx = gf{cur}.rx(i1,i2,1,1);
+      ry = gf{cur}.rx(i1,i2,1,2);
+      sx = gf{cur}.rx(i1,i2,2,1);
+      sy = gf{cur}.rx(i1,i2,2,2);
 
       ur = Dr2(un,i1,i2); us = Ds2(un,i1,i2);
       vr = Dr2(vn,i1,i2); vs = Ds2(vn,i1,i2);

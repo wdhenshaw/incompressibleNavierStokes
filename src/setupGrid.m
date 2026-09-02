@@ -1,7 +1,7 @@
 %
 %  Construct the grid
 % 
-function par = setupGrid(par )
+function [par] = setupGrid( par )
 
 
   % --- Setup the grid ---
@@ -35,7 +35,7 @@ function par = setupGrid(par )
   % numGhost = 0;%
   
   iax=1+numGhost;    iay=1+numGhost;       % index of boundary point at x=xa, y=ya
-  ibx=iax+par.Nx;    iby=iay+par.Ny;           % index of boundary point at x=xb, y=yb
+  ibx=iax+par.Nx;    iby=iay+par.Ny;       % index of boundary point at x=xb, y=yb
   Ngx=ibx+numGhost;  Ngy=iby+numGhost;     % number of grid points in x and y
   Ng = Ngx*Ngy; 
   
@@ -57,7 +57,7 @@ function par = setupGrid(par )
 
   % -- form the 2D grid points ---
 
-  if( strcmp(par.map,'Cartesian') )
+  if( strcmp(par.map,'Cartesian') && par.gridMotion==par.noMotion)
     par.isCartesian =1;
 
     par.x = zeros(par.Ngx,par.Ngy,2); 
@@ -72,6 +72,14 @@ function par = setupGrid(par )
     par.isCartesian = 0;
     par = evalMap( par );
   end
+
+  % % -- new way for moving grids : store grid and metrics in the grid function
+  % for igf=1:par.numberOfGridFunctions
+  %   gf{igf}.x = par.x(:,:,:);
+  %   if( ~strcmp(par.map,'Cartesian') )
+  %     gf{igf}.rx = par.rx(:,:,:,:);
+  %   end
+  % end
   
 
 

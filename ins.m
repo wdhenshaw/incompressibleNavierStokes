@@ -34,7 +34,14 @@ function outPar = ins(varargin)
   rainbow;
 
 
-  par.periodic=-1; par.dirichlet=1; par.noSlipWall=2; par.slipWall=3; par.inflow=4; par.outflow=5; par.pressureInflow=6;
+  par.periodic       =-1; 
+  par.dirichlet      = 1; 
+  par.noSlipWall     = 2; 
+  par.slipWall       = 3; 
+  par.inflow         = 4; 
+  par.outflow        = 5; 
+  par.pressureInflow = 6;
+  par.traction       = 7;
 
   par.uc=1; par.vc=2; par.pc=3;    % component numbers
 
@@ -52,13 +59,16 @@ function outPar = ins(varargin)
   par.figDir    = 'fig';           % figure directory
   par.plotName  = 'ins';           % for plot name 
 
-  par.map = 'Cartesian';           % 'Cartesian', 'Rectangle', 'Annulus', 'TFI', ...
+  par.map = 'Cartesian';           % 'Cartesian', 'Rectangle', 'Annulus', 'TFI', 'rotatedSquare', 'freeSurface', ...
 
 
   par.checkFileName = 'ins.check'; % name of the check file
 
   par.useOptFill=1;                % use optimized fill method for matrices
   par.useNew    =1;                % use new re-organized functions
+
+  % combinedImplicitSolverNeeded : set to 1 if implicit solve couples u and v
+  par.combinedImplicitSolverNeeded =0;   
 
   par.xa=0.; par.xb=1.;            % spatial dimensions
   par.ya=0.; par.yb=1.;            % spatial dimensions
@@ -76,14 +86,12 @@ function outPar = ins(varargin)
   par.kx=1.;                       % x-wave number in the IC and exact solution (scaled by 2 pi below)
   par.ky=1.;                       % y-wave number in the IC and exact solution (scaled by 2 pi below)
   par.kt=.5;                       % for TZ manufactured solution (scaled by 2 pi below)
-  par.degreex = 2;
-  par.degreet = 2;
   par.tzScale=0;                   % Trig TZ: 0=scale yb 1/sqrt(kx^2+ky^2) , 1=scale TZ yb 1/(kx^2+ky^2) 
   par.xa=0.; par.xb=1.;            % space interval interval
   par.ya=0.; par.yb=1.;            % space interval interval
   par.knownSolution='none';        % known solution, if any 
   par.ms = 'none';                 % manufactured solution, trig or poly
-  par.degreex=2; degreet=2;        % degree of poly MS
+  par.degreex=2; par.degreet=2;    % degree of poly MS
 
   par.N0=10;                       % grid points in x and y if Nx and Ny are not set
   par.Nx = -1; 
@@ -123,6 +131,21 @@ function outPar = ins(varargin)
   par.innerRadius =0.5;
   par.outerRadius =1.;
 
+  % ---- grid motion types ----
+  par.noMotion =0; 
+  par.translate=1; 
+  par.rotate   =2;
+  par.deform   =3;
+  par.motion='none';    % [none|translate|rotate|deform]
+
+  par.transVect = [1,1]; % direction of the tranlate motion
+  % par.transVect = [1,0]; % direction of the tranlate motion
+
+  % ---- For moving grids ---
+  par.numberOfTimeLevels=3;
+
+  % par.useGridFunctions=1;       % new way -- use grid functions gf{}
+  par.numberOfGridFunctions=2;  
 
   par.echo = 0;
 
@@ -139,7 +162,9 @@ function outPar = ins(varargin)
     fprintf('Usage\n');
     fprintf(' ins -nu=<f> -tf=<f> -tp=<f> -ts=[ab2|pc2|im2] -cfl=<f> -bcs=<s> -ms=[none|poly|trig] -ic=[default|constant] ...\n');
     fprintf('     -idebug=<i> -known=[none|Poiseuille|TaylorGreen] -plotOption=<i> -kx=<f> -ky=<f> -kt=<f} -degreex=<i> -degreet=<i> ...\n');
-    fprintf('     -ad=<i> -ad21=<f> -ad22=<f> -movieMode=[0|1] -savePlots=[0|1] -checkFileName=<s> -map=[Cartesian|Rectangle|Annulus|TFI] \n')
+    fprintf('     -ad=<i> -ad21=<f> -ad22=<f> -movieMode=[0|1] -savePlots=[0|1] -checkFileName=<s> \n');
+    fprintf('     -map=[Cartesian|Rectangle|rotatedSquare|Annulus|TFI|freeSurface] \n')
+    fprintf('     -motion=[none|translate|rotate|deform]\n');
     fprintf('where:')
     fprintf(' bcs : list of four letters, d=Dirichlet, n=no-slip wall, s=slip wall, i=inflow, I=pressure inflow, o=outflow\n');
     fprintf('     : examples -bcs=ions : left=i, right=o, bottom=n, top=s\n');
@@ -156,14 +181,36 @@ function outPar = ins(varargin)
 
   par.savePlotThisStep=0; % set to 1 when we want to save plots
 
+  par.mu = par.nu*par.rho; 
   par.tFinal = par.tf;
   N0 = par.N0;
   nu = par.nu;
   % xa = par.xa; xb = par.xb;
   % ya = par.ya; yb = par.yb;
 
-  % set to 1 if implicit solvers for the velocity component are different:
+  if( strcmp(par.motion,'none') )
+    par.gridMotion=par.noMotion;
+  elseif( strcmp(par.motion,'translate') )
+    par.gridMotion=par.translate;
+  elseif( strcmp(par.motion,'rotate') )
+    par.gridMotion=par.rotate;
+  elseif( strcmp(par.motion,'deform') )
+    par.gridMotion=par.deform;    
+  else
+    error('Unknown motion');
+  end
+
+  if( strcmp(par.map,'Cartesian') && par.gridMotion==par.noMotion)
+    par.isCartesian =1;
+  else
+    par.isCartesian =0;
+  end  
+
+  % par.isCartesian =1; % -----************
+
+  % multipleImplicitSolversNeeded : set to 1 if implicit solvers for the velocity component are different:
   par.multipleImplicitSolversNeeded=0; 
+
   numbc = strlength(par.bcs); 
   par.bcLabel=''; 
   for dir=1:par.nd
@@ -179,7 +226,12 @@ function outPar = ins(varargin)
         elseif( par.bcs(m)=='s' )
           par.bc(side,dir)=par.slipWall;
           par.bcLabel=strcat(par.bcLabel,'s');
-          par.multipleImplicitSolversNeeded=1; 
+          if( par.isCartesian )
+            par.multipleImplicitSolversNeeded=1; 
+          else
+            % slipWall BC couples u and v on the boundary and ghost 
+            par.combinedImplicitSolverNeeded=1; 
+          end
         elseif( par.bcs(m)=='I' )
           par.bc(side,dir)=par.pressureInflow;
           par.bcLabel=strcat(par.bcLabel,'I');   
@@ -193,6 +245,11 @@ function outPar = ins(varargin)
         elseif( par.bcs(m)=='p' )
           par.bc(side,dir)=par.periodic;
           par.bcLabel=strcat(par.bcLabel,'p');
+        elseif( par.bcs(m)=='t' )
+          par.bc(side,dir)=par.traction;
+          par.bcLabel=strcat(par.bcLabel,'t');  
+          % traction BC couples u and v on the boundary and ghost 
+          par.combinedImplicitSolverNeeded=1;     
         else
           fprintf('ERROR: Unknown bcn=[%s]\n',par.bcs);
           error('error');
@@ -200,11 +257,20 @@ function outPar = ins(varargin)
       end
     end
   end  
+  if( par.combinedImplicitSolverNeeded ) par.multipleImplicitSolversNeeded=0; end 
 
-  if( ~strcmp(par.ms,'none') && ~strcmp(par.map,'Cartesian') )
+  if( strcmp(par.map,'tfi') )
+    par.map='TFI';
+  end
+  if( strcmp(par.map,'rectangle') )
+    par.map='Rectangle';
+  end  
+  
+  if( (~strcmp(par.ms,'none') && ~strcmp(par.map,'Cartesian')) ) % || strcmp(par.ms,'poly')  )
     % For testing : Turn off divergence damping for Manufactured solutions and non-Cartesian grids 
     par.cdv=0;
   end
+
 
 
   par.kx = par.kx*2*pi;
@@ -232,23 +298,24 @@ function outPar = ins(varargin)
   outPar.maxErr = zeros(4,1);
 
   %  --- Setup the grid ---
-  par = setupGrid( par );
+  [par] = setupGrid( par );
   
   if( par.idebug> 0 )
     fprintf('-----------------Incompressible Navier-Stokes ---------------------------------------------\n');
     fprintf(' ts=%s, tFinal=%g, nu=%g, cfl=%g, cdv=%g, knownSolution=%s, N0=%d, idebug=%d numThreads=%d, maxThreads=%d\n',...
              par.ts,par.tFinal,par.nu,par.cfl,par.cdv,par.knownSolution,N0,par.idebug,par.numThreads,maxThreads);
-    fprintf(' map=%s\n',par.map);
+    fprintf(' map=%s, isCartesian=%d, motion=%s (gridMotion=%d)\n',par.map,par.isCartesian,par.motion,par.gridMotion);
     fprintf(' manufactured solution ms=%s, degreex=%d, degreet=%d, [kx,ky,kt]=[%g,%g,%g]*2*pi, tzScale=%d\n',...
              par.ms,par.degreex,par.degreet,par.kx/(2*pi),par.ky/(2*pi),par.kt/(2*pi),par.tzScale);
     fprintf(' par.bcLabel=%s, par.bc=[%d,%d,%d,%d] par.gid=[%d,%d,%d,%d]\n',par.bcLabel,par.bc(1,1),par.bc(2,1),par.bc(1,2),par.bc(2,2),...
              par.gid(1,1),par.gid(2,1),par.gid(1,2),par.gid(2,2) );
     fprintf(' useOptFill = %d (use optimized fill method for matrices)\n',par.useOptFill)
     fprintf(' ad=%d, ad21=%g, ad22=%g (ad=1 : add artificial dissipation)\n',par.ad,par.ad21,par.ad22);
-    % fprintf(' useNew=%d (1=use new re-organized functions)\n',par.useNew);
+    % fprintf(' useGridFunctions=%d (1=use new grid functions)\n',par.useGridFunctions);
     fprintf(' plotEveryStep=%d, plotOption=%d\n',par.plotEveryStep,par.plotOption);
     fprintf(' outflow: outflowPressureCoeffp=%g, outflowPressureCoeffpn=%g, pOutflow=%g\n',...
               par.outflowPressureCoeffp,par.outflowPressureCoeffpn,par.pOutflow);
+    fprintf(' implicitTimeStep: multipleImplicitSolversNeeded=%d combinedImplicitSolverNeeded=%d\n',par.multipleImplicitSolversNeeded,par.combinedImplicitSolverNeeded);
     fprintf(' ic=%s\n',par.ic);
     fprintf('-------------------------------------------------------------------------------------------\n');
 
@@ -257,13 +324,11 @@ function outPar = ins(varargin)
 
   % allocate space for the solution 
   Ngx = par.Ngx; Ngy=par.Ngy;
-  un   = zeros(Ngx,Ngy);   % holds U_i^n
-  vn   = zeros(Ngx,Ngy);   % holds V_i^n
-  pn   = zeros(Ngx,Ngy);   % holds P_i^n
-
-  unp1 = zeros(Ngx,Ngy);   % holds U_i^n+1
-  vnp1 = zeros(Ngx,Ngy);   % holds V_i^n+1
-  pnp1 = zeros(Ngx,Ngy);   % holds P_i^n+1
+  for igf=1:par.numberOfGridFunctions
+    gf{igf}.u = zeros(Ngx,Ngy);
+    gf{igf}.v = zeros(Ngx,Ngy);
+    gf{igf}.p = zeros(Ngx,Ngy);
+  end
   
   ut   = zeros(Ngx,Ngy);   % holds u.t
   vt   = zeros(Ngx,Ngy);   % holds v.t
@@ -277,16 +342,20 @@ function outPar = ins(varargin)
   par.cpuSetup = par.cpuTotal;
   % --- Initial conditions ---
   t=0.; 
-  [un,vn,par] = getInitialConditions( t,un,vn,par );
-
+  cur =1;  % cuurent solution index into gf{}
+  next=2;
+  % -- get the grid and grid velocity at the new time ---
+  [gf,par] = getGrid( t, gf,cur, par );   
+  [gf{cur}.u,gf{cur}.v,par] = getInitialConditions( t,gf{cur}.u,gf{cur}.v,par );
 
    % fprintf('AFTER getIC un=[%d,%d] vn=[%d,%d]\n',...
    %       size(un,1),size(un,2), size(vn,1),size(vn,2) );
 
   par.dtOld = -1;
-  [dt,par] = getTimeStep( 0,un,vn,par );
+  [dt,par] = getTimeStep( 0,gf{cur}.u,gf{cur}.v, gf,cur, par );
   Nt = max(2,ceil(par.tFinal/dt));      % estimated number of time-steps 
   dt = par.tFinal/Nt;                   % adjust dt to reach tFinal exactly
+  par.dt=dt;
 
   % coefficients in the Adams-Bashhforth scheme: 
   dtOld = dt;
@@ -297,9 +366,8 @@ function outPar = ins(varargin)
   % fprintf('>>> nu*dt/dx^2 = %10.2e',nu*dt/dx^2);  
   % dt = cfl*.5*sqrt( dx^2 + dy^2);  % time step (adjusted below)  
 
-  factorMatrix=1; 
-  [pn,par] = pressureEquation( t,un,vn,dt,factorMatrix,par ); 
-  factorMatrix=0; 
+  par.factorPressureMatrix=1; 
+  [gf{cur}.p,par] = pressureEquation( t,gf{cur}.u,gf{cur}.v,dt, gf,cur, par ); 
 
   nuScaleFactor=1.; % scale factor of nu*Delta( ) in getUt
 
@@ -307,43 +375,65 @@ function outPar = ins(varargin)
   if( par.plotOption>2 )
     % ---- plot initial conditions ----
     par.step=1;
-    par = plotSolution( t,un,vn,pn, par);
+    par = plotSolution( t,gf{cur}.u,gf{cur}.v,gf{cur}.p, gf,cur, par);
     fprintf('Plot initial condition and pause...\n');
     pause 
   end
   
   if( strcmp(par.ts,'ab2') || strcmp(par.ts,'pc2') )
     % -- evaluate du/dt at t=-dt for some schemes ---
+
+    % CHECK ME FOR MOVING GRIDS
+
     t=-dt;
-    % do this for now: 
-    ut = par.uet(par.x(:,:,1),par.x(:,:,2),t);
-    vt = par.vet(par.x(:,:,1),par.x(:,:,2),t);
-    % unp1 = ue(x,y,t);
-    % vnp1 = ve(x,y,t);
-    % pnp1 = pressureEquation( t,un,vn,dt,factorMatrix ); 
-    % [ut,vt] = getUt( t,unp1,vnp1,pnp1,I1,I2,nuScaleFactor );
+
+    [gf,par] = getGrid( t, gf,next, par );    
+
+    gf{next}.u = par.ue(gf{next}.x(:,:,1),gf{next}.x(:,:,2),t);
+    gf{next}.v = par.ve(gf{next}.x(:,:,1),gf{next}.x(:,:,2),t);
+    gf{next}.p = par.pe(gf{next}.x(:,:,1),gf{next}.x(:,:,2),t); 
+
+
+    if( par.gridMotion==par.noMotion )
+      ut = par.uet(gf{next}.x(:,:,1),gf{next}.x(:,:,2),t);
+      vt = par.vet(gf{next}.x(:,:,1),gf{next}.x(:,:,2),t);
+    else
+      nuScaleFactor=1;
+      [ut,vt,par] = getUt( t,gf{next}.u,gf{next}.v,gf{next}.p, gf,next, nuScaleFactor,par );
+    end 
+ 
   end
   if( strcmp(par.ts,'im2') )
     % implicit scheme: ut holds explicit part of the operator
     t=-dt; 
-    unp1 = par.ue(par.x(:,:,1),par.x(:,:,2),t);
-    vnp1 = par.ve(par.x(:,:,1),par.x(:,:,2),t);
-    pnp1 = par.pe(par.x(:,:,1),par.x(:,:,2),t); 
+
+    [gf,par] = getGrid( t, gf,next, par );    
+
+    gf{next}.u = par.ue(gf{next}.x(:,:,1),gf{next}.x(:,:,2),t);
+    gf{next}.v = par.ve(gf{next}.x(:,:,1),gf{next}.x(:,:,2),t);
+    gf{next}.p = par.pe(gf{next}.x(:,:,1),gf{next}.x(:,:,2),t); 
+
+    % gf{next}.u = par.ue(par.x(:,:,1),par.x(:,:,2),t);
+    % gf{next}.v = par.ve(par.x(:,:,1),par.x(:,:,2),t);
+    % gf{next}.p = par.pe(par.x(:,:,1),par.x(:,:,2),t); 
+
+
     nuScaleFactor=0.; % leave off viscous terms
-    [ut,vt,par] = getUt( t,unp1,vnp1,pnp1,nuScaleFactor,par );
-    nuScaleFactor=1;
+    [ut,vt,par] = getUt( t,gf{next}.u,gf{next}.v,gf{next}.p, gf,next, nuScaleFactor,par );
+    nuScaleFactor=1;      
     
   end
 
   t=0.;     
 
   % --- Start time-stepping loop ---
+  par.factorImplicitMatrix=1;
 
-  if( strcmp(par.ts,'im2') )
-    % ----- Form the implicit matrix ------
-    par = formImplicitTimeSteppingMatrix( dt, par );
+  % if( strcmp(par.ts,'im2') )
+  %   % ----- Form the implicit matrix ------
+  %   par = formImplicitTimeSteppingMatrix( t,dt, gf,cur, par );
 
-  end 
+  % end 
 
   par.cpuSetup = cputime - par.cpuSetup;
   par.cpuGetUt    = 0;
@@ -351,14 +441,6 @@ function outPar = ins(varargin)
   par.cpuBC       = 0;
   par.cpuImplicit = 0; % implicit time-stepping
 
-  % --- Difference Operators ---
-  Dzx = @(u,I1,I2) ( u(I1+1,I2) -u(I1-1,I2) )*(1./(2.*dx));   % u.x
-  Dzy = @(u,I1,I2) ( u(I1,I2+1) -u(I1,I2-1) )*(1./(2.*dy));   % u.y
-
-  DpxDmx = @(u,I1,I2) ( u(I1+1,I2) -2.*u(I1,I2) +u(I1-1,I2) )*(1./dx^2);  % u.xx 
-  DpyDmy = @(u,I1,I2) ( u(I1,I2+1) -2.*u(I1,I2) +u(I1,I2-1) )*(1./dy^2);  % u.yy
-
-  DzxDzy = @(u,I1,I2) ( u(I1+1,I2+1) - u(I1-1,I2+1) - u(I1+1,I2-1) +u(I1-1,I2-1) )*(1./(4.*dx*dy)); % u.xy   
    
   [I1,I2] = getIndex( par.gid );
 
@@ -372,41 +454,27 @@ function outPar = ins(varargin)
     tnp1 = t+dt;      % new time
 
     par.step = n;     % for titles
+
+    % -- get the grid and grid velocity at the new time ---
+    [gf,par] = getGrid( tnp1, gf,next, par );    
     
     if( strcmp(par.ts,'ab2') )
       % --- Adams-Bashforth order 2 ---
 
       par.nuScaleFactor=nuScaleFactor;
-      [unp1,vnp1,pnp1,par,ut,vt] = advanceAdams( t,dt, un,vn,pn,unp1,vnp1,pnp1, ut,vt,par );
-
-
-      % copy over for next step 
-      un=unp1;
-      vn=vnp1; 
-      pn=pnp1; 
+      [gf,par,ut,vt] = advanceAdams( t,dt, gf,cur,next, ut,vt,par );
 
     elseif( strcmp(par.ts,'pc2') )
       % ---PC2 = AB2 + AM2 predictor corrector order 2 ---
 
-
       par.nuScaleFactor=nuScaleFactor;
-      [unp1,vnp1,pnp1,par,ut,vt] = advancePC( t,dt, un,vn,pn,unp1,vnp1,pnp1, ut,vt,par );
-
-      % copy over for next step 
-      un=unp1;
-      vn=vnp1; 
-      pn=pnp1; 
+      [gf,par,ut,vt] = advancePC( t,dt, gf,cur,next, ut,vt,par );
 
     elseif( strcmp(par.ts,'im2') )
 
       % -- IMEX Implicit-Explicit scheme ---
       par.nuScaleFactor=nuScaleFactor;
-      [unp1,vnp1,pnp1,par,ut,vt] = advanceIM( t,dt, un,vn,pn,unp1,vnp1,pnp1, ut,vt,par );
-
-      % copy over for next step 
-      un=unp1;
-      vn=vnp1; 
-      pn=pnp1;
+      [gf,par,ut,vt] = advanceIM( t,dt, gf,cur,next, ut,vt,par );
 
     else
       fprintf('ERROR: unknown ts=%s\n',par.ts);
@@ -422,14 +490,14 @@ function outPar = ins(varargin)
       if( par.plotEveryStep || par.movieMode || (par.plotOption>0 && mod(floor(par.plotOption/2),2)==1) )
         par.savePlotThisStep=1;
 
-        par = plotSolution( tnp1,un,vn,pn, par);
+        par = plotSolution( tnp1,gf{next}.u,gf{next}.v,gf{next}.p, gf,next, par);
 
         if( par.movieMode==0 )   pause; else drawnow; end 
         errorsComputed=1;
       end
       cpuCurrent = cputime-par.cpuTotal;
       if( par.idebug ) 
-        [maxDivU,maxGradU,par] = getMaxDivergence( un,vn,par );
+        [maxDivU,maxGradU,par] = getMaxDivergence( gf{next}.u,gf{next}.v,par );
         divOverGrad = maxDivU/max(maxGradU,1e-10);
 
         if( par.computeErrors  )
@@ -440,27 +508,31 @@ function outPar = ins(varargin)
             vErrMax = par.maxErr(3);
             divMax  = par.maxErr(4);
           else
-            [maxErr,perr,uerr,verr,div] = getErrors( tnp1,un,vn,pn,par );
+            [maxErr,perr,uerr,verr,div] = getErrors( tnp1,gf{next}.u,gf{next}.v,gf{next}.p, gf,next, par );
             pErrMax = maxErr(1);
             uErrMax = maxErr(2);
             vErrMax = maxErr(3);
             divMax  = maxErr(4);
           end
-          fprintf('%s: t=%9.3e step=%6d dt=%9.3e err-[u,v,p]=[%8.2e,%8.2e,%8.2e] div/grad=%9.2e, cpu=%9.2e(s)\n',...
-               par.ts,tnp1,par.step,dt,uErrMax,vErrMax,pErrMax, divOverGrad,cpuCurrent); 
+          fprintf('%s: t=%9.3e step=%6d Nx=%3d dt=%9.3e err-[p,u,v]=[%8.2e,%8.2e,%8.2e] div/grad=%9.2e, cpu=%9.2e(s)\n',...
+               par.ts,tnp1,par.step,par.Nx,dt,pErrMax,uErrMax,vErrMax, divOverGrad,cpuCurrent); 
         else
-          fprintf('%s: t=%9.3e step=%6d dt=%9.3e div/grad=%9.2e, cpu=%9.2e(s)\n',par.ts,tnp1,par.step,dt,divOverGrad,cpuCurrent); 
+          fprintf('%s: t=%9.3e step=%6d Nx=%3d dt=%9.3e div/grad=%9.2e, cpu=%9.2e(s)\n',par.ts,tnp1,par.step,par.Nx,dt,divOverGrad,cpuCurrent); 
         end
       end
 
     end 
+
+    % update grid function counters 
+    cur  = mod(cur ,par.numberOfGridFunctions)+1;
+    next = mod(next,par.numberOfGridFunctions)+1;
 
     if( tnp1 > par.tFinal-.5*dt )
       break;
     end
 
     if( mod(n,par.checkTimeStep)==0 )
-      [dtNew,par] = getTimeStep( n,un,vn,par );
+      [dtNew,par] = getTimeStep( n,gf{cur}.u,gf{cur}.v, gf,cur, par );
 
       numSteps = max(1,ceil((par.tFinal-tnp1)/dtNew));     % estimated number of time-steps 
       dtNew = (par.tFinal-tnp1)/numSteps;                     % adjust dt to reach tFinal exactly
@@ -471,6 +543,7 @@ function outPar = ins(varargin)
         fprintf('Change the time-step: step=%6d, dt=%10.4e, dtNew=%10.4e, numStepsRemaining=%d (rel-dtdiff=%9.2e)\n',n,dt,dtNew,numSteps,dtDiff);
         dtOld = dt;
         dt = dtNew;
+        par.dt=dt;
         par.ab1=  dt*(1.+dt/(2.*dtOld));  % becomes 1.5*dt  if dt==dtOld
         par.ab2= -dt*    dt/(2.*dtOld);   %         -.5*dt        
 
@@ -487,6 +560,8 @@ function outPar = ins(varargin)
       par.ab1 = 1.5*dt;
       par.ab2 = -.5*dt;
     end   
+
+
   
   end
   % --- End time-stepping loop ---
@@ -501,11 +576,11 @@ function outPar = ins(varargin)
   % plot results 
   if par.plotOption>1
     par.savePlotThisStep=1;
-    par = plotSolution( tnp1,un,vn,pn, par);
+    par = plotSolution( tnp1,gf{cur}.u,gf{cur}.v,gf{cur}.p, gf,cur, par);
   end
 
   if( par.computeErrors )
-    maxErr = getErrors( tnp1,un,vn,pn,par );
+    maxErr = getErrors( tnp1,gf{cur}.u,gf{cur}.v,gf{cur}.p, gf,cur, par );
     pErrMax = maxErr(1);
     uErrMax = maxErr(2);
     vErrMax = maxErr(3);
@@ -544,10 +619,10 @@ function outPar = ins(varargin)
   par.maxErr = maxErr;
   par.Nt = Nt;
   par.dt = dt;
-  par.uNorm(1) = max(abs(un), [], "all");
-  par.uNorm(2) = max(abs(vn), [], "all");
-  par.uNorm(3) = max(abs(pn), [], "all");
-  [maxDivU,maxGradU,par] = getMaxDivergence( un,vn,par );
+  par.uNorm(1) = max(abs(gf{cur}.u), [], "all");
+  par.uNorm(2) = max(abs(gf{cur}.v), [], "all");
+  par.uNorm(3) = max(abs(gf{cur}.p), [], "all");
+  [maxDivU,maxGradU,par] = getMaxDivergence( gf{cur}.u,gf{cur}.v, par );
   par.maxDivU = maxDivU;
   par.maxGradU = maxGradU;
   writeCheckFile( par )

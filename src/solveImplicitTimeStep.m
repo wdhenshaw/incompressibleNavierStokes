@@ -4,7 +4,19 @@
 % NOTE:
 %  (unp1,vnp1) : holds the right-hand-side to the implicit equations at interior equations
 %
-function [unp1,vnp1,par] = solveImplicitTimeStep( unp1,vnp1,tnp1, par )
+function [unp1,vnp1,par] = solveImplicitTimeStep( unp1,vnp1,tnp1, gf,cur, par )
+
+
+  if( par.combinedImplicitSolverNeeded )
+    % The next function handles the case when the velcoity components are coupled
+    [unp1,vnp1,par] = solveImplicitTimeStepCombined( unp1,vnp1,tnp1, gf,cur, par );
+    return
+  end
+
+  if( par.factorImplicitMatrix )
+     par = formImplicitTimeSteppingMatrix( tnp1, par.dt, gf,cur, par );
+     par.factorImplicitMatrix=0; 
+  end 
 
   cpu0 = cputime;
 
@@ -58,8 +70,8 @@ function [unp1,vnp1,par] = solveImplicitTimeStep( unp1,vnp1,tnp1, par )
       for i1=I1b 
         ie=eqn(i1,i2); % boundary point 
         if( manufacturedSolution )
-          rhsu(ie) = par.ue(par.x(i1,i2,1),par.x(i1,i2,2),tnp1);
-          rhsv(ie) = par.ve(par.x(i1,i2,1),par.x(i1,i2,2),tnp1);
+          rhsu(ie) = par.ue(gf{cur}.x(i1,i2,1),gf{cur}.x(i1,i2,2),tnp1);
+          rhsv(ie) = par.ve(gf{cur}.x(i1,i2,1),gf{cur}.x(i1,i2,2),tnp1);
 
           % fprintf(' imp rhs: (i1,i2)=(%3d,%3d) ie=%3d ue=%10.3e\n',i1,i2,ie,rhsu(ie));
         else
@@ -85,14 +97,14 @@ function [unp1,vnp1,par] = solveImplicitTimeStep( unp1,vnp1,tnp1, par )
         if( axis==1 )
           % left/right : set u 
           if( manufacturedSolution )
-            rhsu(ie) = par.gu{mbc}(par.x(i1,i2,1),par.x(i1,i2,2),tnp1);
+            rhsu(ie) = par.gu{mbc}(gf{cur}.x(i1,i2,1),gf{cur}.x(i1,i2,2),tnp1);
           else
             rhsu(ie)=0.;
           end 
         else
           % bottom/top: set v 
           if( manufacturedSolution )
-            rhsv(ie) = par.gv{mbc}(par.x(i1,i2,1),par.x(i1,i2,2),tnp1);
+            rhsv(ie) = par.gv{mbc}(gf{cur}.x(i1,i2,1),gf{cur}.x(i1,i2,2),tnp1);
           else
             rhsv(ie)=0.; 
           end
@@ -109,14 +121,14 @@ function [unp1,vnp1,par] = solveImplicitTimeStep( unp1,vnp1,tnp1, par )
         if( axis==1 )
            % left/right : v.x = 
           if( manufacturedSolution )
-            rhsv(ie) = n1*par.vex(par.x(i1,i2,1),par.x(i1,i2,2),tnp1);
+            rhsv(ie) = n1*par.vex(gf{cur}.x(i1,i2,1),gf{cur}.x(i1,i2,2),tnp1);
           else
             rhsv(ie)=0.;
           end
         else
           % bottom top: u.y = 
           if( manufacturedSolution )
-            rhsu(ie) = n2*par.uey(par.x(i1,i2,1),par.x(i1,i2,2),tnp1);
+            rhsu(ie) = n2*par.uey(gf{cur}.x(i1,i2,1),gf{cur}.x(i1,i2,2),tnp1);
           else
             rhsu(ie)=0.;
           end               
@@ -136,20 +148,26 @@ function [unp1,vnp1,par] = solveImplicitTimeStep( unp1,vnp1,tnp1, par )
         if( axis==1 )
           % left/right : set v  
           if( manufacturedSolution )
-            rhsv(ie) = par.gv{mbc}(par.x(i1,i2,1),par.x(i1,i2,2),tnp1);
+            rhsv(ie) = par.gv{mbc}(gf{cur}.x(i1,i2,1),gf{cur}.x(i1,i2,2),tnp1);
           else
             rhsv(ie)=0.; 
           end
         else
           % bottom/top: set u 
           if( manufacturedSolution )
-            rhsu(ie) = par.gu{mbc}(par.x(i1,i2,1),par.x(i1,i2,2),tnp1);
+            rhsu(ie) = par.gu{mbc}(gf{cur}.x(i1,i2,1),gf{cur}.x(i1,i2,2),tnp1);
           else
             rhsu(ie)=0.; 
           end
         end
       end
-      end             
+      end
+
+    elseif( par.bc(side,axis)==par.traction )
+
+      fprintf('solveImp: finish me for traction bc\n');
+      error('error');
+
 
     elseif( par.bc(side,axis)==par.outflow )
       % velocity is extrapolated -- do nothing here
@@ -178,12 +196,12 @@ function [unp1,vnp1,par] = solveImplicitTimeStep( unp1,vnp1,tnp1, par )
       i1=par.gid(side1,1); i2=par.gid(side2,2); % corner point
       ie = eqn(i1,i2);
       if( manufacturedSolution )
-        rhsu(ie) = par.gu{mbc}(par.x(i1,i2,1),par.x(i1,i2,2),tnp1);
+        rhsu(ie) = par.gu{mbc}(gf{cur}.x(i1,i2,1),gf{cur}.x(i1,i2,2),tnp1);
       else
         rhsu(ie)=0.;
       end 
       if( manufacturedSolution )
-        rhsv(ie) = par.gv{mbc}(par.x(i1,i2,1),par.x(i1,i2,2),tnp1);
+        rhsv(ie) = par.gv{mbc}(gf{cur}.x(i1,i2,1),gf{cur}.x(i1,i2,2),tnp1);
       else
         rhsv(ie)=0.; 
       end
