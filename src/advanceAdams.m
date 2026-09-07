@@ -1,9 +1,15 @@
 %
 % Adams Bashforth -- Grid Function version 
 %
-function [gf,par,ut,vt] = advanceAdams( t,dt, gf,cur,next, ut,vt,par )
+function [gf,par,ut,vt] = advanceAdams( t,dt, gf,cur, ut,vt,par )
 
   tnp1 = t + dt;
+
+  next=mod(cur  +par.numberOfGridFunctions,par.numberOfGridFunctions)+1; 
+
+  % -- predict the grid and grid velocity at the new time ---
+  par.gridMotionOption=par.predictGrid; 
+  [gf,par] = getGrid( tnp1, gf,next, par );    
 
   [I1,I2] = getIndex( par.gid );
 
@@ -38,7 +44,9 @@ function [gf,par,ut,vt] = advanceAdams( t,dt, gf,cur,next, ut,vt,par )
   if( par.gridMotion~=par.noMotion) par.factorPressureMatrix=1; end
   [gf{next}.p,par] = pressureEquation( tnp1, gf{next}.u,gf{next}.v,dt, gf,next, par );   
 
-
+  % -- correct the grid  ---
+  par.gridMotionOption=par.correctGrid; 
+  [gf,par] = getGrid( tnp1, gf,next, par ); 
 
 
   return

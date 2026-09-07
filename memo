@@ -11,19 +11,118 @@ git clone https://github.com/wdhenshaw/incompressibleNavierStokes.git incompress
 
 ins.m : solve INS with pressure-poisson
 
---- NICE EXAMPLES:
 
-(1) Shear flow -- Kelvin-Helmholtz instability
+***************************************
+***** Mon Sept 7, 2026
 
--- finer grid N=500
-ins -ts=pc2 -tzScale=1 -tf=2 -tp=0.1 -ms=none -knownSolution=none -idebug=1 -nu=.0005 -ya=-.5 -yb=1.5 -xb=2 -bcs=ppnn -N0=500 -ic=shear -movieMode=1 -plotOption=3 -plotErrors=0 -kx=1 -checkTimeStep=20 -ad=1 -ad21=.1 -ad22=.1 -cfl=0.95 -numThreads=1;
+ADD CURVATURE TERM to pressre RHS
 
--- coarser grid N=300
-ins -ts=pc2 -tzScale=1 -tf=2 -tp=.05 -ms=none -knownSolution=none -idebug=1 -nu=.0005 -ya=-.5 -yb=1.5 -xb=2 -bcs=ppnn -N0=300 -ic=shear -movieMode=1 -plotOption=3 -plotErrors=0 -kx=1 -checkTimeStep=20 -ad=1 -ad21=.1 -ad22=.1 -cfl=0.95 -numThreads=1;
+Guassian:
+ins -ts=im2 -tf=1 -tp=0.02 -ms=none -kx=2 -knownSolution=none -nu=0.01 -cdv=0 -bcs=ppst -idebug=1 -movieMode=1 -motion=freeSurfaceMotion -map=freeSurface -icfs=gaussian -ampfs=0.1 -gamma=0.001 -plotEveryStep=1 -plotOption=3 -gravity=-10 -ic=zero -plotGrid=1 -plotAspectRatio=2.5 -checkTimeStep=5 -dtMax=5e-3 -N0=40;
+
+sine: 
+ins -ts=im2 -tf=1 -tp=0.02 -ms=none -kx=2 -knownSolution=none -nu=0.01 -cdv=0 -bcs=ppst -idebug=1 -movieMode=1 -motion=freeSurfaceMotion -map=freeSurface -icfs=sine -ampfs=0.1 -gamma=0.001 -plotEveryStep=0 -plotOption=3 -gravity=-10 -ic=zero -plotGrid=1 -plotAspectRatio=2.5 -checkTimeStep=1 -dtMax=5e-3 -N0=80;
+
+
+IM2 GAUSSIAN initial surface
+ins -ts=im2 -tf=1 -tp=0.05 -ms=none -kx=2 -knownSolution=none -nu=0.01 -cdv=0 -bcs=ppst -idebug=1 -movieMode=1 -motion=freeSurfaceMotion -map=freeSurface -icfs=gaussian -ampfs=0.15 -plotEveryStep=0 -plotOption=3 -gravity=-10 -ic=zero -plotGrid=1 -plotAspectRatio=2.5 -checkTimeStep=5 -dtMax=1e-2 -N0=40;
 
 
 ***************************************
+***** Sun Sept 6, 2026
+
+Free surface INITIAL CONDIION
+
+GAUSSIAN initial surface
+ins -ts=pc2 -tf=1 -tp=0.05 -ms=none -kx=2 -knownSolution=none -nu=0.01 -cdv=0 -bcs=ppst -idebug=1 -movieMode=1 -motion=freeSurfaceMotion -map=freeSurface -icfs=gaussian -ampfs=0.15 -plotEveryStep=0 -plotOption=3 -gravity=-10 -ic=zero -plotGrid=1 -plotAspectRatio=2.5 -checkTimeStep=5 -N0=40;
+
+
+***************************************
+***** Sat Sept 5, 2026
+
+>>>>> START ADD Free surface positions
+
+TEST CASE -- free-surface
+
+IM2: ***set dtMax*** 
+ins -ts=im2 -tf=1 -tp=0.05 -ms=none -kx=2 -knownSolution=none -nu=0.01 -cdv=0 -bcs=ppst -idebug=1 -movieMode=1 -motion=freeSurfaceMotion -map=freeSurface -ampfs=0.05 -plotEveryStep=0 -plotOption=3 -gravity=-10 -ic=zero -plotGrid=1 -N0=40 -dtMax=.01;
+
+
+PC2: Slip on bottom: looks ok 
+ins -ts=pc2 -tf=1 -tp=0.05 -ms=none -kx=2 -knownSolution=none -nu=0.01 -bcs=ppst -idebug=1 -movieMode=1 -motion=freeSurfaceMotion -map=freeSurface -ampfs=0.05 -plotEveryStep=0 -plotOption=3 -gravity=-10 -ic=zero -plotGrid=1 -plotAspectRatio=2.5 -checkTimeStep=5 -N0=40;
+
+
+
+AB2: Slip on bottom: looks ok 
+ins -ts=ab2 -tf=1 -tp=0.05 -ms=none -kx=2 -knownSolution=none -nu=0.01  -bcs=ppst -idebug=1 -movieMode=1 -motion=freeSurfaceMotion -map=freeSurface -ampfs=0.05 -plotEveryStep=0 -plotOption=3 -gravity=-10 -ic=zero -plotGrid=1 -checkTimeStep=5 -N0=40;
+
+
+AB2: No-slip on bottom : looks ok 
+ins -ts=ab2 -tf=1 -tp=0.05 -ms=none -kx=2 -knownSolution=none -nu=0.01 -cdv=0 -bcs=ppnt -idebug=1 -movieMode=1 -motion=freeSurfaceMotion -map=freeSurface -ampfs=0.05 -plotEveryStep=0 -plotOption=3 -gravity=-10 -ic=zero -plotGrid=1 -checkTimeStep=5 -N0=40;
+
+
+
+>>>>>>> testSpline and curvature <<<<<<<<<<
+Curvature: max-err= 1.67e-02 (rada=1, radb=2, ns=21, m=101)
+Curvature: max-err= 4.13e-03 (rada=1, radb=2, ns=41, m=101)
+
+
+***************************************
+***** Fri Sep 4, 2026
+
+
+>>> add eta to gf{igf} : free surface positions
+
+
+>>>> ADD gravity
+
+box with a traction BC on top: --> steady state solution 
+ins -ts=im2 -tf=1 -tp=0.05 -ms=none -knownSolution=none -nu=0.05 -cdv=0 -bcs=nnnt -idebug=1 -movieMode=0 -map=Cartesian -plotEveryStep=1 -plotOption=3 -gravity=-1 -ic=zero -N0=40;
+ins -ts=ab2 -tf=1 -tp=0.05 -ms=none -knownSolution=none -nu=0.05 -cdv=0 -bcs=nnnt -idebug=1 -movieMode=0 -map=Cartesian -plotEveryStep=1 -plotOption=3 -gravity=-1 -ic=zero -N0=40;
+
+
+***************************************
+***** Thurs Sept 3, 2026
+
+FIX SPLINE ROUTINES TO USE MATLAB VERSIONS
+
+TEST periodic spline -- looks second-order
+ins -ts=im2 -tf=1 -tp=0.05 -ms=trig -kx=1 -ky=1.5 -knownSolution=none -nu=0.05 -cdv=0 -bcs=ppnn -idebug=1 -movieMode=1 -plotGrid=1 -map=freeSurface -motion=deform -plotOption=1 -N0=40;
+
+im2: t=1.00e+00: Nx= 40 Ny= 40 Nt=   54 dt=1.85e-02 max-Err(p,u,v)=(2.02e-02,1.06e-02,6.90e-03) cpu=1.59e+01(s)
+im2: t=1.00e+00: Nx= 80 Ny= 80 Nt=  107 dt=9.35e-03 max-Err(p,u,v)=(5.34e-03,2.74e-03,1.82e-03) cpu=2.80e+01(s)
+
+
+USE kx for frequency: 
+ins -ts=im2 -tf=1 -tp=0.05 -ms=trig -kx=1 -ky=1.5 -knownSolution=none -nu=0.05 -cdv=0 -bcs=nnnn -idebug=1 -movieMode=1 -plotGrid=1 -map=freeSurface -motion=deform -plotOption=1 -N0=40;
+
+im2: t=1.00e+00: Nx= 40 Ny= 40 Nt=   54 dt=1.85e-02 max-Err(p,u,v)=(9.31e-02,1.00e-02,8.49e-03) cpu=1.20e+01(s)
+im2: t=1.00e+00: Nx= 80 Ny= 80 Nt=  107 dt=9.35e-03 max-Err(p,u,v)=(3.29e-02,2.57e-03,2.41e-03) cpu=3.00e+01(s)
+
+
+**NEW** MATCHES 
+ins -ts=im2 -tf=1 -tp=0.05 -ms=trig -kx=1.5 -ky=1.5 -knownSolution=none -nu=0.05 -cdv=0 -bcs=nnnn -idebug=1 -movieMode=1 -plotGrid=1 -map=freeSurface -motion=deform -plotOption=1 -N0=40;
+im2: t=4.688e-02 step=     3 Nx= 40 dt=1.562e-02 err-[p,u,v]=[1.60e-02,1.61e-03,1.21e-03] div/grad= 4.53e-03, cpu= 1.15e+00(s)
+im2: t=9.375e-02 step=     6 Nx= 40 dt=1.562e-02 err-[p,u,v]=[1.63e-02,2.95e-03,2.34e-03] div/grad= 8.16e-03, cpu= 1.75e+00(s)
+im2: t=1.562e-01 step=    10 Nx= 40 dt=1.562e-02 err-[p,u,v]=[1.53e-02,4.32e-03,3.52e-03] div/grad= 1.66e-02, cpu= 2.47e+00(s)
+im2: t=2.031e-01 step=    13 Nx= 40 dt=1.562e-02 err-[p,u,v]=[1.39e-02,5.08e-03,4.09e-03] div/grad= 2.49e-02, cpu= 3.07e+00(s)
+im2: t=2.500e-01 step=    16 Nx= 40 dt=1.562e-02 err-[p,u,v]=[1.20e-02,5.61e-03,4.36e-03] div/grad= 3.47e-02, cpu= 3.72e+00(s)
+im2: t=2.969e-01 step=    19 Nx= 40 dt=1.562e-02 err-[p,u,v]=[9.72e-03,5.93e-03,4.37e-03] div/grad= 4.46e-02, cpu= 5.17e+00(s)
+
+START: 
+ins -ts=im2 -tf=1 -tp=0.05 -ms=trig -kx=1.5 -ky=1.5 -knownSolution=none -nu=0.05 -cdv=0 -bcs=nnnn -idebug=1 -movieMode=1 -plotGrid=1 -map=freeSurface -motion=deform -plotOption=1 -N0=40;
+
+im2: t=4.688e-02 step=     3 Nx= 40 dt=1.562e-02 err-[p,u,v]=[1.60e-02,1.61e-03,1.21e-03] div/grad= 4.53e-03, cpu= 8.46e+00(s)
+im2: t=9.375e-02 step=     6 Nx= 40 dt=1.562e-02 err-[p,u,v]=[1.63e-02,2.95e-03,2.34e-03] div/grad= 8.16e-03, cpu= 1.18e+01(s)
+im2: t=1.562e-01 step=    10 Nx= 40 dt=1.562e-02 err-[p,u,v]=[1.53e-02,4.32e-03,3.52e-03] div/grad= 1.66e-02, cpu= 1.42e+01(s)
+im2: t=2.031e-01 step=    13 Nx= 40 dt=1.562e-02 err-[p,u,v]=[1.39e-02,5.08e-03,4.09e-03] div/grad= 2.49e-02, cpu= 1.60e+01(s)
+im2: t=2.500e-01 step=    16 Nx= 40 dt=1.562e-02 err-[p,u,v]=[1.20e-02,5.61e-03,4.36e-03] div/grad= 3.47e-02, cpu= 1.73e+01(s)
+im2: t=2.969e-01 step=    19 Nx= 40 dt=1.562e-02 err-[p,u,v]=[9.72e-03,5.93e-03,4.37e-03] div/grad= 4.46e-02, cpu= 1.87e+01(s)
+
+***************************************
 ***** Wed Sept 2, 2026
+
+COMMITED AND PUSHED LATEST VERSION 
 
 FIX SLIP WALL FOR CURVILINEAR
 

@@ -171,14 +171,23 @@ function par = evalMap( par )
 
     % --- top curve ---
     rv = r(:,1,1); 
-    ampt=0.1;
-    yv = ampt*sin(3*pi*rv);
+    ampt= par.ampfs; % 0.05;
+    xv = par.xa + (par.xb-par.xa)*rv;
+    if( strcmp(par.icfs,'sine') )
+      yv = ampt*sin(par.kx*rv);
+    elseif( strcmp(par.icfs,'gaussian') )
+      yv = ampt*exp( - (par.betag*(xv-par.x0g)).^2 );
+    else
+      fprintf('\n getGrid:ERROR: unknown free surface initial condition, icsf=[%s]\n',par.icsf);
+    end    
+    % yv = ampt*sin(par.kx*rv);  %% HARD CODE FOR NOW -- MUST MATCH VALUES IN getGrid
 
-    bcLeft=0; gLeft=0; bcRight=0; gRight=0; % natural BCs
-    coeff = splineCoeff( rv,yv, bcLeft,gLeft, bcRight,gRight );
-
-    % eval spline and derivative at points rv
-    [yv0,yvr] = splineEval( rv,yv,coeff, rv );    
+    conds='second'; % second derivative zero ('natural')
+    if( par.bc(1,1)==par.periodic )
+      conds='periodic';
+    end 
+    par.cs = splineInit( rv,yv,conds );
+    [yv0,yvr] = splineEval( par.cs, rv ); 
 
 
     for i2=I2

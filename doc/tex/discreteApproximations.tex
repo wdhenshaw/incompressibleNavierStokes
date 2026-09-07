@@ -1,23 +1,60 @@
+%!TEX root = ../insDoc.tex
+
 \clearpage
-\section{Discrete approximations} 
+\section{Numerical approach} 
+
+
+\subsection{Discrete approximations in space} 
 
 The discrete approach is based on the methods described in~\cite{CGNS,splitStep2003,fins2020}.
 
 
 The method-of-lines approximation keeps time continuous and discretizes in space.
-Let $\Vv_\jv(t) \approx \uv(\xv_\jv,t)$, and $P_\jv(t) = p(\xv_\jv,t)$.
+Let $\Uv_\jv(t) \approx \uv(\xv_\jv,t)$, and $P_\jv(t) = p(\xv_\jv,t)$.
 The discretization of the interior equations takes the form
 \bse
+\label{eq:MOL}
 \bat
-   & \f{d}{dt} \Vv_\jv + (\Vv_\jv\cdot\grad_h) \Vv_\jv + \f{1}{\rho} \grad_h P_\jv = \nu \Delta_h \Vv_\jv - \Dc_h^{(2)} \Vv_\jv ,  \qquad && \jv\in\Omega_h , \\
-   & \Delta_h P_\jv = \grad_h \Vv_\jv : \grad_h \Vv_\jv + \f{c_d}{\dt} \grad_h \cdot \Vv_\jv                             ,   \qquad && \jv\in\Omega_h ,
+   & \f{d}{dt} \Uv_\jv + (\Uv_\jv\cdot\grad_h) \Uv_\jv + \f{1}{\rho} \grad_h P_\jv = \nu \Delta_h \Uv_\jv - \Dc_h^{(2)} \Uv_\jv ,  \qquad && \jv\in\Omega_h , \\
+   & \Delta_h P_\jv = \grad_h \Uv_\jv : \grad_h \Uv_\jv + \f{c_d}{\dt} \grad_h \cdot \Uv_\jv                             ,   \qquad && \jv\in\Omega_h ,
 \eat
 where $\grad_h$ and $\Delta_h$ denote discrete approximations to $\grad$ and $\Delta$, respectively.
 The second-order artificial dissipation operator  $\Dc_h^{(2)} $ is 
 \ba
-   & \Dc_h^{(2)} \Vv_\jv \eqdef ( a_1 + a_2 \| \grad_h \Vv_\jv \|_1  )\Big(  (-\dx^2\Dpx\Dmx) + (-\dy^2\Dpy\Dmy) \Big), \\
-   & \| \grad_h \Vv_\jv \|_1  = |\Dzx V_{1,\jv} | + |\Dzx V_{2,\jv} | + |\Dzy V_{1,\jv} | + |\Dzy V_{2,\jv} |,
+   & \Dc_h^{(2)} \Uv_\jv \eqdef ( a_1 + a_2 \| \grad_h \Uv_\jv \|_1  )\Big(  (-\dx^2\Dpx\Dmx) + (-\dy^2\Dpy\Dmy) \Big), \\
+   & \| \grad_h \Uv_\jv \|_1  = |\Dzx V_{1,\jv} | + |\Dzx V_{2,\jv} | + |\Dzy V_{1,\jv} | + |\Dzy V_{2,\jv} |,
 \ea
 \ese
 while $c_d$ is the coefficient of the divergence damping.
+
+
+%-----------------------------------------------------------------------------
+\subsection{Time-stepping algorithms} \label{sec:time_stepping_algorithms}
+
+Time-stepping algorithms 
+\begin{description}
+   \item[AB2] A second-order accurate Adams-Bashforth scheme
+   \item[PC2] A second-order accurate predictor-corrector scheme
+   \item[IM2] A second-order accurate Implicit-explicit (IMEX) scheme. 
+\end{description}
+
+
+% -------------------------------------------------------------------
+\subsection{Free surface evolution} \label{sec:free_surface_evolution}
+
+Let $\etav(s,t)$ denote the x-y coordinates of the free surface as a function of $s$ and $t$. Here $s$ is some parameterization of the surface.
+The free surface satisfies 
+\ba
+ \p_t \etav = \uv(\etav(s,t),t).
+\ea
+Here is a predictor corrector time-stepping algorithm to update the free surface from time $t^n$ to $t^{n+1}$.
+The predictor step is a second-order accurate Adams-Bashforth scheme to compute $\eta_i^p \approx \eta^{n+1}$,
+\ba
+   \etav_{i}^{p} = \etav_{i}^{n} + \dt\Big( \f{3}{2} \Uv_{\iv}^n - \frac{1}{2} \Uv_{\iv}^{n-1}\Big) .
+\ea
+After the fluid variables have been updated to $t^{n+1}$, the free-surface positions are
+corrected with a second-order accurate Adams-Moulton scheme,
+\ba
+   \etav_{i}^{n+1} = \etav_{i}^{n} + \dt\Big( \f{1}{2} \Uv_{\iv}^{n+1} +  \frac{1}{2} \Uv_{\iv}^{n}\Big) .
+\ea
 

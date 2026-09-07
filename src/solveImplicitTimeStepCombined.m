@@ -51,7 +51,7 @@ function [unp1,vnp1,par] = solveImplicitTimeStepCombined( unp1,vnp1,tnp1, gf,cur
   end
 
   % Boundary conditions for implicit equations
-  if( ~strcmp(par.ms,'none') || ~strcmp(par.knownSolution,'known')  ) manufacturedSolution=1; else manufacturedSolution=0; end
+  if( ~strcmp(par.ms,'none') || ~strcmp(par.knownSolution,'none')  ) manufacturedSolution=1; else manufacturedSolution=0; end
 
   for axis=1:2
   for side=1:2

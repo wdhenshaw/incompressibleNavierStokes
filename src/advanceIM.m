@@ -1,22 +1,19 @@
 %
 % IMEX scheme -- Grid Function version 
 %
-function [gf,par,ut,vt] = advanceIM( t,dt, gf,cur,next, ut,vt,par )
+function [gf,par,ut,vt] = advanceIM( t,dt, gf,cur, ut,vt,par )
 
-  % declare operators 
-  % --- Difference Operators ---
-  % Dzx = @(u,I1,I2) ( u(I1+1,I2) -u(I1-1,I2) )*(1./(2.*dx));   % u.x
-  % Dzy = @(u,I1,I2) ( u(I1,I2+1) -u(I1,I2-1) )*(1./(2.*dy));   % u.y
-
+  nu = par.nu;
   dx = par.dx;
   dy = par.dy;
 
-  % DpxDmx = @(u,I1,I2) ( u(I1+1,I2) -2.*u(I1,I2) +u(I1-1,I2) )*(1./dx^2);  % u.xx 
-  % DpyDmy = @(u,I1,I2) ( u(I1,I2+1) -2.*u(I1,I2) +u(I1,I2-1) )*(1./dy^2);  % u.yy
-
-
   tnp1 = t + dt;
-  nu = par.nu;
+  next=mod(cur  +par.numberOfGridFunctions,par.numberOfGridFunctions)+1; 
+
+  % -- get the grid and grid velocity at the new time ---
+  par.gridMotionOption=par.predictGrid; 
+  [gf,par] = getGrid( tnp1, gf,next, par );    
+
  
   [I1,I2] = getIndex( par.gid );
 
@@ -39,6 +36,11 @@ function [gf,par,ut,vt] = advanceIM( t,dt, gf,cur,next, ut,vt,par )
   [gf{next}.p,par] = pressureEquation( tnp1, gf{next}.u,gf{next}.v,dt, gf,next,par ); 
 
   % ====== CORRECTOR : Crank-Nicolson =====
+
+  % -- correct the grid  ---
+  par.gridMotionOption=par.correctGrid; 
+  [gf,par] = getGrid( tnp1, gf,next, par ); 
+
   nuScaleFactor=.0;  % leave off viscous terms
   [ utp,vtp,par ] = getUt( tnp1,gf{next}.u,gf{next}.v,gf{next}.p, gf,next, nuScaleFactor,par );
  

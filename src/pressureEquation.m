@@ -420,7 +420,9 @@ function [p,par] = pressureEquation( t,u,v,dt, gf,cur, par )
 
   cpu0 = cputime;
 
-  % -- Assign the RHS  --
+  % -------------------------------------
+  % ---------- Assign the RHS  ----------
+  % -------------------------------------
   rhs = zeros(Ngs,1);     % right-hand-side
 
   % I = iax:ibx; J=iay:iby;  % interior and boundary points
@@ -482,6 +484,9 @@ function [p,par] = pressureEquation( t,u,v,dt, gf,cur, par )
       mbc = side+2*(axis-1);  % pointer into gp array
       [I1b,I2b]=getBoundaryIndex(side,axis,par);
 
+      if( par.bc(side,axis)==par.traction && par.gamma~=0 )
+        kappa = getCurvature( t,gf,cur, par );
+      end 
       
       % Loop over boundary points on face=(side,axis)
       for i2=I2b
@@ -511,9 +516,11 @@ function [p,par] = pressureEquation( t,u,v,dt, gf,cur, par )
             if( par.isCartesian )
 
               % -- cartesian ---
+              n1 = -is1; % outward normal [n1,n2]
+              n2 = -is2; 
               if( axis==1 )
                 % p.n = (+/-) nu*( u.xx ) = (+/-) nu*( -v.xy )
-                rhs(ie)= -is1*nu*( -DzxDzy(v,i1,i2) );
+                rhs(ie)= -is1*nu*( -DzxDzy(v,i1,i2) ) + rho*n1*par.gravityVector(1);
 
                 if( addBoundaryForcing==1 )
                   % vxy = DzxDzy(v,i1,i2); vxyTrue=vexy(gf{cur}.x(i1,i2,1),gf{cur}.x(i1,i2,2),t); 
@@ -524,7 +531,7 @@ function [p,par] = pressureEquation( t,u,v,dt, gf,cur, par )
                 end
               else
                 % p.n = (+/-) nu*( v.yy ) = (+/-) nu*( -u.xy )
-                rhs(ie)= -is2*nu*( -DzxDzy(u,i1,i2) );
+                rhs(ie)= -is2*nu*( -DzxDzy(u,i1,i2) ) + rho*n2*par.gravityVector(2);
                 if( addBoundaryForcing==1 )
                   rhs(ie)= rhs(ie) -is2*( par.pey(gf{cur}.x(i1,i2,1),gf{cur}.x(i1,i2,2),t) + nu*par.uexy(gf{cur}.x(i1,i2,1),gf{cur}.x(i1,i2,2),t) ); 
                 end
@@ -532,7 +539,7 @@ function [p,par] = pressureEquation( t,u,v,dt, gf,cur, par )
 
             else 
               % -- curvilinear --
-              %  p.n = rho * nu* [ n1 * ( nu*Delta(u) ) + n2 * ( nu Delta v ) ]
+              %  p.n = rho * nu* [ n1 * ( nu*Delta(u) ) + n2 * ( nu Delta v ) ] + rho*( n1*gv(1) + n2*gv(2) )
               % CURL-CURL BC
               %   u.xx + u.yy -> -v.xy + u.yy
               %   v.xx + v.yy ->  v.xx - u.xy 
@@ -559,7 +566,7 @@ function [p,par] = pressureEquation( t,u,v,dt, gf,cur, par )
                 vxx = UXX(2,1,1);
                 uxy = UXX(1,1,2);
 
-                rhs(ie)= rho*nu*( n1*(-vxy+uyy) + n2*(vxx-uxy) ); % curl-curl BC 
+                rhs(ie)= rho*nu*( n1*(-vxy+uyy) + n2*(vxx-uxy) ) + rho*(n1*par.gravityVector(1) + n2*par.gravityVector(2)); % curl-curl BC 
 
                 if( addBoundaryForcing==1 )
                   rhs(ie)= rhs(ie) ...
@@ -586,6 +593,7 @@ function [p,par] = pressureEquation( t,u,v,dt, gf,cur, par )
 
 
           elseif( par.bc(side,axis)==par.traction )
+
             % ----- TRACTION BC ----
             %   nv^T sigmav nv = 0 
 
@@ -609,7 +617,11 @@ function [p,par] = pressureEquation( t,u,v,dt, gf,cur, par )
               end
 
             else
-              % nv^T sigmav nv = -p + 2*mu*( ux*n1^2 + vy*n2^2 + (uy+vx)*n1*n2 );     
+              % ------------------------------
+              % --- traction : curvilinear ---
+              % ------------------------------
+
+              % nv^T sigmav nv = -p + 2*mu*( ux*n1^2 + vy*n2^2 + (uy+vx)*n1*n2 )   + gamma*kappa
 
               % ---- get outward normal (n1,n2) ----
               [n1,n2,rxNorm] = getBoundaryNormal( side,axis,i1,i2, gf,cur, par );
@@ -628,7 +640,13 @@ function [p,par] = pressureEquation( t,u,v,dt, gf,cur, par )
               uy =  ry*Dr2(u,i1,i2) + sy*Ds2(u,i1,i2);
               vy =  ry*Dr2(v,i1,i2) + sy*Ds2(v,i1,i2);
 
-              rhs(ie) = 2*mu*( ux*n1^2 + vy*n2^2 + (uy+vx)*n1*n2 );      
+              rhs(ie) = 2*mu*( ux*n1^2 + vy*n2^2 + (uy+vx)*n1*n2 );  
+
+              if( par.gamma~=0 )
+                % Note the sign of the curvatutre term here since the equation is
+                %    p = nv^T \tauv nv - gamma kappa
+                rhs(ie) = rhs(ie) - par.gamma*kappa(i1); 
+              end   
                                   
               if( addBoundaryForcing==1 )
                 uex = par.uex(gf{cur}.x(i1,i2,1),gf{cur}.x(i1,i2,2),t);

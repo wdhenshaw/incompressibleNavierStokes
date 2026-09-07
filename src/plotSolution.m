@@ -23,7 +23,11 @@ function par = plotSolution( tn,un,vn,pn, gf,cur, par)
   	figure(1)
     tl =tiledlayout('flow','TileSpacing','Compact');
 
-    title(tl,sprintf('INS: ts=%s t=%5.2f step=%3d nu=%g N=[%d,%d] cfl=%5.2f bc=%s ad=%d',par.ts,tn,par.step,par.nu,par.Ngx,par.Ngy,par.cfl,par.bcLabel,par.ad),'FontSize',16);
+    extra='';
+    if( par.gravity~=0 ) extra=strcat(sprintf('g=%g, ',par.gravity )); end 
+    if( par.gamma~=0 )   extra=strcat(extra,sprintf(' \\gamma=%g, ',par.gamma )); end 
+
+    title(tl,sprintf('INS: ts=%s t=%8.2e step=%3d nu=%g, %sN=[%d,%d] cfl=%5.2f bc=%s ad=%d',par.ts,tn,par.step,par.nu,extra,par.Ngx,par.Ngy,par.cfl,par.bcLabel,par.ad),'FontSize',16);
     % title(tl,sprintf('%s: t=%5.2f, m=%d, N=[%d,%d], G=%s, cfl=%5.2f, bc=%s',gp.schemeName,t,gp.m,gp.N1,gp.N2,gp.mapName,gp.cfl,gp.bcLabel),'FontSize',16);
 
     nexttile;
@@ -50,18 +54,26 @@ function par = plotSolution( tn,un,vn,pn, gf,cur, par)
     title('p'); hold off;
     setAspectRatio();
 
-    ratio = (par.xb-par.xa)/(par.yb-par.ya); % **************************** FIX ME *********************
-    if( ratio==1 )
+    % ratio = (par.xb-par.xa)/(par.yb-par.ya); % **************************** FIX ME *********************
+    
+    if( par.plotAspectRatio<=0 )
+      xWidth = max(max(gf{cur}.x(I1,I2,1))) - min(min(gf{cur}.x(I1,I2,1)));
+      yWidth = max(max(gf{cur}.x(I1,I2,2))) - min(min(gf{cur}.x(I1,I2,2)));
+      par.plotAspectRatio=xWidth/yWidth;
+    end
+    if( par.plotAspectRatio==1 )
       xwidth = 1200;
       ywidth = 350; 
-    elseif( ratio>=1 )
-      xwidth = 600*ratio; 
+    elseif( par.plotAspectRatio>=1 )
+      xwidth = 600*par.plotAspectRatio; 
       ywidth = 300;  
     else
       xwidth = 900; % *(gf{cur}.xb-gf{cur}.xa);
-      ywidth = 250*ratio;  % *(par.yb-par.ya);
+      ywidth = 250*par.plotAspectRatio;  % *(par.yb-par.ya);
     end
-    pos = get(gcf,'position');  pos(3) = xwidth; pos(4) = ywidth; set(gcf,'position',pos);  
+    if( 1==1 )
+      pos = get(gcf,'position');  pos(3) = xwidth; pos(4) = ywidth; set(gcf,'position',pos);  
+    end
 
     % Hardcopy 
     timeLabel=sprintf('t%.1f',tn);
@@ -73,12 +85,12 @@ function par = plotSolution( tn,un,vn,pn, gf,cur, par)
     end 
 
 
-    % --- plot vorticity ---
-    if( strcmp(par.ms,'none') )
+    % --- plot vorticity and streamlines  ---
+    if( par.plotVorticity && strcmp(par.ms,'none') )
    	  figure(2)
       tl =tiledlayout('flow','TileSpacing','Compact');
 
-      title(tl,sprintf('ts=%s t=%5.2f step=%3d nu=%g N=[%d,%d] cfl=%5.2f bc=%s ad=%d',par.ts,tn,par.step,par.nu,par.Ngx,par.Ngy,par.cfl,par.bcLabel,par.ad),'FontSize',16);    
+      title(tl,sprintf('ts=%s t=%8.2e step=%3d nu=%g N=[%d,%d] cfl=%5.2f bc=%s ad=%d',par.ts,tn,par.step,par.nu,par.Ngx,par.Ngy,par.cfl,par.bcLabel,par.ad),'FontSize',16);    
 
       vor = zeros(par.Ngx,par.Ngy);
       [J1,J2] = getIndex( par.gid );
@@ -120,7 +132,7 @@ function par = plotSolution( tn,un,vn,pn, gf,cur, par)
          savePlotFile( sprintf('%s/%sVorticityAndStreamLines',par.figDir,myPlotName),'pdf' );
       end 
     end
-    
+
     % ---- ERRORS ----
     if( par.computeErrors && par.plotErrors )
 	    [maxErr,perr,uerr,verr,div] = getErrors( tn,un,vn,pn, gf,cur, par );
@@ -197,6 +209,11 @@ function par = plotSolution( tn,un,vn,pn, gf,cur, par)
 		title(sprintf('p-err: t=%9.3e, ts=%s (Nx=%d) cfl=%4.2f',tn,ts,Nx,cfl)); xlabel('x'); ylabel('y'); drawnow; commandwindow; 
 
   end
+
+  if( par.plotGrid )
+    plotGrid(  tn, gf,cur, par );
+  end
+
 
   par.cpuPlot = par.cpuPlot + cputime - cpu0;
 return 

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2025.1.23)  1 SEP 2026 19:45
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2025.1.23)  7 SEP 2026 16:31
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1399,76 +1399,77 @@ pdfTeX warning (ext4): destination with the same identifier (name{table.1}) has
  been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.64 \ea
+l.58 \ea
         ] [3]) (./tex/discreteApproximations.tex [4]) (./tex/numericalResults.t
-ex [5
+ex (./tables/insTSab2BCnnnnMapCartesianMStrig.tex) (./tables/insTSpc2BCnnnnMapC
+artesianMStrig.tex) (./tables/insTSim2BCnnnnMapCartesianMStrig.tex) [5
 
-]
-<../fig/insTaylorGreenVelocityAndPressure.pdf, id=192, 1205.50375pt x 352.31625
+] [6]
+<../fig/insTaylorGreenVelocityAndPressure.pdf, id=224, 1205.50375pt x 352.31625
 pt>
 File: ../fig/insTaylorGreenVelocityAndPressure.pdf Graphic file (type pdf)
 <use ../fig/insTaylorGreenVelocityAndPressure.pdf>
 Package pdftex.def Info: ../fig/insTaylorGreenVelocityAndPressure.pdf  used on 
-input line 37.
+input line 59.
 (pdftex.def)             Requested size: 1205.50082pt x 352.31538pt.
 File: ../fig/insTaylorGreenVelocityAndPressure.pdf Graphic file (type pdf)
 <use ../fig/insTaylorGreenVelocityAndPressure.pdf>
 Package pdftex.def Info: ../fig/insTaylorGreenVelocityAndPressure.pdf  used on 
-input line 37.
+input line 59.
 (pdftex.def)             Requested size: 455.24408pt x 140.04773pt.
 Missing character: There is no ; in font nullfont!
-<../fig/insTaylorGreenVorticityAndStreamLines.pdf, id=194, 804.00375pt x 402.50
+<../fig/insTaylorGreenVorticityAndStreamLines.pdf, id=226, 804.00375pt x 402.50
 375pt>
 File: ../fig/insTaylorGreenVorticityAndStreamLines.pdf Graphic file (type pdf)
 <use ../fig/insTaylorGreenVorticityAndStreamLines.pdf>
 Package pdftex.def Info: ../fig/insTaylorGreenVorticityAndStreamLines.pdf  used
- on input line 41.
+ on input line 63.
 (pdftex.def)             Requested size: 804.0018pt x 402.50276pt.
 File: ../fig/insTaylorGreenVorticityAndStreamLines.pdf Graphic file (type pdf)
 <use ../fig/insTaylorGreenVorticityAndStreamLines.pdf>
 Package pdftex.def Info: ../fig/insTaylorGreenVorticityAndStreamLines.pdf  used
- on input line 41.
+ on input line 63.
 (pdftex.def)             Requested size: 256.0748pt x 122.7381pt.
 Missing character: There is no ; in font nullfont!
-[6
+[7
 
 
 pdfTeX warning (ext4): destination with the same identifier (name{figure.1}) ha
 s been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.59 \clearpage
+l.81 \clearpage
                 <../fig/insTaylorGreenVelocityAndPressure.pdf> <../fig/insTaylo
 rGreenVorticityAndStreamLines.pdf>]
-<../fig/insShearN800t2p0VelocityAndPressure.pdf, id=228, 1205.50375pt x 352.316
+<../fig/insShearN800t2p0VelocityAndPressure.pdf, id=262, 1205.50375pt x 352.316
 25pt>
 File: ../fig/insShearN800t2p0VelocityAndPressure.pdf Graphic file (type pdf)
 <use ../fig/insShearN800t2p0VelocityAndPressure.pdf>
 Package pdftex.def Info: ../fig/insShearN800t2p0VelocityAndPressure.pdf  used o
-n input line 88.
+n input line 110.
 (pdftex.def)             Requested size: 1205.50082pt x 352.31538pt.
 File: ../fig/insShearN800t2p0VelocityAndPressure.pdf Graphic file (type pdf)
 <use ../fig/insShearN800t2p0VelocityAndPressure.pdf>
 Package pdftex.def Info: ../fig/insShearN800t2p0VelocityAndPressure.pdf  used o
-n input line 88.
+n input line 110.
 (pdftex.def)             Requested size: 455.24408pt x 140.04773pt.
 Missing character: There is no ; in font nullfont!
-<../fig/insShearN800t2p0VorticityAndStreamLines.pdf, id=230, 804.00375pt x 402.
+<../fig/insShearN800t2p0VorticityAndStreamLines.pdf, id=264, 804.00375pt x 402.
 50375pt>
 File: ../fig/insShearN800t2p0VorticityAndStreamLines.pdf Graphic file (type pdf
 )
 <use ../fig/insShearN800t2p0VorticityAndStreamLines.pdf>
 Package pdftex.def Info: ../fig/insShearN800t2p0VorticityAndStreamLines.pdf  us
-ed on input line 92.
+ed on input line 114.
 (pdftex.def)             Requested size: 804.0018pt x 402.50276pt.
 File: ../fig/insShearN800t2p0VorticityAndStreamLines.pdf Graphic file (type pdf
 )
 <use ../fig/insShearN800t2p0VorticityAndStreamLines.pdf>
 Package pdftex.def Info: ../fig/insShearN800t2p0VorticityAndStreamLines.pdf  us
-ed on input line 92.
+ed on input line 114.
 (pdftex.def)             Requested size: 256.0748pt x 122.7381pt.
 Missing character: There is no ; in font nullfont!
-) [7
+) [8
 
 
 pdfTeX warning (ext4): destination with the same identifier (name{figure.2}) ha
@@ -1501,7 +1502,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 18--23
 eFractionalStepIMEXSchemeForINSOnMovingGrids _
  []
 
-) [8
+) [9
 
 ] (./insDoc.aux)
  ***********
@@ -1509,43 +1510,48 @@ LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-02-20>
  ***********
 Package rerunfilecheck Info: File `insDoc.out' has not changed.
-(rerunfilecheck)             Checksum: 8D607AD05C1CAFD1CE10D5489E1EFB87;1427.
+(rerunfilecheck)             Checksum: 035B5EE151FD3673E80D49606F2BF888;1994.
  ) 
 Here is how much of TeX's memory you used:
- 35622 strings out of 474116
- 691745 string characters out of 5743682
- 1954187 words of memory out of 5000000
- 57286 multiletter control sequences out of 15000+600000
- 576164 words of font info for 104 fonts, out of 8000000 for 9000
+ 35661 strings out of 474116
+ 692609 string characters out of 5743682
+ 1956187 words of memory out of 5000000
+ 57300 multiletter control sequences out of 15000+600000
+ 576785 words of font info for 106 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  93i,14n,99p,419b,930s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb
 ></usr/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx7.pfb><
-/usr/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmbxti10.pfb>
-</usr/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb><
-/usr/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></u
-sr/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr
-/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi9.pfb></usr/l
-ocal/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmib10.pfb></usr/l
-ocal/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/loc
-al/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/local
-/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/local/te
-xlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/texli
-ve/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/local/texlive/
-2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2
-024/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/local/texlive/20
-24/texmf-dist/fonts/type1/public/amsfonts/cm/cmti7.pfb></usr/local/texlive/2024
-/texmf-dist/fonts/type1/public/amsfonts/cm/cmti8.pfb></usr/local/texlive/2024/t
-exmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb></usr/local/texlive/2024/te
-xmf-dist/fonts/type1/public/amsfonts/cm/cmtt8.pfb></usr/local/texlive/2024/texm
-f-dist/fonts/type1/public/amsfonts/cm/cmtt9.pfb></usr/local/texlive/2024/texmf-
-dist/fonts/type1/public/mathabx-type1/matha10.pfb></usr/local/texlive/2024/texm
-f-dist/fonts/type1/public/mathabx-type1/matha7.pfb></usr/local/texlive/2024/tex
-mf-dist/fonts/type1/public/mathabx-type1/mathx10.pfb>
-Output written on insDoc.pdf (8 pages, 914538 bytes).
+/usr/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx8.pfb></u
+sr/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmbxti10.pfb></
+usr/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></u
+sr/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></usr
+/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/l
+ocal/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/loc
+al/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/local
+/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi9.pfb></usr/local/t
+exlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmib10.pfb></usr/local/t
+exlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/tex
+live/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/local/texli
+ve/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/local/texlive/
+2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/texlive/202
+4/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/local/texlive/2024/t
+exmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2024/te
+xmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texlive/2024/texm
+f-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/local/texlive/2024/texmf
+-dist/fonts/type1/public/amsfonts/cm/cmti7.pfb></usr/local/texlive/2024/texmf-d
+ist/fonts/type1/public/amsfonts/cm/cmti8.pfb></usr/local/texlive/2024/texmf-dis
+t/fonts/type1/public/amsfonts/cm/cmtt10.pfb></usr/local/texlive/2024/texmf-dist
+/fonts/type1/public/amsfonts/cm/cmtt8.pfb></usr/local/texlive/2024/texmf-dist/f
+onts/type1/public/amsfonts/cm/cmtt9.pfb></usr/local/texlive/2024/texmf-dist/fon
+ts/type1/public/mathabx-type1/matha10.pfb></usr/local/texlive/2024/texmf-dist/f
+onts/type1/public/mathabx-type1/matha7.pfb></usr/local/texlive/2024/texmf-dist/
+fonts/type1/public/mathabx-type1/matha8.pfb></usr/local/texlive/2024/texmf-dist
+/fonts/type1/public/mathabx-type1/mathx10.pfb>
+Output written on insDoc.pdf (9 pages, 962081 bytes).
 PDF statistics:
- 387 PDF objects out of 1000 (max. 8388607)
- 263 compressed objects within 3 object streams
- 81 named destinations out of 1000 (max. 500000)
- 265 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 443 PDF objects out of 1000 (max. 8388607)
+ 307 compressed objects within 4 object streams
+ 94 named destinations out of 1000 (max. 500000)
+ 289 words of extra memory for PDF output out of 10000 (max. 10000000)
 

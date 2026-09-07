@@ -160,7 +160,9 @@ function par = plotStreamLines( u,v,par )
   xlabel('x'); ylabel('y');
 
   % clim([0,uScale]);
-  clim([0,par.maxSpeed]);
+  if( par.maxSpeed>0 )
+    clim([0,par.maxSpeed]);
+  end
   xlim([xa,xb]);
   ylim([ya,yb]);
   title('streamlines');

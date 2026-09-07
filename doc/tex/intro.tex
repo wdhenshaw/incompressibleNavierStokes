@@ -8,13 +8,33 @@
 The \texttt{ins.m} Matlab code solves the incompressible Navier-Stokes equations in velocity-pressure form,
 \bse
 \bat
-  & \p_t \uv + (\uv\cdot\grad) \uv + \f{1}{\rho} \grad p = \nu \Delta \uv,   \quad && \xv\in\Omega, ~t>0,   \\
-  &  \f{1}{\rho} \Delta p = - \grad\uv:\grad\uv,                                          \quad && \xv\in\Omega, ~t>0,  \\
+  & \p_t \uv + (\uv\cdot\grad) \uv + \f{1}{\rho} \grad p = \nu \Delta \uv +  \gv + \fv(\xv,t),   \quad && \xv\in\Omega, ~t>0,   \\
+  &  \f{1}{\rho} \Delta p = - \grad\uv:\grad\uv + \grad\cdot\fv,                                          \quad && \xv\in\Omega, ~t>0,  \\
   & \uv(\xv,0) = \uv_0(\xv)                                                  \quad && \xv\in\Omega,\\
   & \grad\cdot\uv(\xv,0) = 0                                                \quad && \xv\in\p\Omega,
 \eat
 \ese
-with appropriate boundary conditions as discussed below.
+where $\nu=\mu/\rho$ is the kinematic viscosity coefficient, $\gv$ is the gravity vector and $\fv(\xv,t)$ is a body forcing. 
+These equations are augmented with appropriate boundary conditions as discussed below.
+
+For problems with surface tension, the traction free boundary condition for the pressure is
+\ba
+   -p = \nv^T \tauv \nv = \gamma \kappa
+\ea 
+where $\tau_{ij}=\mu( \p_{x_j} u_i + \p_{x_i} u_j )$, $\gamma$ is the coefficient of surface tension and $\kappa$ is the curvature.
+Non-dimensional numbers associated with the surface tension are 
+\bse
+\bat
+  & \textrm{We} = \f{\rho v^2 L}{\gamma},         \qquad&& \textrm{Weber number: ratio of inertial to surface tension forces}, \\
+  & \textrm{Ca} = \f{\mu v}{\gamma}               \qquad&& \textrm{Capillary number: ratio of viscous to surface tension forces}, \\
+  & \textrm{Bo} = \f{\Delta\rho \, g L}{\gamma}   \qquad&& \textrm{Bond number: ratio of buoyancy to surface tension forces}, \\
+  & \textrm{Oh} = \f{\mu}{\sqrt{\rho \gamma L}}   \qquad&& \textrm{Ohnesorge number: relates viscous to inertial and surface tension forces},
+\eat
+\ese
+where $v$ is the velocity scale, $L$ the length scale, and
+where $\Delta\rho$ is the density difference between the two fluids (or $\rho$ for a free surface).
+
+
 
 
 % -------------------------------------------------------
@@ -135,5 +155,16 @@ From $I= \nv\nv^T + \tv\tv^T$, it follows that $\tv\tv^T = I - \nv\nv^T$ and thu
 \ea
 The form in~\eqref{eq:tractionVelocityBC} is convenient since it does not require forming tangent vectors. In addition, it is a good form to use when constucting 
 the implicit time-stepping matrix to ensure that the matrix has non-zero diagonal entries.
+
+
+
+
+
+
+
+
+
+
+
 
 

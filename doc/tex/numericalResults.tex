@@ -1,5 +1,27 @@
+%!TEX root = ../insDoc.tex
+
+
 \section{Numerical Results} \label{sec:numerical_results}
 
+% -------------------------------------------------------------------
+\subsection{Manufactured solutions}
+
+\mni
+The Matlab code \texttt{runGridConvergence.m} can be used to run grid convergence tests and create a LaTeX table.
+Here is an example, (for the implicit method we specify the $\dt$ to use on the coarsest grid, and this is halved each resolution)
+\begin{Verbatim}[fontsize=\small]
+\end{Verbatim}
+runGridConvergence -ts=ab2 -tf=.25 -ms=trig -numResolutions=4
+runGridConvergence -ts=pc2 -tf=.25 -ms=trig -numResolutions=4
+runGridConvergence -ts=im2 -tf=.25 -ms=trig -numResolutions=3 -dtMax=.01
+\begin{table}
+\footnotesize
+\begin{center}
+\input tables/insTSab2BCnnnnMapCartesianMStrig.tex
+\input tables/insTSpc2BCnnnnMapCartesianMStrig.tex
+\input tables/insTSim2BCnnnnMapCartesianMStrig.tex
+\end{center}
+\end{table}
 
 % -------------------------------------------------------------------
 \clearpage

@@ -57,8 +57,13 @@ function [u,v,par] = applyBoundaryConditions( u,v,t, gf,cur, par )
 
       if( par.bc(side,axis)==par.dirichlet || par.bc(side,axis)==par.noSlipWall || par.bc(side,axis)==par.inflow )
 
-        u(I1b,I2b)=par.gu{mbc}(gf{cur}.x(I1b,I2b,1),gf{cur}.x(I1b,I2b,2),t);
-        v(I1b,I2b)=par.gv{mbc}(gf{cur}.x(I1b,I2b,1),gf{cur}.x(I1b,I2b,2),t);
+        if( manufacturedSolution || ~strcmp(par.knownSolution,'none') )
+          u(I1b,I2b)=par.gu{mbc}(gf{cur}.x(I1b,I2b,1),gf{cur}.x(I1b,I2b,2),t);
+          v(I1b,I2b)=par.gv{mbc}(gf{cur}.x(I1b,I2b,1),gf{cur}.x(I1b,I2b,2),t);
+        else
+          u(I1b,I2b)=0.0;
+          v(I1b,I2b)=0.0;
+        end
 
       elseif( par.bc(side,axis)==par.slipWall )
         % done below now 

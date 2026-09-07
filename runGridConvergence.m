@@ -26,6 +26,7 @@ function runGridConvergence( varargin )
  par.map = 'Cartesian';           % 'Cartesian', 'Rectangle', 'Annulus', 'TFI', ...
  par.bcs='nnnn'; 
  par.motion='none';
+ par.dtMax=1e8; 
  
 
  par.echo = 0;
@@ -44,30 +45,34 @@ function runGridConvergence( varargin )
 
     Nx= par.N0*2^(ires-1); 
 
-    cmd = sprintf('ins -ts=%s -tzScale=1 -tf=%g -ms=%s -knownSolution=%s -idebug=%d -nu=0.1 -bcs=%s -N0=%d -map=%s -motion=%s -plotOption=-1;',...
-              par.ts,par.tf,par.ms,par.knownSolution, par.idebug,par.bcs, Nx, par.map, par.motion);
+
+    cmd = sprintf('ins -ts=%s -tzScale=1 -tf=%g -ms=%s -knownSolution=%s -idebug=%d -nu=0.1 -bcs=%s -N0=%d -map=%s -motion=%s -dtMax=%g -plotOption=-1;',...
+              par.ts,par.tf,par.ms,par.knownSolution, par.idebug,par.bcs, Nx, par.map, par.motion,par.dtMax);
     % cmd = sprintf('ins -ts=ab2 -tzScale=1 -tf=.1 -ms=poly -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bc1=noSlipWall -bc2=dirichlet  -bc3=noSlipWall -bc4=dirichlet -plotOption=0 -N0=%d;',Nx);
     % fprintf('Running [%s]\n',cmd);
     eval(cmd); 
 
     % output results from the run are found here:
     Nv(ires) = Nx;
+    dtv(ires) = ans.par.dt;
     fprintf(' ires=%d: Nx=%d maxErr=[%9.2e,%9.2e,%9.2e,%9.2e]\n',ires,Nx,ans.maxErr(1),ans.maxErr(2),ans.maxErr(3),ans.maxErr(4));
     maxErr(1:4,ires) = ans.maxErr(1:4);
 
     cpuv(ires) = ans.cpu;
     % pause
 
+    par.dtMax= par.dtMax/2; % reduce dtMax for the implicit method
+ 
   end 
 
-  fprintf('  N     p-err  ratio   u-err  ratio   v-err  ratio    div  ratio    cpu(s)  ratio\n');
-  fprintf(' --------------------------------------------------------------------------------- \n');
+  fprintf('  N     dt      p-err  ratio   u-err  ratio   v-err  ratio    div   ratio    cpu(s)  ratio\n');
+  fprintf(' -------------------------------------------------------------------------------------- \n');
   for ires=1:par.numResolutions
     if ires==1 
-      fprintf('%4d  %8.2e       %8.2e       %8.2e       %8.2e        %8.2e\n',Nv(ires),maxErr(1,ires),maxErr(2,ires),maxErr(3,ires),maxErr(4,ires),cpuv(ires));
+      fprintf('%4d  %8.2e %8.2e       %8.2e       %8.2e       %8.2e        %8.2e\n',Nv(ires),dtv(ires),maxErr(1,ires),maxErr(2,ires),maxErr(3,ires),maxErr(4,ires),cpuv(ires));
     else
-      fprintf('%4d  %8.2e %4.1f  %8.2e %4.1f  %8.2e %4.1f  %8.2e %4.1f   %8.2e %4.1f\n',...
-          Nv(ires),...
+      fprintf('%4d  %8.2e %8.2e %4.1f  %8.2e %4.1f  %8.2e %4.1f  %8.2e %4.1f   %8.2e %4.1f\n',...
+          Nv(ires),dtv(ires),...
           maxErr(1,ires),maxErr(1,ires-1)/maxErr(1,ires),...
           maxErr(2,ires),maxErr(2,ires-1)/maxErr(2,ires),...
           maxErr(3,ires),maxErr(3,ires-1)/maxErr(3,ires),...
@@ -77,50 +82,57 @@ function runGridConvergence( varargin )
 
   end
 
-return
+  %
+  % Output a LaTeX table of results
+  %
+  insPar = ans.par; 
+
+  extra='';
+  if( ~strcmp(insPar.ms,'none') )     extra = strcat(extra,sprintf('MS%s'),insPar.ms);          end 
+  if( ~strcmp(insPar.motion,'none') ) extra = strcat(extra,sprintf('Motion%s'),insPar.motion);  end 
+
+  name=sprintf('insTS%sBC%sMap%s%s',insPar.ts,insPar.bcLabel,insPar.map,extra);
+
+  tableDir = 'doc/tables';
+
+  latexFileName = sprintf('%s/%s.tex',tableDir,name); 
+
+  output = fopen(latexFileName,'w');
+
+
+  %  Output results as a LaTeX table
+  fprintf(output,"\n%% ------------ INS Table for LaTeX from runGridConvergence.m  -------------------------------\n");
+
+  fprintf(output,"\\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|} \\hline\n"); 
+  fprintf(output," \\multicolumn{10}{|c|}{INS: ts=%s, BC=%s, Map=%s, Motion=%s, MS=%s } \\\\ \\hline \n",insPar.ts,insPar.bcLabel,insPar.map,insPar.motion,insPar.ms);
+  fprintf(output,"     N  &   $\\Delta t$ & $E_p$   &  r  &   $E_u$   &   r    &   $E_v$   & r   &  $|\\grad\\cdot\\uv|$  & r   \\\\ \\hline \n");
+  
+  ires=1;
+  fprintf(output," %3d   &  %8.2e  &  %9.2e  &        &  %9.2e  &        &  %9.2e  &        &  %9.2e  &        \\\\ \n",...
+          Nv(ires),dtv(ires),...
+          maxErr(1,ires),...
+          maxErr(2,ires),...
+          maxErr(3,ires),...
+          maxErr(4,ires) ... 
+           );  
+  for ires=2:par.numResolutions
+    fprintf(output," %3d   &  %8.2e  &  %9.2e  & %3.1f  &  %9.2e  & %3.1f  &  %9.2e  & %3.1f  &  %9.2e  & %3.1f  \\\\ \n",...
+          Nv(ires),dtv(ires),...
+          maxErr(1,ires),maxErr(1,ires-1)/maxErr(1,ires),...
+          maxErr(2,ires),maxErr(2,ires-1)/maxErr(2,ires),...
+          maxErr(3,ires),maxErr(3,ires-1)/maxErr(3,ires),...
+          maxErr(4,ires),maxErr(4,ires-1)/maxErr(4,ires) ...
+           );
+  end 
+
+  fprintf(output," \\hline \n");
+  fprintf(output,"\\end{tabular}\n");  
+
+
+  fclose(output);
+  if( 1==1 || par.idebug >0 ) fprintf('Wrote table of eigenWave results to file=[%s]\n',latexFileName); end
+
+  return
+
 end
 
-% fprintf('\\bigskip\n');
-% fprintf('%% ....................................... (a) .......................................................\n');
-% fprintf('\\noindent(a) FE results\n');
-% 
-% % FE - poly 
-% fprintf('\\begin{lstlisting}[frame=single,caption={insPP FE+CD2 poly(2,1)}]\n');
-% insPP -ts=fe -tf=.5 -ms=poly -idebug=1 -nu=0.1 -degreex=2 -degreet=1 -bc1=dirichlet -bc2=dirichlet -bc3=dirichlet -bc4=dirichlet -N0=10 -numResolutions=1
-% fprintf('\\end{lstlisting}\n');
-% 
-% fprintf('\\bigskip\n');
-% % FE - trig
-% fprintf('\\begin{lstlisting}[frame=single,caption={insPP FE+CD2 trig}]\n');
-% insPP -ts=fe -tf=.25 -ms=trig -idebug=1 -nu=0.1 -bc1=dirichlet -bc2=dirichlet -bc3=dirichlet -bc4=dirichlet -N0=10 -numResolutions=3
-% fprintf('\\end{lstlisting}\n');
-% 
-% 
-% 
-% fprintf('\\bigskip\n');
-% fprintf('%% ....................................... (b) .......................................................\n');
-% fprintf('\\noindent(b)  AB2 results.\n');
-% 
-% fprintf('\\begin{lstlisting}[frame=single,caption={insPP AB2 + poly(2,2)}]\n');
-% insPP -ts=ab2 -tf=.5 -ms=poly -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bc1=noSlipWall -bc2=dirichlet  -bc3=noSlipWall -bc4=dirichlet -N0=10 -numResolutions=1
-% fprintf('\\end{lstlisting}\n');
-% 
-% fprintf('\\begin{lstlisting}[frame=single,caption={insPP AB2 + trig}]\n');
-% insPP -ts=ab2 -tf=.25 -ms=trig -idebug=1 -nu=0.1 -bc1=noSlipWall -bc2=dirichlet -bc3=noSlipWall -bc4=dirichlet -N0=10 -numResolutions=3
-% fprintf('\\end{lstlisting}\n');
-% 
-% 
-% fprintf('\\bigskip\n');
-% fprintf('%% ....................................... (c) .......................................................\n');
-% fprintf('\\noindent(c) IMEX results. \n');
-% 
-% fprintf('\\begin{lstlisting}[frame=single,caption={insPP IMEX + poly(2,1)}]\n');
-% insPP -ts=im2 -tf=.5 -ms=poly -idebug=1 -nu=0.1 -degreex=2 -degreet=1 -bc1=noSlipWall -bc2=dirichlet  -bc3=noSlipWall -bc4=dirichlet -N0=10 -numResolutions=1
-% fprintf('\\end{lstlisting}\n');
-% 
-% 
-% fprintf('\\bigskip\n');
-% fprintf('\\begin{lstlisting}[frame=single,caption={insPP IMEX + trig}]\n');
-% insPP -ts=im2 -tf=.75 -ms=trig -idebug=1 -nu=0.1 -bc1=noSlipWall -bc2=dirichlet -bc3=noSlipWall -bc4=dirichlet -N0=10 -numResolutions=3
-% fprintf('\\end{lstlisting}\n');
-% 

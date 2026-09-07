@@ -5,11 +5,12 @@ function [ ut,vt,par,uLap,vLap ] = getUt( t,un,vn,pn, gf,cur, nuScaleFactor,par 
 
   cpu0 = cputime;
 
-  dx = par.dx;
-  dy = par.dy;
-  dr = par.dr(1);
-  ds = par.dr(2);  
-  nu = par.nu;
+  dx  = par.dx;
+  dy  = par.dy;
+  dr  = par.dr(1);
+  ds  = par.dr(2);  
+  nu  = par.nu;
+  rho = par.rho;
 
   if( ~strcmp(par.ms,'none') ) manufacturedSolution=1; else manufacturedSolution=0; end
 
@@ -71,13 +72,13 @@ function [ ut,vt,par,uLap,vLap ] = getUt( t,un,vn,pn, gf,cur, nuScaleFactor,par 
     vLap(I1,I2) = DpxDmx(vn,I1,I2) + DpyDmy(vn,I1,I2);
 
     if( nuScaleFactor~=0 )
-      ut(I1,I2) = -( un(I1,I2).*ux(I1,I2) + vn(I1,I2).*uy(I1,I2) + Dzx(pn,I1,I2) ) + nu*uLap(I1,I2) + uf(I1,I2);
-      vt(I1,I2) = -( un(I1,I2).*vx(I1,I2) + vn(I1,I2).*vy(I1,I2) + Dzy(pn,I1,I2) ) + nu*vLap(I1,I2) + vf(I1,I2);
+      ut(I1,I2) = -( un(I1,I2).*ux(I1,I2) + vn(I1,I2).*uy(I1,I2) + Dzx(pn,I1,I2) ) + nu*uLap(I1,I2) + uf(I1,I2) + par.gravityVector(1);
+      vt(I1,I2) = -( un(I1,I2).*vx(I1,I2) + vn(I1,I2).*vy(I1,I2) + Dzy(pn,I1,I2) ) + nu*vLap(I1,I2) + vf(I1,I2) + par.gravityVector(2);
 
     else
       % leave off viscous terms 
-      ut(I1,I2) = -( un(I1,I2).*ux(I1,I2) + vn(I1,I2).*uy(I1,I2) + Dzx(pn,I1,I2) ) + uf(I1,I2);
-      vt(I1,I2) = -( un(I1,I2).*vx(I1,I2) + vn(I1,I2).*vy(I1,I2) + Dzy(pn,I1,I2) ) + vf(I1,I2);
+      ut(I1,I2) = -( un(I1,I2).*ux(I1,I2) + vn(I1,I2).*uy(I1,I2) + Dzx(pn,I1,I2) ) + uf(I1,I2) + par.gravityVector(1);
+      vt(I1,I2) = -( un(I1,I2).*vx(I1,I2) + vn(I1,I2).*vy(I1,I2) + Dzy(pn,I1,I2) ) + vf(I1,I2) + par.gravityVector(2);
 
     end
 
@@ -134,12 +135,12 @@ function [ ut,vt,par,uLap,vLap ] = getUt( t,un,vn,pn, gf,cur, nuScaleFactor,par 
 
       % ut(i1,i2) = -( un(i1,i2)*ux(i1,i2) + vn(i1,i2)*uy(i1,i2) + px ) + nu*uLap + par.ufe(gf{cur}.x(i1,i2,1),gf{cur}.x(i1,i2,2),t);
       if( nuScaleFactor~=0 )
-        ut(i1,i2) = -( (un(i1,i2)-gv(1))*ux(i1,i2) + (vn(i1,i2)-gv(2))*uy(i1,i2) + px ) + nu*uLap(i1,i2) + uf(i1,i2);
-        vt(i1,i2) = -( (un(i1,i2)-gv(1))*vx(i1,i2) + (vn(i1,i2)-gv(2))*vy(i1,i2) + py ) + nu*vLap(i1,i2) + vf(i1,i2);
+        ut(i1,i2) = -( (un(i1,i2)-gv(1))*ux(i1,i2) + (vn(i1,i2)-gv(2))*uy(i1,i2) + px ) + nu*uLap(i1,i2) + uf(i1,i2) + par.gravityVector(1);
+        vt(i1,i2) = -( (un(i1,i2)-gv(1))*vx(i1,i2) + (vn(i1,i2)-gv(2))*vy(i1,i2) + py ) + nu*vLap(i1,i2) + vf(i1,i2) + par.gravityVector(2);
       else
         % leave off viscous terms 
-        ut(i1,i2) = -( (un(i1,i2)-gv(1))*ux(i1,i2) + (vn(i1,i2)-gv(2))*uy(i1,i2) + px ) + uf(i1,i2);
-        vt(i1,i2) = -( (un(i1,i2)-gv(1))*vx(i1,i2) + (vn(i1,i2)-gv(2))*vy(i1,i2) + py ) + vf(i1,i2);
+        ut(i1,i2) = -( (un(i1,i2)-gv(1))*ux(i1,i2) + (vn(i1,i2)-gv(2))*uy(i1,i2) + px ) + uf(i1,i2) + par.gravityVector(1);
+        vt(i1,i2) = -( (un(i1,i2)-gv(1))*vx(i1,i2) + (vn(i1,i2)-gv(2))*vy(i1,i2) + py ) + vf(i1,i2) + par.gravityVector(2);
       end
 
 
