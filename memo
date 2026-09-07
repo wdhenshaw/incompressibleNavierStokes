@@ -15,6 +15,9 @@ ins.m : solve INS with pressure-poisson
 ***************************************
 ***** Mon Sept 7, 2026
 
+
+git commit -m"wdh: changes to support free surface motion with surface tension"
+
 ADD CURVATURE TERM to pressre RHS
 
 Guassian:

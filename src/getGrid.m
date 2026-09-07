@@ -252,9 +252,9 @@ function [gf,par] = getGrid( t, gf,cur, par )
         if( par.bc(1,1)==par.periodic )
           conds='periodic';
         end   
-        if( par.idebug>0 )
-          fprintf('*** getGrid: create splines for the free surface for cur=%d t=%9.3e ***\n',cur,t);
-        end
+        % if( par.idebug>0 )
+        %   fprintf('*** getGrid: create splines for the free surface for cur=%d t=%9.3e ***\n',cur,t);
+        % end
 
         gf{cur}.ycs = splineInit( rv(J1),yv(J1),conds ); % spline is periodic using J1
         [yv,yvr] = splineEval( gf{cur}.ycs, rv );        % This should set the periodic images in yv 
