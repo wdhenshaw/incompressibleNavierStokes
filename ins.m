@@ -506,18 +506,13 @@ function outPar = ins(varargin)
 
     par.step = n;     % for titles
 
-    % par.gridMotionOption=par.predictGrid; 
-    % [gf,par] = getGrid( tnp1, gf,next, par );        
-
     if( strcmp(par.ts,'ab2') )
       % --- Adams-Bashforth order 2 ---
-
       par.nuScaleFactor=nuScaleFactor;
       [gf,par,ut,vt] = advanceAdams( t,dt, gf,cur, ut,vt,par );
 
     elseif( strcmp(par.ts,'pc2') )
       % ---PC2 = AB2 + AM2 predictor corrector order 2 ---
-
       par.nuScaleFactor=nuScaleFactor;
       [gf,par,ut,vt] = advancePC( t,dt, gf,cur, ut,vt,par );
 
@@ -596,13 +591,10 @@ function outPar = ins(varargin)
         dtOld = dt;
         dt = dtNew;
         par.dt=dt;
+        % Adjust AB2 coefficients for a variable time step:
         par.ab1=  dt*(1.+dt/(2.*dtOld));  % becomes 1.5*dt  if dt==dtOld
         par.ab2= -dt*    dt/(2.*dtOld);   %         -.5*dt        
 
-        % if( strcmp(par.ts,'im2') )
-        %   fprintf('time-step has changed, refactor the implicit matrix...\n');
-        %   par = formImplicitTimeSteppingMatrix( dt, par );
-        % end
       else
         if( par.idebug > 1 )
           fprintf('Do NOT change the time-step: rel-dt-diff=%9.2e\n',dtDiff);
@@ -661,13 +653,6 @@ function outPar = ins(varargin)
     fprintf('  plotting        %8.2e  %5.1f\n',par.cpuPlot,               par.cpuPlot/par.cpuTotal*100);
   end   
 
-  % fprintf('%s: t=%8.2e CPU=%7.1e ',ts,tnp1,cpu);
-  % if( m>1 )
-  %   fprintf(' ratios(u,v,p,div)=(%4.2f,%4.2f,%4.2f,%4.2f) rates=(%4.2f,%4.2f,%4.2f,%4.2f)\n',...
-  %                    erru(m-1)/erru(m),errv(m-1)/errv(m),errp(m-1)/errp(m),errDiv(m-1)/errDiv(m), ...
-  %                    log2(erru(m-1)/erru(m)),log2(errv(m-1)/errv(m)),log2(errp(m-1)/errp(m)),log2(errDiv(m-1)/errDiv(m))); 
-  % end
-  
   par.maxErr = maxErr;
   par.Nt = Nt;
   par.dt = dt;
@@ -686,66 +671,4 @@ function outPar = ins(varargin)
 end
 
 
-% --- Utility functions ---
 
-% -----------------------------------------------------------------------
-% convert a bc name (e.g. 'noSlipWall') to the corresponding integer flag
-% -----------------------------------------------------------------------
-function [ bcNumber ] = bcNameToNumber( bcName )
-
- globalDeclarations;
-
- if( strcmp(bcName,'periodic') )
-   bcNumber=periodic;
- elseif( strcmp(bcName,'dirichlet') )
-   bcNumber=dirichlet;
- elseif( strcmp(bcName,'noSlipWall') )
-   bcNumber=noSlipWall;
- elseif( strcmp(bcName,'slipWall') )
-   bcNumber=slipWall;
- elseif( strcmp(bcName,'inflow') )
-   bcNumber=inflow;
- elseif( strcmp(bcName,'outflow') )
-   bcNumber=outflow;
- else
-  fprintf('bcNameToNumber:ERROR: unknown bcName=[%s]\n',bcName); pause; 
- end
-end
-
-
-
-% -----------------------------------------------------------------------
-% Function to compute modulus with base 1 
-% -----------------------------------------------------------------------
-function [ mm ] = myMod( m,numberOfTimeLevels )
-  mm = mod( m-1,numberOfTimeLevels)+1; 
-end
-
-% -----------------------------------------------------------------------
-% Function getReal: read a command line argument for a real variable
-% -----------------------------------------------------------------------
-function [ val ] = getReal( line,name,val)
- % fprintf('getReal: val=%g line=[%s] name=[%s]\n',val,line,name);
- if( strncmp(line,strcat(name,'='),length(name)+1) )
-   val = sscanf(line,sprintf('%s=%%e',name)); 
-   % fprintf('getReal: scan for val=%g\n',val);
- end
-end
-
-% -----------------------------------------------------------------------
-% Function getInt: read a command line argument for an integer variable
-% -----------------------------------------------------------------------
-function [ val ] = getInt( line,name,val)
- if( strncmp(line,strcat(name,'='),length(name)+1) )
-   val = sscanf(line,sprintf('%s=%%d',name)); 
- end
-end
-
-% -----------------------------------------------------------------------
-% Function getString: read a command line argument for a string variable
-% -----------------------------------------------------------------------
-function [ val ] = getString( line,name,val)
- if( strncmp(line,strcat(name,'='),length(name)+1) )
-   val = sscanf(line,sprintf('%s=%%s',name)); 
- end
-end

@@ -13,6 +13,13 @@ ins.m : solve INS with pressure-poisson
 
 
 ***************************************
+***** Tues Sept 8, 2026
+
+
+ins -ts=im2 -tf=1 -tp=0.1 -ms=none -knownSolution=TaylorGreen -nu=0.1  -bcs=nnnn -N0=40 -idebug=1 -plotOption=1 -movieMode=1 -dtMax=1e-2;
+ins -ts=pc2 -tf=1 -tp=0.1 -ms=none -knownSolution=TaylorGreen -nu=0.1  -bcs=nnnn -N0=40 -idebug=1 -plotOption=1 -movieMode=1;
+
+***************************************
 ***** Mon Sept 7, 2026
 
 

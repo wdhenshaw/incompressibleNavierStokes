@@ -130,7 +130,7 @@ function runGridConvergence( varargin )
 
 
   fclose(output);
-  if( 1==1 || par.idebug >0 ) fprintf('Wrote table of eigenWave results to file=[%s]\n',latexFileName); end
+  if( 1==1 || par.idebug >0 ) fprintf('Wrote table of ins results to file=[%s]\n',latexFileName); end
 
   return
 

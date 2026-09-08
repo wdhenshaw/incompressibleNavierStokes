@@ -1,7 +1,7 @@
 \babel@toc {english}{}\relax 
 \contentsline {section}{\numberline {1}Matlab files}{2}{section.1}%
 \contentsline {section}{\numberline {2}Introduction, governing equations, boundary conditions}{2}{section.2}%
-\contentsline {subsection}{\numberline {2.1}Boundary conditions}{2}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.1}Boundary conditions}{3}{subsection.2.1}%
 \contentsline {paragraph}{\textbf {No-slip wall or inflow}}{3}{equation.2.6}%
 \contentsline {paragraph}{\textbf {Slip wall}}{3}{equation.2.7}%
 \contentsline {paragraph}{\textbf {Outflow}}{3}{equation.2.11}%
