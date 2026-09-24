@@ -4,21 +4,12 @@
 \expandafter\ifx\csname urlprefix\endcsname\relax\def\urlprefix{URL }\fi
 
 \bibitem{CGNS}
-G.~S. Chesshire, W.~D. Henshaw, Composite overlapping meshes for the solution
-  of partial differential equations 90~(1) (1990) 1--64\citeCount{527},
-  \url{publications/cgns1990.pdf}.
+G.~S. Chesshire, W.~D. Henshaw, Composite overlapping meshes for the solution of partial differential equations, JCP 90~(1) (1990) 1--64\citeCount{527}, \url{publications/cgns1990.pdf}.
 
 \bibitem{splitStep2003}
-W.~D. Henshaw, N.~A. Petersson, A split-step scheme for the incompressible
-  {Navier-Stokes} equations, in: M.~M. Hafez (Ed.), Numerical Simulation of
-  Incompressible Flows, World Scientific, 2003, pp. 108--125\citeCount{50},
-  \url{publications/henshawPetersson2001.pdf}.
+W.~D. Henshaw, N.~A. Petersson, A split-step scheme for the incompressible {Navier-Stokes} equations, in: M.~M. Hafez (Ed.), Numerical Simulation of Incompressible Flows, World Scientific, 2003, pp. 108--125\citeCount{50}, \url{publications/henshawPetersson2001.pdf}.
 
 \bibitem{fins2020}
-F.~Meng, J.~W. Banks, W.~D. Henshaw, D.~W. Schwendeman, Fourth-order accurate
-  fractional-step {IMEX} schemes for the incompressible {Navier-Stokes}
-  equations on moving overlapping grids, Computer Methods in Applied Mechanics
-  and Engineering 366 (2020) 113040,
-  \url{publications/FourthOrderAccurateFractionalStepIMEXSchemeForINSOnMovingGrids_MengBanksHenshawSchwendeman2020.pdf}.
+F.~Meng, J.~W. Banks, W.~D. Henshaw, D.~W. Schwendeman, Fourth-order accurate fractional-step {IMEX} schemes for the incompressible {Navier-Stokes} equations on moving overlapping grids, Computer Methods in Applied Mechanics and Engineering 366 (2020) 113040, \url{publications/FourthOrderAccurateFractionalStepIMEXSchemeForINSOnMovingGrids_MengBanksHenshawSchwendeman2020.pdf}.
 
 \end{thebibliography}

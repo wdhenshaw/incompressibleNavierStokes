@@ -52,7 +52,7 @@ ins -ts=im2  -tf=.5 -ms=none -knownSolution=TaylorGreen -idebug=1 -nu=0.1 -bcs=n
 \begin{figure}[htb]
 \begin{center}
 \begin{tikzpicture}[scale=1]
-  \useasboundingbox (0,.6) rectangle (16,9.5);  % set the bounding box (so we have less surrounding white space)
+  \useasboundingbox (0, 0.6) rectangle (16,9.5);  % set the bounding box (so we have less surrounding white space)
 
 
   \begin{scope}[yshift=\figHeight]
@@ -76,6 +76,28 @@ ins -ts=im2  -tf=.5 -ms=none -knownSolution=TaylorGreen -idebug=1 -nu=0.1 -bcs=n
 }
 
 
+\clearpage
+\subsection{Travelling Wave of a Linearized Surface} \label{sec:travelling_wave_linear_surface}
+Consider an irrotational fluid flow such that there exists a scalar function $\varphi$ where
+\begin{align} \label{eq:VelocityPotentialDefinition}
+	\mathbf u &= \nabla \varphi
+\end{align}
+Then assuming that for a given wave number $k = 2 \pi n / L$ that the free surface is a travelling wave of amplitude $0 < \eta_0 \ll 1$
+\begin{align} \label{eq:FreeSurface}
+	\eta(x, t) &= \eta_0 \cos(kx - \omega t)
+\end{align}
+We have that our equation for the velocity potential and dispersion relation is given by
+\begin{subequations}
+\begin{align} \label{eq:FreeSurfaceEquations}
+	\varphi(\mathbf x, t) &= \frac{g}{ \omega } \left( 1 + \frac{k^2L^2}{\text{Bo}} \right) \frac{ \cosh( ky + kH) }{ \cosh(kH) } \cdot - \eta_0 \sin(kx - \omega t) \\
+	\omega^2 &= kg \left( 1 + \frac{k^2 L^2} {\text{Bo}}  \right) \tanh( kH )
+\end{align}
+\end{subequations}
+And the pressure of the fluid given by
+
+\begin{align} \label{eq:Pressure}
+	p &= p_0 - \rho ( \varphi_t + g y)
+\end{align}
 
 % -------------------------------------------------------------------
 \clearpage

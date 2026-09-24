@@ -162,6 +162,8 @@ function [gf,par] = getGrid( t, gf,cur, par )
             yv = amp*sin(par.kx*rv);
           elseif( strcmp(par.icfs,'gaussian') )
             yv = amp*exp( - (par.betag*(xv-par.x0g)).^2 );
+		  elseif (strcmp(par.icfs,'cos'))
+	        yv = amp*cos(par.kx*xv - par.DispersionRelation * t);
           else
             fprintf('\n getGrid:ERROR: unknown free surface initial condition, icsf=[%s]\n',par.icsf);
           end

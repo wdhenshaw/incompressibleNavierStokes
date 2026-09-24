@@ -1,0 +1,35 @@
+MATLAB UTILITY ROUTINES
+
+cd ~/Dropbox/matlabUtilities
+
+(*) printArray.m                       : Output an array to a file in a nice format 
+
+(*) initPolyTZ.m, polyTZ.m, testPoly.m : polynomial twilight zone (manufactured solutions)
+
+(*) trigTZ.m, testTrig.m               : trigonometric twilight zone (manufactured solutions)
+
+(*) assignCommandLineOption.m          : read command line options
+
+(*) clearOpenFigures.m                 : clear a list of open figures (often placed near the top of a main routine)
+
+(*) savePlotFile.m                     : Save a matlab plot as a pdf (uses /usr/local/bin/ps2pdf to crop the file)
+
+============== RESULTS FROM TEST ROUTINES =========
+
+
+>> testPoly 
++++ initPolyTZ : DEFINE POLY COEFF degreex=2 degreet=2 nc=2 ++++
+Max error in ux  =  9.8e-12
+Max error in uyy =  1.5e-08
+Max error in ut  =  7.4e-12
+
+>> testPoly -degreex=2 -degreet=3 -userCoeff=1
+Max error in ux  =  9.2e-11
+Max error in uyy =  1.1e-07
+Max error in ut  =  1.8e-10
+
+>> testTrig
+Max error in ux  =  7.0e-09
+Max error in uy  =  3.2e-08
+Max error in uyy =  3.9e-05
+Max error in ut  =  6.4e-09

@@ -13,6 +13,15 @@ ins.m : solve INS with pressure-poisson
 
 
 ***************************************
+***** TO COMMIT:
+
+git commit -m "gw: Added Known Solution GravityCapillaryWave"
+
+runGridConvergence -ts=pc2 -tf=.25 -ms=none -knownSolution=GravityCapillaryWave -bcs=ppnt -numResolutions=3 -gravity=-1 -map=freeSurface -motion=freeSurfaceMotion;
+
+ins -ts=ab2 -tf=1 -tp=.01 -ms=none -knownSolution=GravityCapillaryWave -nu=0.1  -bcs=ppnt -N0=40 -idebug=1 -gravity=-1 -gamma=0 -computeErrors=1 -plotOption=3 -movieMode=0 -plotEveryStep=1 -ya=-1 -yb=0 -icfs=cos -ampfs=1e-2 -plotGrid=1 -motion=freeSurfaceMotion -map=freeSurface;
+
+***************************************
 ***** Tues Sept 8, 2026
 
 

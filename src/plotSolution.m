@@ -71,7 +71,7 @@ function par = plotSolution( tn,un,vn,pn, gf,cur, par)
       xwidth = 900; % *(gf{cur}.xb-gf{cur}.xa);
       ywidth = 250*par.plotAspectRatio;  % *(par.yb-par.ya);
     end
-    if( 1==1 )
+    if( 1==0 )
       pos = get(gcf,'position');  pos(3) = xwidth; pos(4) = ywidth; set(gcf,'position',pos);  
     end
 

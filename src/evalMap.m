@@ -177,6 +177,8 @@ function par = evalMap( par )
       yv = ampt*sin(par.kx*rv);
     elseif( strcmp(par.icfs,'gaussian') )
       yv = ampt*exp( - (par.betag*(xv-par.x0g)).^2 );
+	elseif (strcmp(par.icfs,'cos'))
+	  yv = ampt*cos(par.kx*xv);
     else
       fprintf('\n getGrid:ERROR: unknown free surface initial condition, icsf=[%s]\n',par.icsf);
     end    

@@ -12,6 +12,7 @@
 function outPar = ins(varargin)
 
   % clear; clf; 
+  addpath('src/'); addpath('matlabUtilities/'); % Add src files and matlabUtils
 
   clearvars -except varargin;
    % --- Clear all open figures ----
@@ -30,9 +31,9 @@ function outPar = ins(varargin)
   set(0,'DefaultLineLineWidth',lineWidth);
   set(0,'DefaultAxesFontSize',fontSize);
 
-  % load the rainbow colour table
+  % load the rainbow colour table & load to par
   rainbow;
-
+  par.rainbowMap = rainbowMap;
 
   par.periodic       =-1; 
   par.dirichlet      = 1; 
@@ -84,6 +85,8 @@ function outPar = ins(varargin)
   par.plotVorticity=0;             % 1 = plot vorticity and streamlines
   par.plotAspectRatio=-1;          % plot aspect ratio
 
+  par.verbose=0; % Change to increase amount outputed
+
   par.nu      =.1;                 % coefficient of diffusion
   par.rho     = 1;                 % FIX ME for rho .ne. 1
   par.gravity = 0;                 % acceleration due to gravity is [0,par.gravity]
@@ -114,7 +117,7 @@ function outPar = ins(varargin)
   par.shearDeltav=1e-2;            % amplitude of perturbation in v for shear flow IV
 
   % free surface parameters:
-  par.icfs  = 'sine';              % free surface initial condition ['sine','gaussian']
+  par.icfs  = 'sine';              % free surface initial condition ['sine','gaussian','cos']
   par.ampfs = 0.05;                % initial free surface amplitude
   par.betag = 10.;                 % gaussian parameter affecting how narrow the gaussian is 
   par.x0g   = 0.5;                 % centre for the gaussian

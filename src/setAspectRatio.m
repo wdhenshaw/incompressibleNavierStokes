@@ -1,5 +1,9 @@
 function setAspectRatio()
 
+	if( true)
+		return
+	end
+
   % axis equal;
   h = get(gca,'DataAspectRatio'); 
   if h(3)==1

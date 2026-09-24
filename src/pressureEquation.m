@@ -475,6 +475,7 @@ function [p,par] = pressureEquation( t,u,v,dt, gf,cur, par )
   %    NOTE: rhs for extrapolation and periodic equations are zero 
   if( ~strcmp(par.ms,'none') ) manufacturedSolution=1; else manufacturedSolution=0; end    
   if( ~strcmp(par.ms,'none') || ~strcmp(par.knownSolution,'none') ) addBoundaryForcing=1; else addBoundaryForcing=0; end
+  if( strcmp(par.knownSolution, 'GravityCapillaryWave') ) addBoundaryForcing=0; end
 
   for side=1:2
     for axis=1:2
