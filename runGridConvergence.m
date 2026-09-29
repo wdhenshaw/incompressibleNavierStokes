@@ -24,7 +24,7 @@ function runGridConvergence( varargin )
  par.tf=0.25;
  par.idebug=0; 
  par.map = 'Cartesian';           % 'Cartesian', 'Rectangle', 'Annulus', 'TFI', ...
- par.bcs='nnnn'; 
+ par.bcs='dddd'; 
  par.motion='none';
  par.dtMax=1e8; 
 
@@ -49,16 +49,16 @@ function runGridConvergence( varargin )
     Nx= par.N0*2^(ires-1); 
 
 
-    cmd = sprintf('ins -ts=%s -tzScale=1 -tf=%g -ms=%s -knownSolution=%s -idebug=%d -nu=0.1 -bcs=%s -N0=%d -map=%s -motion=%s -dtMax=%g -plotOption=-1 -gravity=%g -gamma=%g -computeErrors=1',...
+    cmd = sprintf('ins -ts=%s -tzScale=1 -tf=%g -ms=%s -knownSolution=%s -idebug=%d -nu=0.1 -bcs=%s -N0=%d -map=%s -motion=%s -dtMax=%g -plotOption=-1 -gravity=%g -gamma=%g -computeErrors=1 -ampfs=1e-4 -icfs=cos -ya=-1 -yb=0 ;',...
               par.ts,par.tf,par.ms,par.knownSolution, par.idebug,par.bcs, Nx, par.map, par.motion,par.dtMax, par.gravity, par.gamma);
 
 	% Add necessary flags for some known solutions
-	if( strcmp(par.knownSolution, 'GravityCapillaryWave') )
-		cmd = sprintf('%s -ampfs=1e-2 -icfs=cos;', cmd);
-	end
+	% if( strcmp(par.knownSolution, 'GravityCapillaryWave') )
+	% 	cmd = sprintf('%s\b ', cmd);
+	% end
 
     % cmd = sprintf('ins -ts=ab2 -tzScale=1 -tf=.1 -ms=poly -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bc1=noSlipWall -bc2=dirichlet  -bc3=noSlipWall -bc4=dirichlet -plotOption=0 -N0=%d;',Nx);
-    % fprintf('Running [%s]\n',cmd);
+    fprintf('Running [%s]\n',cmd);
     eval(cmd); 
 
     % output results from the run are found here:

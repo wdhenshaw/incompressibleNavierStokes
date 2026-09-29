@@ -139,6 +139,9 @@
 % \author[rpi]{Donald~W.~Schwendeman\fnref{NSFgrants}}
 % \ead{schwed@rpi.edu}
 
+\author[rpi]{Gabriel Weredyk}
+\ead{weredg@rpi.edu}
+
 
 \address[rpi]{Department of Mathematical Sciences, Rensselaer Polytechnic Institute, Troy, NY 12180, USA}
 
@@ -177,38 +180,7 @@
 
 
 % -----------------------------------------------------------------
-\newpage
-\section{Matlab files}
-
-\begin{table}[H]\small % you should set \tableFont to \footnotesize or other size
-% \newcommand{\num}[2]{#1e{#2}} % use this command to set the format of numbers in the table.
-\begin{center}
-\begin{tabular}{ll} % \hline 
-  ins.m                             &  Main routine . \\
-  runChecks.m                       &  Run regression tests. \\
-  runGridConvergence.m              &  Run a grid convergence test. \\
-  advanceAdams.m                    &  Adams time-stepping. \\
-  advanceIM.m                       &  IMEX time-stepping. \\
-  advancePC.m                       &  Predictor-Corrector time-stepping. \\
-  applyBoundaryConditions.m         & apply (explicit) boundary conditions  \\
-  pressureEquation.m                & form pressure equation and solve \\
-  evalMap.m                         & eval the grid mapping and derivatives \\
-  formImplicitTimeSteppingMatrix.m  & form systems for implicit time-stepping of $u$ or $v$ \\
-  formImplicitTimeSteppingMatrixCombined.m  & form systems for implicit time-stepping for $(u,v)$ \\
-  getGrid.m                         & get the grid for moving grid problems \\
-  getTimeStep.m                     & compute the time-step \\
-  solveImplicitTimeStep.m           & solve the implicit time-step equations of $u$ or $v$ \\
-  solveImplicitTimeStepCombined.m   & solve the implicit time-step equations for $(u,v)$ \\
-  getInitialConditions.m            & assign initial conditions \\
-  getUt.m                           & evaluate momentum equations \\
-  getTimeStep.m                     & determine the time-step $\dt$ \\
-  plotSolution.m                    & plot solution contours and streamlines \\
-  plotStreamLines.m                 & stream line plotter 
-\end{tabular}
-  \caption{Selected ins Matlab files.}
-\end{center}
-\end{table}
-
+\input tex/matlab
 
 \input tex/intro
 

@@ -15,6 +15,9 @@ function outPar = ins(varargin)
   addpath('src/'); addpath('matlabUtilities/'); % Add src files and matlabUtils
 
   clearvars -except varargin;
+	
+  varargin
+
    % --- Clear all open figures ----
   clearOpenFigures(1:7);
 
@@ -32,6 +35,7 @@ function outPar = ins(varargin)
   set(0,'DefaultAxesFontSize',fontSize);
 
   % load the rainbow colour table & load to par
+  % NOTE: Not assigned by user, just assigning variables
   rainbow;
   par.rainbowMap = rainbowMap;
 
@@ -46,6 +50,7 @@ function outPar = ins(varargin)
 
   par.uc=1; par.vc=2; par.pc=3;    % component numbers
 
+  % NOTE: Start of user defined variables
   par.numThreads=1;                % max number of threads Matlab is allowed to use 
   par.nd=2;                        % number of space dimensions
   par.tf=.5;                       % final time 
@@ -61,7 +66,6 @@ function outPar = ins(varargin)
   par.plotName  = 'ins';           % for plot name 
 
   par.map = 'Cartesian';           % 'Cartesian', 'Rectangle', 'Annulus', 'TFI', 'rotatedSquare', 'freeSurface', ...
-
 
   par.checkFileName = 'ins.check'; % name of the check file
 
@@ -115,6 +119,8 @@ function outPar = ins(varargin)
 
   par.shearBeta = 40;              % parameter in shear flow IC u = tanh(beta*(y-ym))
   par.shearDeltav=1e-2;            % amplitude of perturbation in v for shear flow IV
+
+  par.perturbation=1e-3;
 
   % free surface parameters:
   par.icfs  = 'sine';              % free surface initial condition ['sine','gaussian','cos']
@@ -170,6 +176,7 @@ function outPar = ins(varargin)
 
   par.echo = 0;
 
+  % NOTE: Default par arguments end here!!!!
   % --- read command line args ---
   for i = 1 : nargin
     line = varargin{i};

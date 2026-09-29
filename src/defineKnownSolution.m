@@ -87,17 +87,16 @@ elseif( strcmp(knownSolution,'GravityCapillaryWave') )
 	% Store important dimensionless parameters
 
 	% Inverse of the bond number, ratio between surface tension & bouyant forces
-	BoInv = par.gamma / ( ( rho  * g * L^2 ) ) ;
+	% BoInv = par.gamma / ( ( rho  * g * L^2 ) ) ;
 
 	% Wave number times different spatial scales
 	kH = kx * H;
-	kL = kx * L;
+
+	% Store commonly occuring dimensionless quantity
+	Pi = 1 + (kx^2 * par.gamma) / ( ( rho  * g  ) ) ;
 
 	% The dispersion relation for the specified wave number
-	omega = sqrt( ...
-		g * kx * ...
-		( 1 + kL^2 * BoInv) * ...
-		tanh( kH ) );
+	omega = sqrt( g * kx * Pi * tanh( kH ) );
 
 	if (~~imag(omega))
 		warning(sprintf('Dispersion Relation Has Imaginary Component %g!!', imag(omega)));
@@ -110,27 +109,26 @@ elseif( strcmp(knownSolution,'GravityCapillaryWave') )
 	wave = @(x, t) ampu * exp( 1i * ( kx * x - omega * t) );
 
 	% Partial derivatives of wave function
-	wavex = @(x, t)  1i * kx * wave(x, t);
-	wavet = @(x, t) -1i * omega  * wave(x, t);
+	wavex  = @(x, t)   1i *    kx * wave(x, t);
+	wavet  = @(x, t)  -1i * omega * wave(x, t);
+
 	wavext = @(x, t) kx * omega * wave(x, t);
-	wavexx = @(x, t) -(kx^2) * wave(x, t);
+	wavexx = @(x, t)    -(kx^2) * wave(x, t);
 
 	% Coefficient function in y for fluid potential
-	phiHat = @(y) -1i * (g / omega) * (1 + kL^2 * BoInv) * (cosh(kx * y + kH) / cosh(kH));
-	phiHaty = @(y) -1i * (g * kx / omega) * (1 + kL^2 * BoInv) * (sinh(kx * y + kH) / cosh(kH));
+	phiHat   = @(y)      -1i * (g / omega) * Pi * (cosh(kx * y + kH) / cosh(kH));
+	phiHaty  = @(y) kx * -1i * (g / omega) * Pi * (sinh(kx * y + kH) / cosh(kH));
+
 	phiHatyy = @(y) kx^2 * phiHat(y);
 
 	% Define exact solution & partial derivatives
-	par.ue = @(x, y, t)            real( phiHat  (y) .* wavex (x, t) );
-	par.ve = @(x, y, t)            real( phiHaty (y) .* wave  (x, t) );
+	par.ue = @(x, y, t)          real( phiHat  (y) .* wavex (x, t) );
+	par.ve = @(x, y, t)          real( phiHaty (y) .* wave  (x, t) );
 
-	par.uet = @(x, y, t)           real( phiHat  (y) .* wavext(x, t) );
-	par.vet = @(x, y, t)           real( phiHaty (y) .* wavet (x, t) );
+	par.uet = @(x, y, t)         real( phiHat  (y) .* wavext(x, t) );
+	par.vet = @(x, y, t)         real( phiHaty (y) .* wavet (x, t) );
 
-	% par.uexy = @(x, y, t)          real( phiHaty (y) .* wavexx(x, t) );
-	% par.vexy = @(x, y, t)          real( phiHatyy(y) .* wavex (x, t) );
-
-	par.pe =  @(x, y, t) - rho * real( phiHat  (y) .* wavet (x, t) + g * y );
+	par.pe  = @(x, y, t) - rho * real( phiHat  (y) .* wavet (x, t) + g * y );
 	par.pex = @(x, y, t) - rho * real( phiHat  (y) .* wavext(x, t) );
 	par.pey = @(x, y, t) - rho * real( phiHaty (y) .* wavet (x, t) + g );
 

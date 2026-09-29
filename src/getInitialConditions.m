@@ -41,7 +41,21 @@ function [gf,par] = getInitialConditions( t,gf,cur, par )
 
     
 
+   elseif ( strcmp(par.ic, 'perturbedPoiseuille') )
+		
+	ampu = (par.pressureInflowValue - par.pOutflow) / ( 2 * par.mu );
 
+	epsilon = par.perturbation;
+
+	uPert =   cos( par.kx * par.x(:,:,1) ) .* sin( par.kx * par.x(:,:,2)) ;
+	vPert = - sin( par.kx * par.x(:,:,1) ) .* cos( par.kx * par.x(:,:,2)) ;
+
+	% uPert = ( (cos( par.kx*par.x(:,:,1))).^3 + cos( par.kx*( par.x(:,:,1) + par.x(:, :, 2))) ) .* sin( par.ky*(par.x(:,:,2)) ) ;
+	% vPert = sin( par.kx*(par.x(:,:,1)) ) .* sin( par.kx*par.x(:,:,2)) ;
+
+	  gf{cur}.u(:,:)= ampu * ( 1 - par.x(:,:,2) ) .* par.x(:,:,2) + epsilon * uPert;
+      gf{cur}.v(:,:)= epsilon * vPert;
+  
   else
   	fprintf('getInitialConditions: unknown initial condition ic=[%s]\n',par.ic);
   	pause;

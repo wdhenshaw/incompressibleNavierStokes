@@ -11,15 +11,61 @@ git clone https://github.com/wdhenshaw/incompressibleNavierStokes.git incompress
 
 ins.m : solve INS with pressure-poisson
 
+***************************************
+***** Thu Sept 24, 2026
+
+git commit -m "gw: Added code to test all configs of BCs"
+
+Poiseuille w/ initial perturbation
+Over short time scale
+ins -ts=pc2 -tf=0.02 -plotEveryStep=1 -ms=none -knownSolution=none -idebug=1 -nu=0.1 -bcs=Ionn -N0=40 -ic=perturbedPoiseuille -movieMode=1 -plotOption=3 -pressureInflowValue=0 -uInflow=0 -outflowPressureCoeffp=1 -outflowPressureCoeffpn=0 -pOutflow=-1 -perturbation=2.5e-1;
+
+Over a long timescale:
+ins -ts=pc2 -tf=12 -tp=0.75 -ms=none -knownSolution=none -idebug=1 -nu=0.1 -bcs=Ionn -N0=40 -ic=perturbedPoiseuille -movieMode=1 -plotOption=3 -pressureInflowValue=0 -uInflow=0 -outflowPressureCoeffp=1 -outflowPressureCoeffpn=0 -pOutflow=-1 -perturbation=2.5e-1;
+
+Poiseuille from ICs
+ins -ts=pc2 -tf=10 -tp=1.0 -ms=none -knownSolution=none -idebug=1 -nu=0.1 -bcs=Ionn -N0=40 -ic=zero -movieMode=1 -plotOption=3 -pressureInflowValue=0 -uInflow=0 -outflowPressureCoeffp=1 -outflowPressureCoeffpn=0 -pOutflow=-1 -perturbation=0;
+
+Poiseuille from Known Solution
+ins -ts=pc2 -tf=10.0 -tp=1.0 -ms=none -knownSolution=Poiseuille -nu=0.1  -bcs=Innn -N0=40 -plotOption=1 -movieMode=1 -dtMax=1e-2 -idebug=1 -pressureInflowValue=0 -uInflow=0;
+
+
+Test different BC configurations
+runGridConvergence -ts=pc2 -tf=.25 -ms=trig -numResolutions=4 -bcs=nnnn
+runGridConvergence -ts=pc2 -tf=.25 -ms=trig -numResolutions=4 -bcs=ssss
+runGridConvergence -ts=pc2 -tf=.25 -ms=trig -numResolutions=4 -bcs=iiii
+runGridConvergence -ts=pc2 -tf=.25 -ms=trig -numResolutions=4 -bcs=IIII
+runGridConvergence -ts=pc2 -tf=.25 -ms=trig -numResolutions=4 -bcs=oooo
+
+Generate gridConvergence tables for different time step procedures
+runGridConvergence -ts=ab2 -tf=.25 -ms=trig -numResolutions=4 -bcs=pppp
+runGridConvergence -ts=pc2 -tf=.25 -ms=trig -numResolutions=4 -bcs=pppp
+runGridConvergence -ts=im2 -tf=.25 -ms=trig -numResolutions=3 -bcs=pppp -dtMax=.01
+
 
 ***************************************
-***** TO COMMIT:
+***** Thu Sept 24, 2026
 
 git commit -m "gw: Added Known Solution GravityCapillaryWave"
 
-runGridConvergence -ts=pc2 -tf=.25 -ms=none -knownSolution=GravityCapillaryWave -bcs=ppnt -numResolutions=3 -gravity=-1 -map=freeSurface -motion=freeSurfaceMotion;
+% GW: Commands I want to run
+runGridConvergence -ts=pc2 -tf=.25 -ms=none -knownSolution=GravityCapillaryWave -bcs=dddd -numResolutions=3 -gravity=-1 -map=freeSurface -motion=freeSurfaceMotion;
+ins -ts=pc2 -tf=1 -tp=.1 -knownSolution=GravityCapillaryWave -nu=0.1  -bcs=dddd -N0=40 -idebug=1 -gravity=-1 -gamma=0 -computeErrors=1 -plotOption=3 -movieMode=1 -ya=-1 -yb=0 -icfs=cos -ampfs=1e-2 -plotGrid=0 -motion=freeSurfaceMotion -map=freeSurface;
 
-ins -ts=ab2 -tf=1 -tp=.01 -ms=none -knownSolution=GravityCapillaryWave -nu=0.1  -bcs=ppnt -N0=40 -idebug=1 -gravity=-1 -gamma=0 -computeErrors=1 -plotOption=3 -movieMode=0 -plotEveryStep=1 -ya=-1 -yb=0 -icfs=cos -ampfs=1e-2 -plotGrid=1 -motion=freeSurfaceMotion -map=freeSurface;
+% GW: GCW on refrence domain with fake dirichlet
+runGridConvergence -ts=pc2 -tf=.05 -ms=none -knownSolution=GravityCapillaryWave -bcs=dddd -numResolutions=3 -gravity=-1 -N0=100;
+runGridConvergence -ts=pc2 -tf=1 -ms=none -knownSolution=GravityCapillaryWave -bcs=dddd -numResolutions=1 -N0=40 -gravity=-1;
+
+% GW: Run INS on GCW with
+ins -ts=im2 -tf=1 -tp=.1 -ms=none -knownSolution=GravityCapillaryWave -nu=0.1  -bcs=dddd -N0=40 -idebug=1 -gravity=-1 -gamma=0 -computeErrors=1 -plotOption=3 -movieMode=1 -ya=-1 -yb=0 -icfs=cos -ampfs=1e-8 -plotGrid=0;
+
+
+ins -ts=pc2 -tf=1 -tp=.1 -ms=none -knownSolution=GravityCapillaryWave -nu=0.1  -bcs=dddd -N0=20 -idebug=0 -gravity=-1 -gamma=0 -computeErrors=1 -plotOption=0 -movieMode=0 -ya=-1 -yb=0 -icfs=cos -ampfs=1e-8 -plotGrid=0;
+
+% GW: runGridConvergence cmd
+ins -ts=pc2 -tzScale=1 -tf=1 -ms=none -knownSolution=GravityCapillaryWave -idebug=0 -nu=0.1 -bcs=dddd -N0=40 -map=Cartesian -motion=none -dtMax=1e+08 -plotOption=1 -idebug=1 -gravity=-1 -gamma=0 -computeErrors=1 -ampfs=1e-8 -icfs=cos;
+
+p
 
 ***************************************
 ***** Tues Sept 8, 2026

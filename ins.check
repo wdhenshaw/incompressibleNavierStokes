@@ -1,8 +1,8 @@
 --------------------- INS Check File --------------------------
-ms=none, ts=pc2, bcs=ppnt, knownSolution=GravityCapillaryWave
-nu= 1.00e-01, cfl= 9.00e-01, tFinal= 2.50e-01, cdv= 1.00e+00
+ms=none, ts=pc2, bcs=dddd, knownSolution=GravityCapillaryWave
+nu= 1.00e-01, cfl= 9.00e-01, tFinal= 1.00e+00, cdv= 1.00e+00
 ad=0, ad21= 1.00e-01, ad22= 1.00e-01
-Nx=20 Ny=20 Nt=132 dt=1.89e-03
-uNorm=2.91e-03, vNorm=6.25e-03, pNorm=5.26e-01
-maxDivU=1.89e-04, maxGradU=9.78e-02
-max-Err(p,u,v)=(5.44e-03,2.68e-02,2.02e-02)
+Nx=40 Ny=40 Nt=813 dt=1.23e-03
+uNorm=1.56e-05, vNorm=1.57e-05, pNorm=1.03e+00
+maxDivU=8.40e-07, maxGradU=2.37e-04
+max-Err(p,u,v)=(1.25e-07,5.11e-08,3.27e-08)
