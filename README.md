@@ -43,4 +43,4 @@ SAMPLE RUNS:
    ins -ts=pc2 -tf=1 -tp=0.05 -ms=none -kx=2 -knownSolution=none -nu=0.01 -cdv=0 -bcs=ppst -idebug=1 -movieMode=1 -motion=freeSurfaceMotion -map=freeSurface -icfs=gaussian -ampfs=0.15 -plotEveryStep=0 -plotOption=3 -gravity=-10 -ic=zero -plotGrid=1 -plotAspectRatio=2.5 -checkTimeStep=5 -N0=40;
 
    IM2: 
-   ins -ts=im2 -tf=1 -tp=0.05 -ms=none -kx=2 -knownSolution=none -nu=0.01 -cdv=0 -bcs=ppst -idebug=1 -movieMode=1 -motion=freeSurfaceMotion -map=freeSurface -icfs=gaussian -ampfs=0.15 -plotEveryStep=0 -plotOption=3 -gravity=-10 -ic=zero -plotGrid=1 -plotAspectRatio=2.5 -checkTimeStep=5 -dtMax=1e-2 -N0=40;
+   ins -ts=im2 -tf=1 -tp=0.05 -ms=none -kx=2 -knownSolution=tone -nu=0.01 -cdv=0 -bcs=ppst -idebug=1 -movieMode=1 -motion=freeSurfaceMotion -map=freeSurface -icfs=gaussian -ampfs=0.15 -plotEveryStep=0 -plotOption=3 -gravity=-10 -ic=zero -plotGrid=1 -plotAspectRatio=2.5 -checkTimeStep=5 -dtMax=1e-2 -N0=40;

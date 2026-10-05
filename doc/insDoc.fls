@@ -432,8 +432,8 @@ INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/mathabx/matha9.tfm
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/mathabx/mathb9.tfm
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/mathabx/mathx10.tfm
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/esint/esint10.tfm
-INPUT tex/intro.tex
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/jknappen/ec/ectt1000.tfm
+INPUT tex/intro.tex
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmbx10.tfm
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmbx7.tfm
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmbx5.tfm

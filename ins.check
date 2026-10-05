@@ -2,7 +2,7 @@
 ms=none, ts=pc2, bcs=dddd, knownSolution=GravityCapillaryWave
 nu= 1.00e-01, cfl= 9.00e-01, tFinal= 1.00e+00, cdv= 1.00e+00
 ad=0, ad21= 1.00e-01, ad22= 1.00e-01
-Nx=40 Ny=40 Nt=813 dt=1.23e-03
-uNorm=1.56e-05, vNorm=1.57e-05, pNorm=1.03e+00
-maxDivU=8.40e-07, maxGradU=2.37e-04
-max-Err(p,u,v)=(1.25e-07,5.11e-08,3.27e-08)
+Nx=20 Ny=20 Nt=204 dt=4.90e-03
+uNorm=3.35e-08, vNorm=3.37e-08, pNorm=1.05e+00
+maxDivU=6.38e-09, maxGradU=4.42e-07
+max-Err(p,u,v)=(6.74e-10,3.11e-10,2.01e-10)

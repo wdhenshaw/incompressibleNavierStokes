@@ -16,8 +16,6 @@ function outPar = ins(varargin)
 
   clearvars -except varargin;
 	
-  varargin
-
    % --- Clear all open figures ----
   clearOpenFigures(1:7);
 
@@ -39,6 +37,7 @@ function outPar = ins(varargin)
   rainbow;
   par.rainbowMap = rainbowMap;
 
+  % ---- Boundary Condition Types ---
   par.periodic       =-1; 
   par.dirichlet      = 1; 
   par.noSlipWall     = 2; 
@@ -47,103 +46,120 @@ function outPar = ins(varargin)
   par.outflow        = 5; 
   par.pressureInflow = 6;
   par.traction       = 7;
+ 
+  % ---- grid motion types ----
+  par.noMotion          =0; 
+  par.translate         =1; 
+  par.rotate            =2;
+  par.deform            =3;
+  par.freeSurfaceMotion =4; 
+
 
   par.uc=1; par.vc=2; par.pc=3;    % component numbers
-
-  % NOTE: Start of user defined variables
-  par.numThreads=1;                % max number of threads Matlab is allowed to use 
   par.nd=2;                        % number of space dimensions
+
+  % WARN: To be implemented
+  par.orderInSpace=2;
+  
+  % TODO: Fix for rho n not equal 1
+  par.rho     = 1;
+  
+  % STEP: Define defaults for user-defined parameters
+
+% Solution Description parameters
+
+  % The three separate ways + par.bcs for defining an IBVP for the code to solve
+  par.knownSolution='none';        % known solution, if any 
+  par.ms = 'none';                 % manufactured solution, trig or poly
+  par.ic = 'default';              % initial condition [default|constant|zero|shear]
+  par.bcs='dddd';
+
+  par.degreex=2; par.degreet=2;    % degree of poly MS % WARN: Maybe case specific?
+  par.uic = 1;                     % constant initial condition values % WARN: Maybe case specific?
+  par.vic = 0; 
+
+  %BC Term parameters
+  % Outflow BC for p is a0*p + a1*p.n = a0*pOutflow 
+  par.outflowPressureCoeffp =1;  % a0 
+  par.outflowPressureCoeffpn=1;  % a1
+  par.pOutflow              =0;   
+  par.pressureInflowValue   =1; % value for pressInflow BC 
+  par.uInflow=1;  
+
+  % Physical parameters
+  par.nu      =.1;                 % coefficient of diffusion
+  par.gravity = 0;                 % acceleration due to gravity is [0,par.gravity] NOTE: Negative!
+  par.gamma   = 0;                 % coefficient of surface tension
+  par.kx=1.;                       % x-wave number in the IC and exact solution (scaled by 2 pi below)
+  par.ky=1.;                       % y-wave number in the IC and exact solution (scaled by 2 pi below)
+  par.kt=.5;                       % for TZ manufactured solution (scaled by 2 pi below)
+  par.tzScale=0;                   % Trig TZ: 0=scale yb 1/sqrt(kx^2+ky^2) , 1=scale TZ yb 1/(kx^2+ky^2) 
+  par.perturbation=1e-3;           % Parameter for any eprturbation in the problem % WARN: Might be problem specific?
+
+  % Time & Timestepping related parameters
   par.tf=.5;                       % final time 
-  par.tp=.1;                       % times to plot
-  par.movieMode=0;                 % 1=run movie
   par.dtMax = 1e10;                % max dt (usually for implicit time stepping)
   par.cfl=.9; 
-  par.ts = 'ab2';                  % time-stepping 
-  par.orderInSpace=2; 
+  par.ts = 'ab2';                  % time-stepping scheme
   par.checkTimeStep = 10000;       % check the time-step every this many steps
-  par.savePlots = 0;               % 1 = save plots
-  par.figDir    = 'fig';           % figure directory
-  par.plotName  = 'ins';           % for plot name 
 
-  par.map = 'Cartesian';           % 'Cartesian', 'Rectangle', 'Annulus', 'TFI', 'rotatedSquare', 'freeSurface', ...
-
-  par.checkFileName = 'ins.check'; % name of the check file
-
-  par.useOptFill=1;                % use optimized fill method for matrices
-  par.useNew    =1;                % use new re-organized functions
-
-  % combinedImplicitSolverNeeded : set to 1 if implicit solve couples u and v
-  par.combinedImplicitSolverNeeded =0;   
-
+  % Grid / Geometry Parameters
   par.xa=0.; par.xb=1.;            % spatial dimensions
   par.ya=0.; par.yb=1.;            % spatial dimensions
+  par.N0=10;                       % grid points in x and y if Nx and Ny are not set
+  par.Nx = -1; 
+  par.Ny = -1;
+  par.map = 'Cartesian';           % 'Cartesian', 'Rectangle', 'Annulus', 'TFI', 'rotatedSquare', 'freeSurface', ...
+  par.icfs  = 'sine';              % free surface initial condition ['sine','gaussian','cos']
+  par.ampfs = 0.05;                % initial free surface amplitude
 
-  par.orderInSpace=2; 
-  par.idebug=0;                    % set to 1 for debugging 
-  par.plotOption=1;                % set to 1 for plotting
+  % Motion Parameters
+  par.motion='none';   % [none|translate|rotate|deform]
+  par.transVect = [1,1]; % direction of the tranlate motion % WARN: Maybe case specific?
+  par.numberOfTimeLevels=3; % ---- For moving grids ---
+  par.numberOfGridFunctions=par.numberOfTimeLevels;  
+  par.predictGrid=0; % par.gridMotionOption is passed to getGrid: 
+  par.correctGrid=1;
+  par.gridMotionOption=par.predictGrid;
+
+  % Optimization & Computation parameters
+  par.numThreads=1;                % max number of threads Matlab is allowed to use 
+  par.useOptFill=1;                % use optimized fill method for matrices
+  par.useNew    =1;                % use new re-organized functions
+  par.combinedImplicitSolverNeeded =0; % set to 1 if implicit solve couples u and v
+
+  % Artifical Terms Parameters
+  par.cdv=1.;                      % coefficient of divergence damping 
+  par.ad   = 0;                    % set to 1 to turn on artificial dissipation
+  par.ad21 = .1;                   % coeff of linear AD
+  par.ad22 = .1;                   % coeff of non-linear AD
+
+  % Printing parameters
+  par.idebug=0;                    % set to 1 for debugging TODO: Add more about other debugging types!!!
   par.computeErrors=0;           
+  par.verbose=0; % Change to increase amount outputed                % TODO: Implement
+  par.echo = 1;   % Parameter involved in assignCommandLineArguments
+  par.checkFileName = 'ins.check'; % name of the check file
+
+  % Plotting parameters
+  par.plotOption=1;                % set to 1 for plotting
+  par.movieMode=0;                 % 1=run movie 
+  par.savePlots = 0;               % 1 = save plots
+  par.tp=.1;                       % times to plot
   par.plotErrors=1;  
   par.plotSolutionOnGhost=0;       % 1 = plot solution and errors on ghost points   
   par.plotEveryStep=0;             % 1 = plot very step for debugging
   par.plotGrid=0;                  % 1 = plot grid
   par.plotVorticity=0;             % 1 = plot vorticity and streamlines
   par.plotAspectRatio=-1;          % plot aspect ratio
-
-  par.verbose=0; % Change to increase amount outputed
-
-  par.nu      =.1;                 % coefficient of diffusion
-  par.rho     = 1;                 % FIX ME for rho .ne. 1
-  par.gravity = 0;                 % acceleration due to gravity is [0,par.gravity]
-  par.gamma   = 0;                 % coefficient of surface tension
-
-  par.kx=1.;                       % x-wave number in the IC and exact solution (scaled by 2 pi below)
-  par.ky=1.;                       % y-wave number in the IC and exact solution (scaled by 2 pi below)
-  par.kt=.5;                       % for TZ manufactured solution (scaled by 2 pi below)
-  par.tzScale=0;                   % Trig TZ: 0=scale yb 1/sqrt(kx^2+ky^2) , 1=scale TZ yb 1/(kx^2+ky^2) 
-  par.xa=0.; par.xb=1.;            % space interval interval
-  par.ya=0.; par.yb=1.;            % space interval interval
-  par.knownSolution='none';        % known solution, if any 
-  par.ms = 'none';                 % manufactured solution, trig or poly
-  par.degreex=2; par.degreet=2;    % degree of poly MS
-
-  par.N0=10;                       % grid points in x and y if Nx and Ny are not set
-  par.Nx = -1; 
-  par.Ny = -1;
-
   par.shade='faceted'; 
-  par.cdv=1.;                      % coefficient of divergence damping 
-  par.ms = 'none';  
-  par.bcs='nnnn';
+  par.figDir    = 'fig';           % figure directory
+  par.plotName  = 'ins';           % for plot name 
 
-  par.ic = 'default';              % initial condition [default|constant|zero|shear]
-
+  % Case-specific parameters:
+  % IMP: Need to migrate these to case specific things
   par.shearBeta = 40;              % parameter in shear flow IC u = tanh(beta*(y-ym))
   par.shearDeltav=1e-2;            % amplitude of perturbation in v for shear flow IV
-
-  par.perturbation=1e-3;
-
-  % free surface parameters:
-  par.icfs  = 'sine';              % free surface initial condition ['sine','gaussian','cos']
-  par.ampfs = 0.05;                % initial free surface amplitude
-  par.betag = 10.;                 % gaussian parameter affecting how narrow the gaussian is 
-  par.x0g   = 0.5;                 % centre for the gaussian
-
-  par.uic = 1;                     % constant initial condition values
-  par.vic = 0; 
-
-
-  par.ad   = 0;                  % set to 1 to turn on artificial dissipation
-  par.ad21 = .1;                 % coeff of linear AD
-  par.ad22 = .1;                 % coeff of non-linear AD
-
-  % Outflow BC for p is a0*p + a1*p.n = a0*pOutflow 
-  par.outflowPressureCoeffp =1;  % a0 
-  par.outflowPressureCoeffpn=1;  % a1
-  par.pOutflow              =0;   
-
-  par.pressureInflowValue   =1; % value for pressInflow BC 
-
-  par.uInflow=1;  
 
   % Annulus map:
   par.x0 = 0;  % centre
@@ -153,30 +169,14 @@ function outPar = ins(varargin)
   par.innerRadius =0.5;
   par.outerRadius =1.;
 
-  % ---- grid motion types ----
-  par.noMotion          =0; 
-  par.translate         =1; 
-  par.rotate            =2;
-  par.deform            =3;
-  par.freeSurfaceMotion =4; 
-  par.motion='none';    % [none|translate|rotate|deform]
-
-  par.transVect = [1,1]; % direction of the tranlate motion
-  % par.transVect = [1,0]; % direction of the tranlate motion
-
-  % ---- For moving grids ---
-  par.numberOfTimeLevels=3;
-  par.numberOfGridFunctions=par.numberOfTimeLevels;  
-
-  % par.gridMotionOption is passed to getGrid: 
-  par.predictGrid=0;
-  par.correctGrid=1;
-  par.gridMotionOption=par.predictGrid;
-
-
-  par.echo = 0;
+  % Free surface gaussian
+  par.betag = 10.;                 % gaussian parameter affecting how narrow the gaussian is 
+  par.x0g   = 0.5;                 % centre for the gaussian
 
   % NOTE: Default par arguments end here!!!!
+
+  % STEP: Prepare user defined arguments for the code
+
   % --- read command line args ---
   for i = 1 : nargin
     line = varargin{i};
@@ -321,6 +321,8 @@ function outPar = ins(varargin)
   par.cpuFactorImpMatrix = 0; % time to factor the implicit matrices
   par.cpuPlot            = 0;
 
+  % NOTE: If solution is following Manufactured / Known solutions, that is defined here!
+
   % --- define the manufactured solution and forcing functions ---
   par = defineManufacturedSolution( par );
 
@@ -328,6 +330,7 @@ function outPar = ins(varargin)
   par = defineKnownSolution( par );
 
   % Define guax, gubx, ...
+  % NOTE: Depending on solution type, define forcing functions (ms, known, ic)
   par = defineBoundaryForcingFunctions( par );
 
   outPar.maxErr = zeros(4,1);
@@ -357,6 +360,7 @@ function outPar = ins(varargin)
 
   end 
 
+  % STEP: Start solve
 
   % --- allocate space for the solution ---
   Ngx = par.Ngx; Ngy=par.Ngy;
@@ -484,7 +488,7 @@ function outPar = ins(varargin)
 
   t=0.;     
 
-  % --- Start time-stepping loop ---
+  % STEP: --- Start time-stepping loop ---
   par.factorImplicitMatrix=1;
 
   % if( strcmp(par.ts,'im2') )

@@ -60,7 +60,7 @@ runGridConvergence -ts=pc2 -tf=1 -ms=none -knownSolution=GravityCapillaryWave -b
 ins -ts=im2 -tf=1 -tp=.1 -ms=none -knownSolution=GravityCapillaryWave -nu=0.1  -bcs=dddd -N0=40 -idebug=1 -gravity=-1 -gamma=0 -computeErrors=1 -plotOption=3 -movieMode=1 -ya=-1 -yb=0 -icfs=cos -ampfs=1e-8 -plotGrid=0;
 
 
-ins -ts=pc2 -tf=1 -tp=.1 -ms=none -knownSolution=GravityCapillaryWave -nu=0.1  -bcs=dddd -N0=20 -idebug=0 -gravity=-1 -gamma=0 -computeErrors=1 -plotOption=0 -movieMode=0 -ya=-1 -yb=0 -icfs=cos -ampfs=1e-8 -plotGrid=0;
+ins -ts=pc2 -tf=1 -tp=.1 -ms=none -knownSolution=GravityCapillaryWave -nu=0.1  -bcs=dddd -N0=20 -idebug=0 -gravity=-1 -gamma=0 -computeErrors=1 -plotOption=0 -movieMode=0 -ya=-1 -yb=0 -icfs=cos -ampfs=1e-8 -plotGrid=0 -randomvariable=1 -echo=1;
 
 % GW: runGridConvergence cmd
 ins -ts=pc2 -tzScale=1 -tf=1 -ms=none -knownSolution=GravityCapillaryWave -idebug=0 -nu=0.1 -bcs=dddd -N0=40 -map=Cartesian -motion=none -dtMax=1e+08 -plotOption=1 -idebug=1 -gravity=-1 -gamma=0 -computeErrors=1 -ampfs=1e-8 -icfs=cos;

@@ -1,14 +1,14 @@
 # Fdb version 4
-["bibtex insDoc"] 1790710545.58127 "insDoc.aux" "insDoc.bbl" "insDoc" 1790710546.84435 0
+["bibtex insDoc"] 1791161918.85064 "insDoc.aux" "insDoc.bbl" "insDoc" 1791162013.17779 0
   "./elsart-num.bst" 1788891843.56369 24001 d94d325492f5efdb522bc1b966338ffd ""
   "./ins.bib" 1790106528.43284 1234 c561951ea71bbdf7e87563080fd45247 ""
   "./journal-ISI.bib" 1788891843.57476 2883 172fbe96479717d57cad6981b213986c ""
-  "insDoc.aux" 1790710546.47606 7724 cc94533eff4035d144a23462503c706c "pdflatex"
+  "insDoc.aux" 1791162012.81072 9010 da026b5258247e63c56b48d2abb43b68 "pdflatex"
   (generated)
   "insDoc.bbl"
   "insDoc.blg"
   (rewritten before read)
-["pdflatex"] 1790710545.7277 "insDoc.tex" "insDoc.pdf" "insDoc" 1790710546.84447 0
+["pdflatex"] 1791162011.96421 "insDoc.tex" "insDoc.pdf" "insDoc" 1791162013.17792 0
   "../fig/PerturbedPoiseuillet0.pdf" 1790698691.39662 584677 b93a65d3bd49574a841e73330fc61471 ""
   "../fig/PerturbedPoiseuillet2e-2.pdf" 1790698756.64256 485079 3ccfb9e1d1b919541a5670556771dd41 ""
   "../fig/PoiseuilleFlow.pdf" 1790698607.7807 562511 80819da7504151f15d396a5049f268b8 ""
@@ -299,12 +299,12 @@
   "/usr/share/texlive/texmf-dist/web2c/texmf.cnf" 1777593600 43785 66587115382950aca692b5f6e3c2fb74 ""
   "/usr/share/texlive/texmf.cnf" 1784047559.76328 38 30db2037d0299efab58b2dc27639c6b7 ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1784066809 4891069 cb53330eca71cfaa51f40ce3129198c9 ""
-  "insDoc.aux" 1790710546.47606 7724 cc94533eff4035d144a23462503c706c "pdflatex"
-  "insDoc.bbl" 1790710545.72306 1090 83825e008d399cbbe1f29062f4091c22 "bibtex insDoc"
-  "insDoc.out" 1790710546.47784 2853 48b2d4629ccce69e04a23f7558c81695 "pdflatex"
-  "insDoc.spl" 1790710546.47784 43 2928c360112602ef4e96605f60652299 "pdflatex"
+  "insDoc.aux" 1791162012.81072 9010 da026b5258247e63c56b48d2abb43b68 "pdflatex"
+  "insDoc.bbl" 1791161918.96906 1090 83825e008d399cbbe1f29062f4091c22 "bibtex insDoc"
+  "insDoc.out" 1791162012.8118 4678 8837e91e978b505e8cca923e2f1934d7 "pdflatex"
+  "insDoc.spl" 1791162012.8118 43 2928c360112602ef4e96605f60652299 "pdflatex"
   "insDoc.tex" 1790710474.25211 6864 ee9319c71efd3cb14811bf2a38c1a991 ""
-  "insDoc.toc" 1790710546.47784 1740 dec949d2323b73d65d2442f79a76999f "pdflatex"
+  "insDoc.toc" 1791162012.8118 2657 7573b6febc4eb263471710401badb68c "pdflatex"
   "tables/insTSab2BCppppMapCartesianMStrig.tex" 1790614403.84213 817 09d071b8e34b8d26e1c546097a309c97 ""
   "tables/insTSim2BCppppMapCartesianMStrig.tex" 1790614428.46413 707 dd9fd5ced55d7cda57f82dba13b71d65 ""
   "tables/insTSpc2BCIIIIMapCartesianMStrig.tex" 1790614994.06763 815 51442647f874a099a93d52b6fbf066ec ""
@@ -313,8 +313,8 @@
   "tables/insTSpc2BCssssMapCartesianMStrig.tex" 1790615157.66752 818 2eb35b99cb833190f30a4274f5feb626 ""
   "tex/defs.tex" 1788891843.57617 15442 272a2ee1a77233ed9153ebdc6d290ad3 ""
   "tex/discreteApproximations.tex" 1788891843.57666 2622 277644b5bdd32eecae4ee376d5c7bfd0 ""
-  "tex/intro.tex" 1790710451.99713 6860 9b8cd569c8e4a95a8fb55eb32c43caf7 ""
-  "tex/matlab.tex" 1790710543.28306 1949 a1e5ab82384185b14b787f4d239a8c51 ""
+  "tex/intro.tex" 1791149703.23089 6860 9b8cd569c8e4a95a8fb55eb32c43caf7 ""
+  "tex/matlab.tex" 1791162010.62682 2472 267c74509605ea2e1c7315c012c09978 ""
   "tex/numericalResults.tex" 1790699975.59535 10553 a2963b9ca9d292192a82d42b133c2d90 ""
   "tex/plotFigureMacros.tex" 1788891843.57666 6646 49a51a2df7a956577023d610ced90540 ""
   "tex/trimFig.tex" 1788891843.57666 8177 b35d4230a8d3d420626a5c4e23a33360 ""
