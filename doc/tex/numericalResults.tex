@@ -156,6 +156,21 @@ And the pressure of the fluid given by
 	p &= p_0 - \rho ( \varphi_t + g y)
 \end{align}
 
+\begin{Verbatim}[fontsize=\small]
+	runGridConvergence -ts=pc2 -tf=1 -ms=none -knownSolution=GravityCapillaryWave -bcs=dddd -numResolutions=3 -gravity=-1 -N0=40 -aa=0;
+Running [ins -ts=pc2 -tzScale=1 -tf=1 -ms=none -knownSolution=GravityCapillaryWave -idebug=0 -nu=0.1 -bcs=dddd -N0=40 -map=Cartesian -motion=none -dtMax=1e+08 -plotOption=-1 -gravity=-1 -gamma=0 -computeErrors=1 -ampfs=1e-8 -aa=0 -icfs=cos -ya=-1 -yb=0 ;]
+ ires=1: Nx=40 maxErr=[ 2.34e-10, 9.54e-11, 6.11e-11, 1.57e-09]
+Running [ins -ts=pc2 -tzScale=1 -tf=1 -ms=none -knownSolution=GravityCapillaryWave -idebug=0 -nu=0.1 -bcs=dddd -N0=80 -map=Cartesian -motion=none -dtMax=5e+07 -plotOption=-1 -gravity=-1 -gamma=0 -computeErrors=1 -ampfs=1e-8 -aa=0 -icfs=cos -ya=-1 -yb=0 ;]
+ ires=2: Nx=80 maxErr=[ 7.31e-11, 2.66e-11, 1.85e-11, 3.88e-10]
+Running [ins -ts=pc2 -tzScale=1 -tf=1 -ms=none -knownSolution=GravityCapillaryWave -idebug=0 -nu=0.1 -bcs=dddd -N0=160 -map=Cartesian -motion=none -dtMax=2.5e+07 -plotOption=-1 -gravity=-1 -gamma=0 -computeErrors=1 -ampfs=1e-8 -aa=0 -icfs=cos -ya=-1 -yb=0 ;]
+ ires=3: Nx=160 maxErr=[ 2.24e-11, 7.08e-12, 5.12e-12, 9.65e-11]
+  N     dt      p-err  ratio   u-err  ratio   v-err  ratio    div   ratio    cpu(s)  ratio
+ --------------------------------------------------------------------------------------
+  40  1.23e-03 2.34e-10       9.54e-11       6.11e-11       1.57e-09        1.96e+00
+  80  3.08e-04 7.31e-11  3.2  2.66e-11  3.6  1.85e-11  3.3  3.88e-10  4.0   1.41e+01  7.2
+ 160  7.69e-05 2.24e-11  3.3  7.08e-12  3.8  5.12e-12  3.6  9.65e-11  4.0   2.32e+02 16.5
+\end{Verbatim}
+
 
 % -------------------------------------------------------------------
 \clearpage

@@ -47,10 +47,11 @@ elseif( strcmp(knownSolution,'Poiseuille') )
   % nu*u.yy = p.x 
   par.computeErrors=1;
 
-  ampu=1.; ampp=-nu*ampu*8;
-  par.ue = @(x,y,t)  (4.*ampu)*(1.-y).*y; 
+  ampu =  (par.pressureInflowValue - par.pOutflow) / ( 2 * par.mu );
+  ampp = -(par.pressureInflowValue - par.pOutflow);
+  par.ue = @(x,y,t)  ampu*(1.-y).*y; 
   par.ve = @(x,y,t)  0.*x;
-  par.pe = @(x,y,t)  ampp*x; 
+  par.pe = @(x,y,t)  ampp*x + par.pressureInflowValue; 
 
   par.uet = @(x,y,t)  0.*x;
   par.vet = @(x,y,t)  0.*x;
@@ -124,6 +125,12 @@ elseif( strcmp(knownSolution,'GravityCapillaryWave') )
 	% Define exact solution & partial derivatives
 	par.ue = @(x, y, t)          real( phiHat  (y) .* wavex (x, t) );
 	par.ve = @(x, y, t)          real( phiHaty (y) .* wave  (x, t) );
+
+	par.uex = @(x, y, t)         real( phiHat  (y) .* wavexx(x, t) );
+	par.uey = @(x, y, t)         real( phiHaty (y) .* wavex (x, t) );
+
+	par.vex = @(x, y, t)         real( phiHaty (y) .* wavex (x, t) );
+	par.vey = @(x, y, t)         real( phiHatyy(y) .* wave  (x, t) );
 
 	par.uet = @(x, y, t)         real( phiHat  (y) .* wavext(x, t) );
 	par.vet = @(x, y, t)         real( phiHaty (y) .* wavet (x, t) );

@@ -4,8 +4,6 @@
 function par = defineManufacturedSolution( par )
 
   ms = par.ms;
-  degreex = par.degreex;
-  degreet = par.degreet;
   kx      = par.kx;
   ky      = par.ky;
   kt      = par.kt;
@@ -59,6 +57,16 @@ function par = defineManufacturedSolution( par )
       par.pett = @(x,y,t) ampp*(-kt^2)*cos(kx*x).*sin(ky*y)*cos(kt*t); 
 
     elseif( strcmp(ms,'poly') )
+
+		if (~isfield(par,'degreex'))
+			par.degreex=2; 
+		end
+		if (~isfield(par,'degreet'))
+			par.degreet=2;    % degree of poly MS % WARN: Maybe case specific?
+		end
+  		
+		degreex = par.degreex;
+  		degreet = par.degreet;
 
       % --- polynomial manufactured solution ---
       %    Note: choose the solution to be divergence free  

@@ -67,16 +67,15 @@ function outPar = ins(varargin)
   % STEP: Define defaults for user-defined parameters
 
 % Solution Description parameters
+ 
+  % Auto Assign metaparameter, overrides defaults for certain parameter choices
+  par.aa = 1;
 
   % The three separate ways + par.bcs for defining an IBVP for the code to solve
   par.knownSolution='none';        % known solution, if any 
   par.ms = 'none';                 % manufactured solution, trig or poly
   par.ic = 'default';              % initial condition [default|constant|zero|shear]
   par.bcs='dddd';
-
-  par.degreex=2; par.degreet=2;    % degree of poly MS % WARN: Maybe case specific?
-  par.uic = 1;                     % constant initial condition values % WARN: Maybe case specific?
-  par.vic = 0; 
 
   %BC Term parameters
   % Outflow BC for p is a0*p + a1*p.n = a0*pOutflow 
@@ -115,7 +114,7 @@ function outPar = ins(varargin)
 
   % Motion Parameters
   par.motion='none';   % [none|translate|rotate|deform]
-  par.transVect = [1,1]; % direction of the tranlate motion % WARN: Maybe case specific?
+  par.transVect = [1,1]; % direction of the translate motion % WARN: Maybe case specific?
   par.numberOfTimeLevels=3; % ---- For moving grids ---
   par.numberOfGridFunctions=par.numberOfTimeLevels;  
   par.predictGrid=0; % par.gridMotionOption is passed to getGrid: 
@@ -158,8 +157,6 @@ function outPar = ins(varargin)
 
   % Case-specific parameters:
   % IMP: Need to migrate these to case specific things
-  par.shearBeta = 40;              % parameter in shear flow IC u = tanh(beta*(y-ym))
-  par.shearDeltav=1e-2;            % amplitude of perturbation in v for shear flow IV
 
   % Annulus map:
   par.x0 = 0;  % centre
@@ -176,15 +173,18 @@ function outPar = ins(varargin)
   % NOTE: Default par arguments end here!!!!
 
   % STEP: Prepare user defined arguments for the code
+  temp_par.echo = 0;
+  temp_par.aa = 1;
 
   % --- read command line args ---
   for i = 1 : nargin
     line = varargin{i};
 
     % Read command line arguments for any entry in the "par" class
-    par = assignCommandLineOption( line, par, par.echo );
-
+    temp_par = assignCommandLineOption( line, temp_par, temp_par.echo );
   end
+
+	par = assignDefaults(temp_par, par);
 
   if( nargin==0 )
     fprintf('Usage\n');
@@ -343,8 +343,8 @@ function outPar = ins(varargin)
     fprintf(' ts=%s, tFinal=%g, nu=%g, gamma=%g, gravity=[%g,%g] cfl=%g, cdv=%g, knownSolution=%s, N0=%d, idebug=%d numThreads=%d, maxThreads=%d\n',...
              par.ts,par.tFinal,par.nu,par.gamma,par.gravityVector(1),par.gravityVector(2),par.cfl,par.cdv,par.knownSolution,N0,par.idebug,par.numThreads,maxThreads);
     fprintf(' map=%s, isCartesian=%d, motion=%s (gridMotion=%d)\n',par.map,par.isCartesian,par.motion,par.gridMotion);
-    fprintf(' manufactured solution ms=%s, degreex=%d, degreet=%d, [kx,ky,kt]=[%g,%g,%g]*2*pi, tzScale=%d\n',...
-             par.ms,par.degreex,par.degreet,par.kx/(2*pi),par.ky/(2*pi),par.kt/(2*pi),par.tzScale);
+    fprintf(' manufactured solution ms=%s, [kx,ky,kt]=[%g,%g,%g]*2*pi, tzScale=%d\n',...
+             par.ms,par.kx/(2*pi),par.ky/(2*pi),par.kt/(2*pi),par.tzScale);
     fprintf(' par.bcLabel=%s, par.bc=[%d,%d,%d,%d] par.gid=[%d,%d,%d,%d]\n',par.bcLabel,par.bc(1,1),par.bc(2,1),par.bc(1,2),par.bc(2,2),...
              par.gid(1,1),par.gid(2,1),par.gid(1,2),par.gid(2,2) );
     fprintf(' useOptFill = %d (use optimized fill method for matrices)\n',par.useOptFill)

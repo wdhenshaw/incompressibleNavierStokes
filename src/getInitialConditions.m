@@ -14,12 +14,27 @@ function [gf,par] = getInitialConditions( t,gf,cur, par )
     gf{cur}.v(:,:)=0.;
 
   elseif( strcmp(par.ic,'constant') )
+
+	if (~isfield(par,'uic'))
+		par.uic = 1;
+	end
+	if (~isfield(par,'vic'))
+		par.vic = 0;
+	end
   	
    gf{cur}.u(:,:) = par.uic;
    gf{cur}.v(:,:) = par.vic;
 
   elseif( strcmp(par.ic,'shear') )
     
+
+   if (~isfield(par,'shearBeta'))
+      par.shearBeta = 40;             % parameter in shear flow IC u = tanh(beta*(y-ym))
+   end
+   if (~isfield(par,'shearDeltav'))
+      par.shearDeltav=1e-2;            % amplitude of perturbation in v for shear flow IV
+   end
+
    % shear flow 
    par.plotErrors=0;
 

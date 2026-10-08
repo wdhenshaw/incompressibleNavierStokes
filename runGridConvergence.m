@@ -15,9 +15,12 @@ function runGridConvergence( varargin )
 
  clearvars -except varargin; 
 
-
+ % Parameters pertaining to the grid refinement study
  par.numResolutions=3;
  par.N0=10;
+ par.dtMax=1e8; 
+
+
  par.ts = 'ab2'; 
  par.ms='trig'; % 'poly' 
  par.knownSolution='none';
@@ -26,18 +29,36 @@ function runGridConvergence( varargin )
  par.map = 'Cartesian';           % 'Cartesian', 'Rectangle', 'Annulus', 'TFI', ...
  par.bcs='dddd'; 
  par.motion='none';
- par.dtMax=1e8; 
 
  par.gravity = 0;
  par.gamma = 0;
+ par.aa = 1;
  
 
  par.echo = 0;
 
  % --- read command line args ---
+ % AND, compile inputFlags string
+
+ inputFlags = '';
+
   for i = 1 : nargin
     line = varargin{i};
     par = assignCommandLineOption( line, par, par.echo );
+
+	n1 = strfind(line,'-');
+	n2 = strfind(line,'=');
+	name = line(n1(1)+1:n2(1)-1);
+
+	% List of parameters to not pass into inputFlags
+	if (strcmp(name,'N0') ||...
+		strcmp(name,'numResolutions') ||...
+		strcmp(name, 'plotOption') ||...
+		strcmp(name, 'computeErrors'))
+		continue;
+	end
+
+	inputFlags = strcat(inputFlags, line, " ");
 
   end
 
@@ -49,15 +70,12 @@ function runGridConvergence( varargin )
     Nx= par.N0*2^(ires-1); 
 
 
-    cmd = sprintf('ins -ts=%s -tzScale=1 -tf=%g -ms=%s -knownSolution=%s -idebug=%d -nu=0.1 -bcs=%s -N0=%d -map=%s -motion=%s -dtMax=%g -plotOption=-1 -gravity=%g -gamma=%g -computeErrors=1 -ampfs=1e-4 -icfs=cos -ya=-1 -yb=0 ;',...
-              par.ts,par.tf,par.ms,par.knownSolution, par.idebug,par.bcs, Nx, par.map, par.motion,par.dtMax, par.gravity, par.gamma);
+    % cmd = sprintf('ins -ts=%s -tzScale=1 -tf=%g -ms=%s -knownSolution=%s -idebug=%d -nu=0.1 -bcs=%s -N0=%d -map=%s -motion=%s -dtMax=%g -plotOption=-1 -gravity=%g -gamma=%g -computeErrors=1 -aa=%d ;',...
+    %           par.ts,par.tf,par.ms,par.knownSolution, par.idebug,par.bcs, Nx, par.map, par.motion,par.dtMax, par.gravity, par.gamma, par.aa);
 
-	% Add necessary flags for some known solutions
-	% if( strcmp(par.knownSolution, 'GravityCapillaryWave') )
-	% 	cmd = sprintf('%s\b ', cmd);
-	% end
 
-    % cmd = sprintf('ins -ts=ab2 -tzScale=1 -tf=.1 -ms=poly -idebug=1 -nu=0.1 -degreex=2 -degreet=2 -bc1=noSlipWall -bc2=dirichlet  -bc3=noSlipWall -bc4=dirichlet -plotOption=0 -N0=%d;',Nx);
+    cmd = sprintf('ins -N0=%d -computeErrors=1 -plotOption=-1 %s;', Nx, inputFlags);
+
     fprintf('Running [%s]\n',cmd);
     eval(cmd); 
 

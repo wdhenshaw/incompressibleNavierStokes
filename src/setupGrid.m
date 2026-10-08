@@ -8,6 +8,7 @@ function [par] = setupGrid( par )
   if( par.Nx<0 )
     if( strcmp(par.map,'Annulus') )
       % choose number of grid points on the Annulus to have nearly equal grid spacings
+
       Nr = par.N0; % Nr 
       deltaR = (par.outerRadius-par.innerRadius)/Nr;
       radiusAverage = .25*par.outerRadius + .75*par.innerRadius;
