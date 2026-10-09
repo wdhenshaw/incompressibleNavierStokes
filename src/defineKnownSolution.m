@@ -18,19 +18,33 @@ if( strcmp(knownSolution,'TaylorGreen') )
 
   ampu=1.; ampp=ampu^2/4; 
   ftg = @(t) exp( -2.*nu*kx^2*t);
-  par.ue = @(x,y,t)  ampu*sin(kx*x).*cos(kx*y)*ftg(t); 
-  par.ve = @(x,y,t) -ampu*cos(kx*x).*sin(kx*y)*ftg(t);
-  par.pe = @(x,y,t)  ampp*( cos(2*kx*x) + cos(2.*kx*y) )*ftg(t)*ftg(t);
-
   ftgt = @(t) (-2.*nu*kx^2)*exp( -2.*nu*kx^2*t);
-  par.uet = @(x,y,t)  ampu*sin(kx*x).*cos(kx*y)*ftgt(t); 
-  par.vet = @(x,y,t) -ampu*cos(kx*x).*sin(kx*y)*ftgt(t);
+
+  par.ue   = @(x,y,t)         ampu*sin(kx*x).*cos(kx*y)*ftg(t); 
+  par.uex  = @(x,y,t)      kx*ampu*cos(kx*x).*cos(kx*y)*ftg(t); 
+  par.uey  = @(x,y,t)     -kx*ampu*sin(kx*x).*sin(kx*y)*ftg(t); 
+  par.uexx = @(x,y,t) (-ampu*kx^2)*sin(kx*x).*cos(kx*y)*ftg(t); 
+  par.uexy = @(x,y,t) (-ampu*kx^2)*cos(kx*x).*sin(kx*y)*ftg(t); 
+  par.ueyy = @(x,y,t) (-ampu*kx^2)*sin(kx*x).*cos(kx*y)*ftg(t); 
+  par.uet  = @(x,y,t)         ampu*sin(kx*x).*cos(kx*y)*ftgt(t); 
+
+  par.ve   = @(x,y,t)        -ampu*cos(kx*x).*sin(kx*y)*ftg(t);
+  par.vex  = @(x,y,t)    -kx*-ampu*sin(kx*x).*sin(kx*y)*ftg(t);
+  par.vey  = @(x,y,t)     kx*-ampu*cos(kx*x).*cos(kx*y)*ftg(t);
+  par.vexx = @(x,y,t) ( ampu*kx^2)*cos(kx*x).*sin(kx*y)*ftg(t);
+  par.vexy = @(x,y,t) ( ampu*kx^2)*sin(kx*x).*cos(kx*y)*ftg(t);
+  par.veyy = @(x,y,t) ( ampu*kx^2)*cos(kx*x).*sin(kx*y)*ftg(t);
+  par.vet  = @(x,y,t)        -ampu*cos(kx*x).*sin(kx*y)*ftgt(t);
+
+
+
+
+  par.pe = @(x,y,t)  ampp*( cos(2*kx*x) + cos(2.*kx*y) )*ftg(t)*ftg(t);
 
   par.pex = @(x,y,t)  ampp*( -2*kx*sin(2.*kx*x) )*ftg(t)*ftg(t);
   par.pey = @(x,y,t)  ampp*( -2*ky*sin(2.*kx*y) )*ftg(t)*ftg(t);
 
-  par.uexy = @(x,y,t) (-ampu*kx^2)*cos(kx*x).*sin(kx*y)*ftg(t); 
-  par.vexy = @(x,y,t) ( ampu*kx^2)*sin(kx*x).*cos(kx*y)*ftg(t);
+
   
 
   par.ufe = @(x,y,t) 0.;
@@ -49,8 +63,20 @@ elseif( strcmp(knownSolution,'Poiseuille') )
 
   ampu =  (par.pressureInflowValue - par.pOutflow) / ( 2 * par.mu );
   ampp = -(par.pressureInflowValue - par.pOutflow);
-  par.ue = @(x,y,t)  ampu*(1.-y).*y; 
+  par.ue  = @(x,y,t)  ampu*(1.-y).*y; 
+  par.uex = @(x,y,t)  0.*x; 
+  par.uey = @(x,y,t)  ampu*(1 - 2*y); 
+  par.uexy = @(x,y,t) 0.*x;
+  par.uexx = @(x,y,t) 0.*x;
+  par.ueyy = @(x,y,t) -2 * ampu;
+
   par.ve = @(x,y,t)  0.*x;
+  par.vex = @(x,y,t)  0.*x;
+  par.vey = @(x,y,t)  0.*x;
+  par.vexy = @(x,y,t) 0.*x;
+  par.vexx = @(x,y,t) 0.*x;
+  par.veyy = @(x,y,t) 0.*x;
+
   par.pe = @(x,y,t)  ampp*x + par.pressureInflowValue; 
 
   par.uet = @(x,y,t)  0.*x;
@@ -58,10 +84,6 @@ elseif( strcmp(knownSolution,'Poiseuille') )
 
   par.pex = @(x,y,t)  ampp;
   par.pey = @(x,y,t)  0*x;
-
-  par.uexy = @(x,y,t) 0.*x;
-  par.vexy = @(x,y,t) 0.*x;
-  
 
  par.ufe = @(x,y,t) 0.;
  par.vfe = @(x,y,t) 0.;

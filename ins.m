@@ -114,7 +114,7 @@ function outPar = ins(varargin)
 
   % Motion Parameters
   par.motion='none';   % [none|translate|rotate|deform]
-  par.transVect = [1,1]; % direction of the translate motion % WARN: Maybe case specific?
+  par.transVect = [2,-1]; % direction of the translate motion % WARN: Maybe case specific?
   par.numberOfTimeLevels=3; % ---- For moving grids ---
   par.numberOfGridFunctions=par.numberOfTimeLevels;  
   par.predictGrid=0; % par.gridMotionOption is passed to getGrid: 
@@ -132,6 +132,12 @@ function outPar = ins(varargin)
   par.ad   = 0;                    % set to 1 to turn on artificial dissipation
   par.ad21 = .1;                   % coeff of linear AD
   par.ad22 = .1;                   % coeff of non-linear AD
+
+  % Debugging parameters
+  par.cheat = 0;
+  % 0 = no cheats
+  % 1 = Use pe instead of calculating p
+  % 2 = Use ue instead of calculating u or v
 
   % Printing parameters
   par.idebug=0;                    % set to 1 for debugging TODO: Add more about other debugging types!!!
@@ -306,6 +312,9 @@ function outPar = ins(varargin)
     par.cdv=0;
   end
 
+  if (par.cheat == 2 && ~strcmp(par.ts, 'ab2'))
+	  error("cheatVelocity is currently not supported by other timestepping methods!");
+  end
 
 
   par.kx = par.kx*2*pi;

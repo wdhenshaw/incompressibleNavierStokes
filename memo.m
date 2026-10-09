@@ -1,6 +1,8 @@
 %
 %  Matlab code to solve the incompressible Navier Stokes Equations
 %
+
+% WARN: Never run this file
 return;
 
 cd /Users/henshaw/DropBox/research/incompressibleNavierStokes
@@ -14,30 +16,29 @@ ins.m : solve INS with pressure-poisson
 ***************************************
 ***** Thu Sept 24, 2026
 
-git commit -m "gw: Added code to test all configs of BCs"
-
-Poiseuille w/ initial perturbation
-Over short time scale
+%%% Poiseuille w/ initial perturbation
+% Over short time scale
 ins -ts=pc2 -tf=0.02 -plotEveryStep=1 -ms=none -knownSolution=none -idebug=1 -nu=0.1 -bcs=Ionn -N0=40 -ic=perturbedPoiseuille -movieMode=1 -plotOption=3 -pressureInflowValue=0 -uInflow=0 -outflowPressureCoeffp=1 -outflowPressureCoeffpn=0 -pOutflow=-1 -perturbation=2.5e-1;
 
-Over a long timescale:
+% Over a long timescale:
 ins -ts=pc2 -tf=12 -tp=0.75 -ms=none -knownSolution=none -idebug=1 -nu=0.1 -bcs=Ionn -N0=40 -ic=perturbedPoiseuille -movieMode=1 -plotOption=3 -pressureInflowValue=0 -uInflow=0 -outflowPressureCoeffp=1 -outflowPressureCoeffpn=0 -pOutflow=-1 -perturbation=2.5e-1;
+%%%
 
-Poiseuille from ICs
+% Poiseuille from ICs
 ins -ts=pc2 -tf=10 -tp=1.0 -ms=none -knownSolution=none -idebug=1 -nu=0.1 -bcs=Ionn -N0=40 -ic=zero -movieMode=1 -plotOption=3 -pressureInflowValue=0 -uInflow=0 -outflowPressureCoeffp=1 -outflowPressureCoeffpn=0 -pOutflow=-1 -perturbation=0;
 
-Poiseuille from Known Solution
+% Poiseuille from Known Solution
 ins -ts=pc2 -tf=10.0 -tp=1.0 -ms=none -knownSolution=Poiseuille -nu=0.1  -bcs=Innn -N0=40 -plotOption=1 -movieMode=1 -dtMax=1e-2 -idebug=1 -pressureInflowValue=0 -uInflow=0;
 
 
-Test different BC configurations
+% Test different BC configurations
 runGridConvergence -ts=pc2 -tf=.25 -ms=trig -numResolutions=4 -bcs=nnnn
 runGridConvergence -ts=pc2 -tf=.25 -ms=trig -numResolutions=4 -bcs=ssss
 runGridConvergence -ts=pc2 -tf=.25 -ms=trig -numResolutions=4 -bcs=iiii
 runGridConvergence -ts=pc2 -tf=.25 -ms=trig -numResolutions=4 -bcs=IIII
 runGridConvergence -ts=pc2 -tf=.25 -ms=trig -numResolutions=4 -bcs=oooo
 
-Generate gridConvergence tables for different time step procedures
+% Generate gridConvergence tables for different time step procedures
 runGridConvergence -ts=ab2 -tf=.25 -ms=trig -numResolutions=4 -bcs=pppp
 runGridConvergence -ts=pc2 -tf=.25 -ms=trig -numResolutions=4 -bcs=pppp
 runGridConvergence -ts=im2 -tf=.25 -ms=trig -numResolutions=3 -bcs=pppp -dtMax=.01
@@ -46,28 +47,31 @@ runGridConvergence -ts=im2 -tf=.25 -ms=trig -numResolutions=3 -bcs=pppp -dtMax=.
 ***************************************
 ***** Thu Sept 24, 2026
 
-git commit -m "gw: Added Known Solution GravityCapillaryWave"
-
 % GW: Commands I want to run
-runGridConvergence -ts=pc2 -tf=.25 -ms=none -knownSolution=GravityCapillaryWave -bcs=dddd -numResolutions=3 -gravity=-1 -map=freeSurface -motion=freeSurfaceMotion;
 
-ins -ts=ab2 -tf=1 -tp=.1 -knownSolution=GravityCapillaryWave -nu=0.1  -bcs=ppnt -N0=40 -idebug=1 -gravity=-1 -gamma=0 -computeErrors=1 -plotOption=3 -movieMode=1 -ya=-1 -yb=0 -icfs=cos -ampfs=1e-8 -plotGrid=0 -motion=freeSurfaceMotion -map=freeSurface -plotEveryStep=1 -plotSolutionOnGhost=1 -xa=-0.5 -xb=0.5;
 
 
 ins -ts=ab2 -tf=1 -tp=.1 -knownSolution=GravityCapillaryWave -nu=0.1  -bcs=ppnt -N0=40 -idebug=1 -gravity=-1 -gamma=0 -computeErrors=1 -plotOption=3 -movieMode=1 -ya=-1 -yb=0 -icfs=cos -ampfs=1e-8 -plotGrid=0 -motion=freeSurfaceMotion -map=freeSurface -plotEveryStep=1 -plotSolutionOnGhost=1 -cdv=0;
 
-runGridConvergence -N0=10 -numResolutions=3 -ts=ab2 -tf=1 -tp=.1 -knownSolution=GravityCapillaryWave -nu=0.1  -bcs=ppnt -gravity=-1 -gamma=0 -computeErrors=1 -ya=-1 -yb=0 -icfs=cos -ampfs=1e-8 -motion=freeSurfaceMotion -map=freeSurface -cdv=0;
+% Solve for a GCW with free surface motion & geometry, but have a fake dirichlet condition instead of traction
+runGridConvergence -ts=pc2 -tf=0.2 -ms=none -knownSolution=GravityCapillaryWave -bcs=ppnd -numResolutions=3 -gravity=-1 -N0=10 -aa=1 -ampfs=1e-2;
+ins -ts=pc2 -tf=1 -ms=none -knownSolution=GravityCapillaryWave -bcs=ppnd -numResolutions=3 -gravity=-1 -N0=10 -aa=1 -plotOption=1 -plotGrid=0 -movieMode=1 -computeErrors=1 -ampfs=1e-2;
 
-% GW: GCW on refrence domain with fake dirichlet
+% Solve for a GCW with no motion, cartesian geometry and fake dirichlet conditions
+runGridConvergence -ts=pc2 -tf=1 -knownSolution=GravityCapillaryWave -bcs=dddd -numResolutions=3 -gravity=-1 -N0=30 -aa=0;
 
-% Run Grid Convergence on "fake dirichlet" refrence domain GCW
-runGridConvergence -ts=pc2 -tf=1 -ms=none -knownSolution=GravityCapillaryWave -bcs=dddd -numResolutions=3 -gravity=-1 -N0=30 -aa=0;
+% Test traction BC on surface with no movement (grid refinement) WORKS !!!
+runGridConvergence -numResolutions=3 -N0=10 -ts=pc2 -tf=1 -tp=0.1 -ms=none -knownSolution=TaylorGreen -nu=0.1  -bcs=dddt -dtMax=1e-2;
+ins -N0=40 -ts=pc2 -tf=1 -tp=0.1 -ms=none -knownSolution=TaylorGreen -nu=0.1  -bcs=dddt -dtMax=1e-2 -idebug=1 -plotOption=1 -movieMode=1;
 
-runGridConvergence -ts=pc2 -tf=1 -ms=none -knownSolution=GravityCapillaryWave -bcs=ppnd -numResolutions=3 -gravity=-1 -N0=10 -aa=1;
-runGridConvergence -ts=pc2 -tf=1 -ms=none -knownSolution=GravityCapillaryWave -bcs=dddd -numResolutions=1 -N0=40 -gravity=-1;
+% Test traction BC on moving grid
+runGridConvergence -numResolutions=3 -N0=10 -ts=pc2 -tf=1 -tp=0.1 -knownSolution=TaylorGreen -nu=0.1  -bcs=dddt -dtMax=1e-2 -motion=translate -cheatPressure=1; % Works
 
-% GW: Run INS on GCW with
-ins -ts=im2 -tf=1 -tp=.1 -ms=none -knownSolution=GravityCapillaryWave -nu=0.1  -bcs=dddd -N0=40 -idebug=1 -gravity=-1 -gamma=0 -computeErrors=1 -plotOption=3 -movieMode=1 -ya=-1 -yb=0 -icfs=cos -ampfs=1e-8 -plotGrid=0;
+runGridConvergence -numResolutions=3 -N0=10 -ts=ab2 -tf=1 -knownSolution=TaylorGreen -nu=0.1  -bcs=dddt -dtMax=1e-2 -motion=rotate -cheat=1; % does not work
+runGridConvergence -numResolutions=3 -N0=20 -ts=ab2 -tf=0.1 -ms=trig -aa=0 -nu=0.1  -bcs=dddt -dtMax=1e-2 -motion=rotate -cheat=2; % does not work
+
+ins -N0=40 -ts=ab2 -tf=1 -tp=0.1 -ms=trig -aa=0 -nu=0.1  -bcs=dddt -dtMax=1e-2 -motion=rotate -idebug=1 -plotOption=3 plotEveryStep=1 -plotSolutionOnGhost=1 -cheat=2 -movieMode=0;
+
 
 ***************************************
 ***** Tues Sept 8, 2026

@@ -217,10 +217,10 @@ function [p,par] = pressureEquation( t,u,v,dt, gf,cur, par )
         [I1b,I2b]=getBoundaryIndex(side,axis,par);
 
         if( par.bc(side,axis)==par.dirichlet ||  par.bc(side,axis)==par.traction )
-          % -- special case for Dirichlet or Traction BC (FIX ME for some other cases)
+          % -- special case for Dirichlet or Traction BC ( FIX ME for some other cases)
           J1b = I1b;
           J2b = I2b;
-          if( par.bc(side,axis)==par.dirichlet && axis==2 ) % top or bottom   ** FIX ME**
+          if( (par.bc(side,axis)==par.dirichlet || par.bc(side,axis)==par.traction) && axis==2 ) % top or bottom   ** FIX ME**
             % skip Dirichlet-Dirichlet, D-T, T-T corners  
             i1a = par.gid(1,1);
             i1b = par.gid(2,1);
@@ -278,7 +278,7 @@ function [p,par] = pressureEquation( t,u,v,dt, gf,cur, par )
                     par.bc(side,axis)==par.slipWall   || ...
                     par.bc(side,axis)==par.inflow )
               % Neumann BC :
-                %    (+-)*Dz( p ) = RHS  : use outward normal 
+                %    (+-)*Dz( p ) = RHS  : use outward normal warn
               % nSign = 2*(side-1)-1; % sign of normal, -1 on left and +1 on right
               % fprintf('pressureEqn: fill-in a Neumann BC (side,axis)=(%d,%d) (i1,i2)=(%d,%d) (is1,is2)=(%d,%d) nSign=%g\n',side,axis,i1,i2,is1,is2,nSign); 
 
@@ -706,6 +706,12 @@ function [p,par] = pressureEquation( t,u,v,dt, gf,cur, par )
      p(i1,i2)=rhs(ie);
    end
    end
+
+	% WARN: Assigning exact value of pressure
+	if (par.cheat == 1)
+		p = par.pe( gf{cur}.x(:, :, 1), gf{cur}.x(:, :, 2), t);
+	end
+
    if( isSingular==1 && mod(floor(idebug/2),2)==1 )
      fprintf('Solution to extra equation=%12.4e\n',rhs(Ngs));
    end

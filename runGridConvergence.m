@@ -19,8 +19,9 @@ function runGridConvergence( varargin )
  par.numResolutions=3;
  par.N0=10;
  par.dtMax=1e8; 
+ par.printCommands=0;
 
-
+% NOTE: runGridConvergence.m can now take *any* parameter that gets passed into ins.m
  par.ts = 'ab2'; 
  par.ms='trig'; % 'poly' 
  par.knownSolution='none';
@@ -54,6 +55,7 @@ function runGridConvergence( varargin )
 	if (strcmp(name,'N0') ||...
 		strcmp(name,'numResolutions') ||...
 		strcmp(name, 'plotOption') ||...
+		strcmp(name, 'printCommands') ||...
 		strcmp(name, 'computeErrors'))
 		continue;
 	end
@@ -76,7 +78,9 @@ function runGridConvergence( varargin )
 
     cmd = sprintf('ins -N0=%d -computeErrors=1 -plotOption=-1 %s;', Nx, inputFlags);
 
-    fprintf('Running [%s]\n',cmd);
+	if (par.printCommands)
+    	fprintf('Running [%s]\n',cmd);
+	end
     eval(cmd); 
 
     % output results from the run are found here:
