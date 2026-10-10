@@ -14,7 +14,7 @@ function par = assignCommandLineOption( line, par, echo )
 	n1 = strfind(line,'-');
 	n2 = strfind(line,'=');
 
-	if( length(n1)>0 && length(n1)>0 )
+	if( length(n1)>0 && length(n2)>0 )
 		name = line(n1(1)+1:n2(1)-1);
 		value = line(n2(1)+1:end);
 		if ~isnan(str2double(value))

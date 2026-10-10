@@ -70,6 +70,93 @@ runGridConvergence -ts=pc2 -tf=1 -ms=none -knownSolution=GravityCapillaryWave -b
 ins -ts=im2 -tf=1 -tp=.1 -ms=none -knownSolution=GravityCapillaryWave -nu=0.1  -bcs=dddd -N0=40 -idebug=1 -gravity=-1 -gamma=0 -computeErrors=1 -plotOption=3 -movieMode=1 -ya=-1 -yb=0 -icfs=cos -ampfs=1e-8 -plotGrid=0;
 
 ***************************************
+***** Sat Oct 10, 2026
+
+me❯ I am going to pull the latest version from the git repository. Changes were made by another person on the project. I would like you to help me go over the changes.
+
+>claude:
+I've fetched the four incoming commits and read the code diffs. Now I'm checking whether they change existing behavior, mainly defaults and the regression suite.
+
+  Ran 1 shell command
+
+I fetched origin/main but haven't pulled or merged anything. The other person is Gabriel Weredyk, who pushed 4 commits between Sep 24 and Oct 8:
+
+┌─────────────────────────────────────────────────────────┬───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                         Commit                          │                                                   What it does                                                    │
+├─────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ 59142a7 Starting to incorporate Gravity Capillary Waves │ Adds the matlabUtilities/ folder to the repo and a new GravityCapillaryWave known solution                        │
+├─────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ 5dac3ac Added Perturbed Poiseuille Flow ICs             │ Generalizes the Poiseuille solution, adds -ic=perturbedPoiseuille, and adds doc figures and tables                │
+├─────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ c8baefa Start of ins-parameters.md                      │ Reorganizes the parameter block in ins.m, renames README to README.md, adds doc/ins-parameters.md and doc/TODO.md │
+├─────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ 6867d34 Start of debugging Traction                     │ Adds the "auto-defaults" mechanism (src/assignDefaults.m) and changes how runGridConvergence builds its commands  │
+└─────────────────────────────────────────────────────────┴───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+A large part of the diff is LaTeX build output (.aux, .log, .fls, .synctex.gz, the PDF) and generated tables. The real code changes are in ins.m, runGridConvergence.m and about 9 files in src/.
+
+Before you pull
+
+git pull will abort. These files are untracked on your side but tracked upstream, so git won't overwrite them:
+- ins.check
+- doc/insDoc.fdb_latexmk
+- doc/insDoc.fls
+- doc/insDoc.synctex.gz
+
+They're all generated files, so you can move or delete them first. The src/*Old.m files and check/ins.check don't conflict.
+
+The main changes
+
+1. GravityCapillaryWave known solution (src/defineKnownSolution.m)
+- It's linear potential-flow theory for a small free-surface wave over depth H, using the dispersion relation ω² = gk(1 + γk²/ρg)·tanh(kH).
+- I checked the math: the kinematic condition, u = φₓ, the velocity derivatives and the linearized Bernoulli pressure are all consistent.
+- The amplitude is about 1e-8, so the nonlinear terms are negligible.
+- One limitation: a potential flow satisfies the momentum equation for any ν, but it doesn't satisfy the viscous stress condition at the free surface unless ν = 0. With nu=0.1 this isn't an exact solution. That may explain the reduced order the author notes ("linear convergence in the pressure"), and why the last commit is "debugging Traction".
+- To make it run, pressureEquation.m now turns off boundary forcing for this case.
+
+2. New parameter handling (ins.m, src/assignDefaults.m)
+- Command-line arguments are now read into a separate temp_par.
+- assignDefaults then applies per-case presets and merges the user's arguments on top. For example, -knownSolution=GravityCapillaryWave automatically sets the domain, bcs=ppnt, map=freeSurface, the free-surface motion, gravity=-1, and so on.
+- The defaults block in ins.m was regrouped by category.
+
+3. Poiseuille changes
+- The exact solution is now driven by the pressure drop: ampu = (pIn − pOut)/(2μ), with p = pIn at x = 0.
+- It now defaults to bcs=Ionn (pressure inflow, outflow).
+
+4. runGridConvergence now passes along only the flags you type, instead of building a fixed ins command.
+
+5. Some defaults now live inside the functions that use them: degreex, degreet, uic, vic, shearBeta and shearDeltav.
+
+Problems I found
+
+1. The default BC changed from nnnn to dddd in ins.m. Any run without -bcs= now behaves differently, including the examples in CLAUDE.md. All 18 regression cases in check/check.m set -bcs, so they aren't affected.
+2. runGridConvergence no longer passes its own defaults on to ins. It still sets ms='trig', bcs='dddd', tzScale=1 and nu=0.1 locally, but those reach ins only if you type them. For example, runGridConvergence -ts=ab2 now runs with ms=none, which has no errors to measure. The LaTeX table is still named from the local values, so the table name can disagree with what was actually run.
+3. The -aa flag doesn't do anything. It's described as auto-assign on/off, but assignDefaults never checks it, so the presets always apply.
+4. A typo in assignDefaults.m: it sets par.outflowPressureCoeff=1, but the real parameter is outflowPressureCoeffp.
+5. assignCommandLineOption.m:
+   - length(n1)>0 && length(n1)>0 tests n1 twice; the second test should be on n2.
+   - Unknown parameter names are now accepted silently. echo=0 hides the warning, and the value is assigned anyway.
+6. -icfs=cos only works with this one solution. getGrid.m uses par.DispersionRelation, which only the GravityCapillaryWave case defines, so any other use of -icfs=cos will crash.
+7. Plotting changes that affect everyone:
+   - setAspectRatio.m now returns immediately.
+   - plotSolution.m turns off figure resizing with if(1==0).
+
+   These look like personal preferences, not fixes.
+8. Smaller items:
+   - ins.m now calls addpath('src/') with a relative path, so it only works when started from the repo root.
+   - A top-level ins.check (just the output of the last run) and the LaTeX build files are now tracked. They will keep causing conflicts, so a .gitignore would help.
+   - The README's last example now has -knownSolution=tone, which is a typo.
+
+What's fine
+
+- None of the regression baselines in check/ changed.
+- The parameter reorganization doesn't change any values except the bcs default.
+- par.mu is defined (ins.m:214) before the new code uses it.
+
+MATLAB R2023b is installed, so after you pull I can run runChecks to confirm nothing broke. I can also draft notes for Gabriel about items 1–7, or fix them myself.
+
+
+***************************************
 ***** Tues Sept 8, 2026
 
 

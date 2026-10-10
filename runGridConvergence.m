@@ -48,6 +48,9 @@ function runGridConvergence( varargin )
 
 	n1 = strfind(line,'-');
 	n2 = strfind(line,'=');
+	if( isempty(n1) || isempty(n2) )
+		continue;   % not of the form -name=value (ignored by assignCommandLineOption too)
+	end
 	name = line(n1(1)+1:n2(1)-1);
 
 	% List of parameters to not pass into inputFlags
@@ -118,7 +121,10 @@ function runGridConvergence( varargin )
   if( ~strcmp(insPar.ms,'none') )     extra = strcat(extra,sprintf('MS%s'),insPar.ms);          end 
   if( ~strcmp(insPar.motion,'none') ) extra = strcat(extra,sprintf('Motion%s'),insPar.motion);  end 
 
-  name=sprintf('insTS%sBC%sMap%s%s',insPar.ts,insPar.bcLabel,insPar.map,extra);
+  bcLabel = insPar.bcLabel;
+  bcLabel = replace(bcLabel, "I", "If");  % 'I' (pressure inflow) -> 'If' so file names do not differ from 'i' (inflow) only by case
+
+  name=sprintf('insTS%sBC%sMap%s%s',insPar.ts,bcLabel,insPar.map,extra);
 
   tableDir = 'doc/tables';
 
