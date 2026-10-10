@@ -11,66 +11,82 @@ git clone https://github.com/wdhenshaw/incompressibleNavierStokes.git incompress
 
 ins.m : solve INS with pressure-poisson
 
-***************************************
-***** Thu Sept 24, 2026
-
-git commit -m "gw: Added code to test all configs of BCs"
-
-Poiseuille w/ initial perturbation
-Over short time scale
-ins -ts=pc2 -tf=0.02 -plotEveryStep=1 -ms=none -knownSolution=none -idebug=1 -nu=0.1 -bcs=Ionn -N0=40 -ic=perturbedPoiseuille -movieMode=1 -plotOption=3 -pressureInflowValue=0 -uInflow=0 -outflowPressureCoeffp=1 -outflowPressureCoeffpn=0 -pOutflow=-1 -perturbation=2.5e-1;
-
-Over a long timescale:
-ins -ts=pc2 -tf=12 -tp=0.75 -ms=none -knownSolution=none -idebug=1 -nu=0.1 -bcs=Ionn -N0=40 -ic=perturbedPoiseuille -movieMode=1 -plotOption=3 -pressureInflowValue=0 -uInflow=0 -outflowPressureCoeffp=1 -outflowPressureCoeffpn=0 -pOutflow=-1 -perturbation=2.5e-1;
-
-Poiseuille from ICs
-ins -ts=pc2 -tf=10 -tp=1.0 -ms=none -knownSolution=none -idebug=1 -nu=0.1 -bcs=Ionn -N0=40 -ic=zero -movieMode=1 -plotOption=3 -pressureInflowValue=0 -uInflow=0 -outflowPressureCoeffp=1 -outflowPressureCoeffpn=0 -pOutflow=-1 -perturbation=0;
-
-Poiseuille from Known Solution
-ins -ts=pc2 -tf=10.0 -tp=1.0 -ms=none -knownSolution=Poiseuille -nu=0.1  -bcs=Innn -N0=40 -plotOption=1 -movieMode=1 -dtMax=1e-2 -idebug=1 -pressureInflowValue=0 -uInflow=0;
-
-
-Test different BC configurations
-runGridConvergence -ts=pc2 -tf=.25 -ms=trig -numResolutions=4 -bcs=nnnn
-runGridConvergence -ts=pc2 -tf=.25 -ms=trig -numResolutions=4 -bcs=ssss
-runGridConvergence -ts=pc2 -tf=.25 -ms=trig -numResolutions=4 -bcs=iiii
-runGridConvergence -ts=pc2 -tf=.25 -ms=trig -numResolutions=4 -bcs=IIII
-runGridConvergence -ts=pc2 -tf=.25 -ms=trig -numResolutions=4 -bcs=oooo
-
-Generate gridConvergence tables for different time step procedures
-runGridConvergence -ts=ab2 -tf=.25 -ms=trig -numResolutions=4 -bcs=pppp
-runGridConvergence -ts=pc2 -tf=.25 -ms=trig -numResolutions=4 -bcs=pppp
-runGridConvergence -ts=im2 -tf=.25 -ms=trig -numResolutions=3 -bcs=pppp -dtMax=.01
-
-
-***************************************
-***** Thu Sept 24, 2026
-
-git commit -m "gw: Added Known Solution GravityCapillaryWave"
-
-% GW: Commands I want to run
-runGridConvergence -ts=pc2 -tf=.25 -ms=none -knownSolution=GravityCapillaryWave -bcs=dddd -numResolutions=3 -gravity=-1 -map=freeSurface -motion=freeSurfaceMotion;
-
-ins -ts=ab2 -tf=1 -tp=.1 -knownSolution=GravityCapillaryWave -nu=0.1  -bcs=ppnt -N0=40 -idebug=1 -gravity=-1 -gamma=0 -computeErrors=1 -plotOption=3 -movieMode=1 -ya=-1 -yb=0 -icfs=cos -ampfs=1e-8 -plotGrid=0 -motion=freeSurfaceMotion -map=freeSurface -plotEveryStep=1 -plotSolutionOnGhost=1 -xa=-0.5 -xb=0.5;
-
-
-ins -ts=ab2 -tf=1 -tp=.1 -knownSolution=GravityCapillaryWave -nu=0.1  -bcs=ppnt -N0=40 -idebug=1 -gravity=-1 -gamma=0 -computeErrors=1 -plotOption=3 -movieMode=1 -ya=-1 -yb=0 -icfs=cos -ampfs=1e-8 -plotGrid=0 -motion=freeSurfaceMotion -map=freeSurface -plotEveryStep=1 -plotSolutionOnGhost=1 -cdv=0;
-
-runGridConvergence -N0=10 -numResolutions=3 -ts=ab2 -tf=1 -tp=.1 -knownSolution=GravityCapillaryWave -nu=0.1  -bcs=ppnt -gravity=-1 -gamma=0 -computeErrors=1 -ya=-1 -yb=0 -icfs=cos -ampfs=1e-8 -motion=freeSurfaceMotion -map=freeSurface -cdv=0;
-
-% GW: GCW on refrence domain with fake dirichlet
-
-% Run Grid Convergence on "fake dirichlet" refrence domain GCW
-runGridConvergence -ts=pc2 -tf=1 -ms=none -knownSolution=GravityCapillaryWave -bcs=dddd -numResolutions=3 -gravity=-1 -N0=30 -aa=0;
-
-runGridConvergence -ts=pc2 -tf=1 -ms=none -knownSolution=GravityCapillaryWave -bcs=ppnd -numResolutions=3 -gravity=-1 -N0=10 -aa=1;
-runGridConvergence -ts=pc2 -tf=1 -ms=none -knownSolution=GravityCapillaryWave -bcs=dddd -numResolutions=1 -N0=40 -gravity=-1;
-
-% GW: Run INS on GCW with
-ins -ts=im2 -tf=1 -tp=.1 -ms=none -knownSolution=GravityCapillaryWave -nu=0.1  -bcs=dddd -N0=40 -idebug=1 -gravity=-1 -gamma=0 -computeErrors=1 -plotOption=3 -movieMode=1 -ya=-1 -yb=0 -icfs=cos -ampfs=1e-8 -plotGrid=0;
+===================================================================================
+==================== NOTES: most recent notes are at the TOP ======================
+===================================================================================
 
 ***************************************
 ***** Sat Oct 10, 2026
+
+ADD option to compute relative errors
+
+Let's have a look at the GravityCapillaryWave:
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>.
+--- gravityCapillary: add PERIODIC AND TRACTION TO TOP  ERRORS ARE VERY LARGE!!
+
+
+pc2: t=9.843e-04 step=     2 Nx= 40 dt=4.921e-04 maxRelErr-[p,u,v]=[0.00e+00,9.22e-02,4.01e-03] div/grad= 1.49e-03 (grad=4.22e-05), cpu= 1.50e+00(s)
+pc2: t=9.843e-04 step=     8 Nx= 80 dt=1.230e-04 maxRelErr-[p,u,v]=[0.00e+00,1.32e-01,6.56e-03] div/grad= 3.88e-04 (grad=4.15e-05), cpu= 2.98e+00(s)
+
+
+ins -N0=40 -idebug=1 -useTrueForP=1 -computeErrors=1 -computeRelativeErrors=1 -plotOption=3 -plotEveryStep=1 -ts=pc2 -cdv=0 -tf=.5 -tp=.01 -ms=none -knownSolution=GravityCapillaryWave -bcs=ppdt -gravity=-1 -ampfs=1e-4 -map=freeSurface -motion=freeSurfaceMotion 
+
+USE TRUE FOR P: BIG ERRORS FOR (u,v) ON THE TRACTION BC
+
+pc2: t=4.916e-04 step=     1 Nx= 40 dt=4.916e-04 maxRelErr-[p,u,v]=[0.00e+00,4.93e-02,1.26e-04] div/grad= 1.60e-03 (grad=4.33e-03), cpu= 1.50e+00(s)
+
+pc2: t=9.833e-03 step=    20 Nx= 40 dt=4.916e-04 maxRelErr-[p,u,v]=[0.00e+00,4.18e-01,7.07e-02] div/grad= 1.26e-03 (grad=3.44e-03), cpu= 2.20e+00(s)
+
+
+pc2: t=9.833e-03 step=    20 Nx= 40 dt=4.916e-04 maxRelErr-[p,u,v]=[3.41e-04,4.57e-01,1.23e-01] div/grad= 1.20e-02 (grad=3.24e-03), cpu= 2.59e+00(s)
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+--- gravityCapillary: DIRICHLET BC's : errors decrease BETTER when CDV==0 
+ins -N0=40 -idebug=1 -computeErrors=1 -computeRelativeErrors=1 -plotOption=3 -plotEveryStep=0 -ts=pc2 -cdv=0 -tf=.5 -tp=.01 -ms=none -knownSolution=GravityCapillaryWave -bcs=dddd -gravity=-1 -ampfs=1e-4 -map=freeSurface -motion=freeSurfaceMotion 
+cdv==0
+pc2: t=9.833e-03 step=    20 Nx= 40 dt=4.916e-04 maxRelErr-[p,u,v]=[4.00e-07,1.33e-04,6.47e-05] div/grad= 1.57e-03 (grad=4.44e-03), cpu= 1.68e+00(s)
+pc2: t=9.963e-03 step=    81 Nx= 80 dt=1.230e-04 maxRelErr-[p,u,v]=[1.09e-07,2.26e-05,1.87e-05] div/grad= 4.13e-04 (grad=4.45e-03), cpu= 1.09e+01(s)
+
+cvd=1:
+pc2: t=9.833e-03 step=    20 Nx= 40 dt=4.916e-04 maxRelErr-[p,u,v]=[9.64e-06,1.69e-03,1.07e-03] div/grad= 8.42e-03 (grad=4.46e-03), cpu= 1.82e+00(s)
+pc2: t=9.963e-03 step=    81 Nx= 80 dt=1.230e-04 maxRelErr-[p,u,v]=[3.87e-06,5.73e-04,2.04e-04] div/grad= 2.85e-03 (grad=4.46e-03), cpu= 1.06e+01(s)
+
+
+gravityCapillary: plot every step
+
+ins -N0=40 -idebug=1 -computeErrors=1 -computeRelativeErrors=1 -plotOption=3 -plotEveryStep=1 -ts=pc2 -cdv=0 -tf=.5 -tp=.001 -ms=none -knownSolution=GravityCapillaryWave -bcs=dddd -gravity=-1 -ampfs=1e-4 -map=freeSurface -motion=freeSurfaceMotion
+
+>>> N=80
+pc2: t=4.916e-04 step=     1 Nx= 40 dt=4.916e-04 maxRelErr-[p,u,v]=[3.99e-07,1.86e-05,5.31e-06] div/grad= 1.67e-03 (grad=4.44e-03), cpu= 1.19e+00(s)
+*** FORM THE PRESSURE MATRIX : Ng=1849 t=  9.8328e-04 cur=3 **
+pc2: t=9.833e-04 step=     2 Nx= 40 dt=4.916e-04 maxRelErr-[p,u,v]=[3.99e-07,3.48e-05,1.11e-05] div/grad= 1.66e-03 (grad=4.44e-03), cpu= 1.83e+00(s)
+pc2: t=1.475e-03 step=     3 Nx= 40 dt=4.916e-04 maxRelErr-[p,u,v]=[3.99e-07,4.85e-05,1.53e-05] div/grad= 1.66e-03 (grad=4.44e-03), cpu= 2.52e+00(s)
+pc2: t=1.967e-03 step=     4 Nx= 40 dt=4.916e-04 maxRelErr-[p,u,v]=[3.99e-07,6.01e-05,1.80e-05] div/grad= 1.65e-03 (grad=4.44e-03), cpu= 3.25e+00(s)
+pc2: t=2.458e-03 step=     5 Nx= 40 dt=4.916e-04 maxRelErr-[p,u,v]=[3.99e-07,7.00e-05,2.02e-05] div/grad= 1.64e-03 (grad=4.44e-03), cpu= 3.93e+00(s)
+pc2: t=2.950e-03 step=     6 Nx= 40 dt=4.916e-04 maxRelErr-[p,u,v]=[3.99e-07,7.86e-05,2.38e-05] div/grad= 1.63e-03 (grad=4.44e-03), cpu= 4.48e+00(s)
+pc2: t=3.441e-03 step=     7 Nx= 40 dt=4.916e-04 maxRelErr-[p,u,v]=[3.99e-07,8.60e-05,2.72e-05] div/grad= 1.63e-03 (grad=4.44e-03), cpu= 5.03e+00(s)
+pc2: t=3.933e-03 step=     8 Nx= 40 dt=4.916e-04 maxRelErr-[p,u,v]=[3.99e-07,9.26e-05,3.05e-05] div/grad= 1.62e-03 (grad=4.44e-03), cpu= 5.56e+00(s)
+pc2: t=4.425e-03 step=     9 Nx= 40 dt=4.916e-04 maxRelErr-[p,u,v]=[3.99e-07,9.84e-05,3.36e-05] div/grad= 1.62e-03 (grad=4.44e-03), cpu= 6.12e+00(s)
+pc2: t=4.916e-03 step=    10 Nx= 40 dt=4.916e-04 maxRelErr-[p,u,v]=[4.00e-07,1.03e-04,3.66e-05] div/grad= 1.61e-03 (grad=4.44e-03), cpu= 6.86e+00(s)
+
+>>>> N=80 
+pc2: t=1.230e-04 step=     1 Nx= 80 dt=1.230e-04 maxRelErr-[p,u,v]=[1.09e-07,2.30e-06,5.65e-07] div/grad= 4.36e-04 (grad=4.45e-03), cpu= 1.52e+00(s)
+*** FORM THE PRESSURE MATRIX : Ng=6889 t=  2.4600e-04 cur=3 **
+pc2: t=2.460e-04 step=     2 Nx= 80 dt=1.230e-04 maxRelErr-[p,u,v]=[1.09e-07,4.30e-06,1.23e-06] div/grad= 4.35e-04 (grad=4.45e-03), cpu= 2.40e+00(s)
+pc2: t=3.690e-04 step=     3 Nx= 80 dt=1.230e-04 maxRelErr-[p,u,v]=[1.09e-07,5.99e-06,1.71e-06] div/grad= 4.34e-04 (grad=4.45e-03), cpu= 3.24e+00(s)
+pc2: t=4.920e-04 step=     4 Nx= 80 dt=1.230e-04 maxRelErr-[p,u,v]=[1.09e-07,7.44e-06,2.02e-06] div/grad= 4.33e-04 (grad=4.45e-03), cpu= 3.94e+00(s)
+pc2: t=6.150e-04 step=     5 Nx= 80 dt=1.230e-04 maxRelErr-[p,u,v]=[1.09e-07,8.68e-06,2.21e-06] div/grad= 4.32e-04 (grad=4.45e-03), cpu= 4.62e+00(s)
+pc2: t=7.380e-04 step=     6 Nx= 80 dt=1.230e-04 maxRelErr-[p,u,v]=[1.09e-07,9.76e-06,2.34e-06] div/grad= 4.32e-04 (grad=4.45e-03), cpu= 5.32e+00(s)
+pc2: t=8.610e-04 step=     7 Nx= 80 dt=1.230e-04 maxRelErr-[p,u,v]=[1.09e-07,1.07e-05,2.45e-06] div/grad= 4.31e-04 (grad=4.45e-03), cpu= 6.05e+00(s)
+pc2: t=9.840e-04 step=     8 Nx= 80 dt=1.230e-04 maxRelErr-[p,u,v]=[1.09e-07,1.15e-05,2.53e-06] div/grad= 4.30e-04 (grad=4.45e-03), cpu= 6.75e+00(s)
+pc2: t=1.107e-03 step=     9 Nx= 80 dt=1.230e-04 maxRelErr-[p,u,v]=[1.09e-07,1.22e-05,2.80e-06] div/grad= 4.30e-04 (grad=4.45e-03), cpu= 7.46e+00(s)
+pc2: t=1.230e-03 step=    10 Nx= 80 dt=1.230e-04 maxRelErr-[p,u,v]=[1.09e-07,1.29e-05,3.08e-06] div/grad= 4.29e-04 (grad=4.45e-03), cpu= 8.13e+00(s)
+pc2: t=1.353e-03 step=    11 Nx= 80 dt=1.230e-04 maxRelErr-[p,u,v]=[1.09e-07,1.35e-05,3.34e-06] div/grad= 4.29e-04 (grad=4.45e-03), cpu= 8.83e+00(s)
+
+
+>>>>>>>>>>>>>>
 
 me❯ I am going to pull the latest version from the git repository. Changes were made by another person on the project. I would like you to help me go over the changes.
 
@@ -154,6 +170,66 @@ What's fine
 - par.mu is defined (ins.m:214) before the new code uses it.
 
 MATLAB R2023b is installed, so after you pull I can run runChecks to confirm nothing broke. I can also draft notes for Gabriel about items 1–7, or fix them myself.
+
+
+
+***************************************
+***** Thu Sept 24, 2026
+
+git commit -m "gw: Added code to test all configs of BCs"
+
+Poiseuille w/ initial perturbation
+Over short time scale
+ins -ts=pc2 -tf=0.02 -plotEveryStep=1 -ms=none -knownSolution=none -idebug=1 -nu=0.1 -bcs=Ionn -N0=40 -ic=perturbedPoiseuille -movieMode=1 -plotOption=3 -pressureInflowValue=0 -uInflow=0 -outflowPressureCoeffp=1 -outflowPressureCoeffpn=0 -pOutflow=-1 -perturbation=2.5e-1;
+
+Over a long timescale:
+ins -ts=pc2 -tf=12 -tp=0.75 -ms=none -knownSolution=none -idebug=1 -nu=0.1 -bcs=Ionn -N0=40 -ic=perturbedPoiseuille -movieMode=1 -plotOption=3 -pressureInflowValue=0 -uInflow=0 -outflowPressureCoeffp=1 -outflowPressureCoeffpn=0 -pOutflow=-1 -perturbation=2.5e-1;
+
+Poiseuille from ICs
+ins -ts=pc2 -tf=10 -tp=1.0 -ms=none -knownSolution=none -idebug=1 -nu=0.1 -bcs=Ionn -N0=40 -ic=zero -movieMode=1 -plotOption=3 -pressureInflowValue=0 -uInflow=0 -outflowPressureCoeffp=1 -outflowPressureCoeffpn=0 -pOutflow=-1 -perturbation=0;
+
+Poiseuille from Known Solution
+ins -ts=pc2 -tf=10.0 -tp=1.0 -ms=none -knownSolution=Poiseuille -nu=0.1  -bcs=Innn -N0=40 -plotOption=1 -movieMode=1 -dtMax=1e-2 -idebug=1 -pressureInflowValue=0 -uInflow=0;
+
+
+Test different BC configurations
+runGridConvergence -ts=pc2 -tf=.25 -ms=trig -numResolutions=4 -bcs=nnnn
+runGridConvergence -ts=pc2 -tf=.25 -ms=trig -numResolutions=4 -bcs=ssss
+runGridConvergence -ts=pc2 -tf=.25 -ms=trig -numResolutions=4 -bcs=iiii
+runGridConvergence -ts=pc2 -tf=.25 -ms=trig -numResolutions=4 -bcs=IIII
+runGridConvergence -ts=pc2 -tf=.25 -ms=trig -numResolutions=4 -bcs=oooo
+
+Generate gridConvergence tables for different time step procedures
+runGridConvergence -ts=ab2 -tf=.25 -ms=trig -numResolutions=4 -bcs=pppp
+runGridConvergence -ts=pc2 -tf=.25 -ms=trig -numResolutions=4 -bcs=pppp
+runGridConvergence -ts=im2 -tf=.25 -ms=trig -numResolutions=3 -bcs=pppp -dtMax=.01
+
+
+***************************************
+***** Thu Sept 24, 2026
+
+git commit -m "gw: Added Known Solution GravityCapillaryWave"
+
+% GW: Commands I want to run
+runGridConvergence -ts=pc2 -tf=.25 -ms=none -knownSolution=GravityCapillaryWave -bcs=dddd -numResolutions=3 -gravity=-1 -map=freeSurface -motion=freeSurfaceMotion;
+
+ins -ts=ab2 -tf=1 -tp=.1 -knownSolution=GravityCapillaryWave -nu=0.1  -bcs=ppnt -N0=40 -idebug=1 -gravity=-1 -gamma=0 -computeErrors=1 -plotOption=3 -movieMode=1 -ya=-1 -yb=0 -icfs=cos -ampfs=1e-8 -plotGrid=0 -motion=freeSurfaceMotion -map=freeSurface -plotEveryStep=1 -plotSolutionOnGhost=1 -xa=-0.5 -xb=0.5;
+
+
+ins -ts=ab2 -tf=1 -tp=.1 -knownSolution=GravityCapillaryWave -nu=0.1  -bcs=ppnt -N0=40 -idebug=1 -gravity=-1 -gamma=0 -computeErrors=1 -plotOption=3 -movieMode=1 -ya=-1 -yb=0 -icfs=cos -ampfs=1e-8 -plotGrid=0 -motion=freeSurfaceMotion -map=freeSurface -plotEveryStep=1 -plotSolutionOnGhost=1 -cdv=0;
+
+runGridConvergence -N0=10 -numResolutions=3 -ts=ab2 -tf=1 -tp=.1 -knownSolution=GravityCapillaryWave -nu=0.1  -bcs=ppnt -gravity=-1 -gamma=0 -computeErrors=1 -ya=-1 -yb=0 -icfs=cos -ampfs=1e-8 -motion=freeSurfaceMotion -map=freeSurface -cdv=0;
+
+% GW: GCW on refrence domain with fake dirichlet
+
+% Run Grid Convergence on "fake dirichlet" refrence domain GCW
+runGridConvergence -ts=pc2 -tf=1 -ms=none -knownSolution=GravityCapillaryWave -bcs=dddd -numResolutions=3 -gravity=-1 -N0=30 -aa=0;
+
+runGridConvergence -ts=pc2 -tf=1 -ms=none -knownSolution=GravityCapillaryWave -bcs=ppnd -numResolutions=3 -gravity=-1 -N0=10 -aa=1;
+runGridConvergence -ts=pc2 -tf=1 -ms=none -knownSolution=GravityCapillaryWave -bcs=dddd -numResolutions=1 -N0=40 -gravity=-1;
+
+% GW: Run INS on GCW with
+ins -ts=im2 -tf=1 -tp=.1 -ms=none -knownSolution=GravityCapillaryWave -nu=0.1  -bcs=dddd -N0=40 -idebug=1 -gravity=-1 -gamma=0 -computeErrors=1 -plotOption=3 -movieMode=1 -ya=-1 -yb=0 -icfs=cos -ampfs=1e-8 -plotGrid=0;
 
 
 ***************************************

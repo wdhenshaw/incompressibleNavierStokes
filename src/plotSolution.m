@@ -137,10 +137,11 @@ function par = plotSolution( tn,un,vn,pn, gf,cur, par)
     if( par.computeErrors && par.plotErrors )
 	    [maxErr,perr,uerr,verr,div] = getErrors( tn,un,vn,pn, gf,cur, par );
 
-      par.maxErr(1) = max(abs(perr(I1,I2)),[],'all');
-      par.maxErr(2) = max(abs(uerr(I1,I2)),[],'all');
-      par.maxErr(3) = max(abs(verr(I1,I2)),[],'all');
-      par.maxErr(4) = max(abs(div (I1,I2)),[],'all');
+      par.maxErr=maxErr;
+      % par.maxErr(1) = max(abs(perr(I1,I2)),[],'all'); % wdh: these are already set in getErrors 2026/10/10
+      % par.maxErr(2) = max(abs(uerr(I1,I2)),[],'all');
+      % par.maxErr(3) = max(abs(verr(I1,I2)),[],'all');
+      % par.maxErr(4) = max(abs(div (I1,I2)),[],'all');
 
 	 	  figure(3)
 	    tl =tiledlayout('flow','TileSpacing','Compact');

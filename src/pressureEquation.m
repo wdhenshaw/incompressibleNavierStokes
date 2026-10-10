@@ -692,6 +692,9 @@ function [p,par] = pressureEquation( t,u,v,dt, gf,cur, par )
       if( mod(floor(idebug/2),2)==1 ) fprintf('RHS to extra equation=%12.4e\n',rhs(Ngs)); end 
    end
 
+   % --------------------------------------------------------------
+   % -------------- SOLVE THE LINEAR SYSTEM FOR THE PRESSURE ------
+   % --------------------------------------------------------------
    % rhs = U\( L\rhs );  % solve LU (rhs) = rhs 
    rhs = par.dA\rhs;  % solve LU (rhs) = rhs 
 
@@ -757,6 +760,12 @@ function [p,par] = pressureEquation( t,u,v,dt, gf,cur, par )
        pause; 
      end 
    end
+
+  if( par.useTrueForP )
+    % over-write the true solution for p
+    [I1,I2] = getIndex(par.dim);
+    p(I1,I2) = par.pe(gf{cur}.x(I1,I2,1),gf{cur}.x(I1,I2,2),t);
+  end 
 
   par.cpuPressure = par.cpuPressure + cputime - cpu0; % time for pressure SOLVES (not factor)
 

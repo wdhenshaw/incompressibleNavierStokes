@@ -134,11 +134,13 @@ function outPar = ins(varargin)
   par.ad22 = .1;                   % coeff of non-linear AD
 
   % Printing parameters
-  par.idebug=0;                    % set to 1 for debugging TODO: Add more about other debugging types!!!
-  par.computeErrors=0;           
-  par.verbose=0; % Change to increase amount outputed                % TODO: Implement
-  par.echo = 1;   % Parameter involved in assignCommandLineArguments
-  par.checkFileName = 'ins.check'; % name of the check file
+  par.idebug                = 0;   % set to 1 for debugging TODO: Add more about other debugging types!!!
+  par.computeErrors         = 0;   
+  par.computeRelativeErrors = 0;   % 1 = compute relative errors  
+  par.useTrueForP           = 0;   % 1 = over-write true solution for p      
+  par.verbose               = 0;   % Change to increase amount outputed                % TODO: Implement
+  par.echo                  = 1;   % Parameter involved in assignCommandLineArguments
+  par.checkFileName         = 'ins.check'; % name of the check file
 
   % Plotting parameters
   par.plotOption=1;                % set to 1 for plotting
@@ -350,7 +352,8 @@ function outPar = ins(varargin)
     fprintf(' useOptFill = %d (use optimized fill method for matrices)\n',par.useOptFill)
     fprintf(' ad=%d, ad21=%g, ad22=%g (ad=1 : add artificial dissipation)\n',par.ad,par.ad21,par.ad22);
     % fprintf(' useGridFunctions=%d (1=use new grid functions)\n',par.useGridFunctions);
-    fprintf(' plotEveryStep=%d, plotOption=%d\n',par.plotEveryStep,par.plotOption);
+    fprintf(' plotEveryStep=%d, plotOption=%d, computeErrors=%d, computeRelativeErrors=%d useTrueForP=%d\n',...
+                 par.plotEveryStep,par.plotOption,par.computeErrors,par.computeRelativeErrors,par.useTrueForP);
     fprintf(' outflow: outflowPressureCoeffp=%g, outflowPressureCoeffpn=%g, pOutflow=%g\n',...
               par.outflowPressureCoeffp,par.outflowPressureCoeffpn,par.pOutflow);
     fprintf(' implicitTimeStep: multipleImplicitSolversNeeded=%d combinedImplicitSolverNeeded=%d\n',par.multipleImplicitSolversNeeded,par.combinedImplicitSolverNeeded);
@@ -574,8 +577,9 @@ function outPar = ins(varargin)
             vErrMax = maxErr(3);
             divMax  = maxErr(4);
           end
-          fprintf('%s: t=%9.3e step=%6d Nx=%3d dt=%9.3e err-[p,u,v]=[%8.2e,%8.2e,%8.2e] div/grad=%9.2e (grad=%8.2e), cpu=%9.2e(s)\n',...
-               par.ts,tnp1,par.step,par.Nx,dt,pErrMax,uErrMax,vErrMax, divOverGrad,maxGradU,cpuCurrent); 
+          if( par.computeRelativeErrors ) errLabel='maxRelErr'; else errLabel='maxErr'; end 
+          fprintf('%s: t=%9.3e step=%6d Nx=%3d dt=%9.3e %s-[p,u,v]=[%8.2e,%8.2e,%8.2e] div/grad=%9.2e (grad=%8.2e), cpu=%9.2e(s)\n',...
+               par.ts,tnp1,par.step,par.Nx,dt,errLabel, pErrMax,uErrMax,vErrMax, divOverGrad,maxGradU,cpuCurrent); 
         else
           fprintf('%s: t=%9.3e step=%6d Nx=%3d dt=%9.3e div/grad=%9.2e (grad=%8.2e) cpu=%9.2e(s)\n',par.ts,tnp1,par.step,par.Nx,dt,divOverGrad,maxGradU,cpuCurrent); 
         end
@@ -644,7 +648,8 @@ function outPar = ins(varargin)
     vErrMax = maxErr(3);
     divMax  = maxErr(4);
     if( par.plotOption>=-0 )
-      fprintf('%s: t=%8.2e: Nx=%3d Ny=%3d Nt=%5d dt=%8.2e max-Err(p,u,v)=(%8.2e,%8.2e,%8.2e) cpu=%8.2e(s)\n',par.ts,tnp1,par.Nx,par.Ny,Nt,dt,pErrMax,uErrMax,vErrMax,par.cpuTotal);
+      if( par.computeRelativeErrors ) errLabel='maxRelErr'; else errLabel='maxErr'; end 
+      fprintf('%s: t=%8.2e: Nx=%3d Ny=%3d Nt=%5d dt=%8.2e %s(p,u,v)=(%8.2e,%8.2e,%8.2e) cpu=%8.2e(s)\n',par.ts,tnp1,par.Nx,par.Ny,Nt,dt,errLabel,pErrMax,uErrMax,vErrMax,par.cpuTotal);
     end
   else
     maxErr = zeros(4,1);

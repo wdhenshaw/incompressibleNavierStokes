@@ -310,6 +310,12 @@ function [u,v,par] = applyBoundaryConditions( u,v,t, gf,cur, par )
               v(i1-is1,i2-is2) = b(2);
 
               if( 1==0 )
+                % Set true values on traction ghost ************************************************************
+                u(i1-is1,i2-is2)= par.ue(gf{cur}.x(i1-is1,i2-is2,1),gf{cur}.x(i1-is1,i2-is2,2),t);
+                v(i1-is1,i2-is2)= par.ve(gf{cur}.x(i1-is1,i2-is2,1),gf{cur}.x(i1-is1,i2-is2,2),t);
+              end       
+
+              if( 1==0 )
                 % check residual and errors
                 ux =  rx*Dr2(u,i1,i2) + sx*Ds2(u,i1,i2);
                 vx =  rx*Dr2(v,i1,i2) + sx*Ds2(v,i1,i2);
@@ -319,16 +325,34 @@ function [u,v,par] = applyBoundaryConditions( u,v,t, gf,cur, par )
                 % tauv*nv : 
                 tauvnv1 =  mu*( 2*ux*n1 + (uy+vx)*n2 );
                 tauvnv2 =  mu*( 2*vy*n2 + (uy+vx)*n1 );
-                f(1) = ( ux+vy )*n1 + (1-n1^2)*( tauvnv1 )   -n1*n2*( tauvnv2 ) - gv(1);
-                f(2) = ( ux+vy )*n2 +  -n1*n2*( tauvnv1 ) +(1-n2^2)*( tauvnv2 ) - gv(2);    
+                f(1) = ( ux+vy )*n1 + (1-n1^2)*( tauvnv1 )    -n1*n2*( tauvnv2 ) - gv(1);
+                f(2) = ( ux+vy )*n2 +   -n1*n2*( tauvnv1 ) +(1-n2^2)*( tauvnv2 ) - gv(2);    
                 
                 uErr = abs( u(i1-is1,i2-is2) - par.ue(gf{cur}.x(i1-is1,i2-is2,1),gf{cur}.x(i1-is1,i2-is2,2),t));
                 vErr = abs( v(i1-is1,i2-is2) - par.ve(gf{cur}.x(i1-is1,i2-is2,1),gf{cur}.x(i1-is1,i2-is2,2),t));
 
-                fprintf('applyBC:tractionBC: [side,axis]=[%d,%d] (i1,i2)=%3d,%3d)  f=(%9.2e,%9.2e) err=(%9.2e,%9.2e)\n',side,axis,i1,i2,f(1),f(2),uErr,vErr);  
-                % pause;
+                ue = par.ue(gf{cur}.x(i1,i2,1),gf{cur}.x(i1,i2,2),t);
+                ve = par.ve(gf{cur}.x(i1,i2,1),gf{cur}.x(i1,i2,2),t);
 
+                uvMax=max(abs(ue),abs(ve));
+
+                fprintf('applyBC:tractionBC: t=%9.3e mu=%9.3e [side,axis]=[%d,%d] (i1,i2)=%3d,%3d)  rel-res=(%9.2e,%9.2e) rel-err-[u,v]=(%9.2e,%9.2e) (n1,n2)=(%e,%e) n1^2+n2^2=%9.3e\n',...
+                     t,mu,side,axis,i1,i2,f(1)/uvMax,f(2)/uvMax,uErr/ue,vErr/ve,n1,n2,n1^2+n2^2); 
+                uex = par.uex(gf{cur}.x(i1,i2,1),gf{cur}.x(i1,i2,2),t);
+                vex = par.vex(gf{cur}.x(i1,i2,1),gf{cur}.x(i1,i2,2),t);
+                uey = par.uey(gf{cur}.x(i1,i2,1),gf{cur}.x(i1,i2,2),t);
+                vey = par.vey(gf{cur}.x(i1,i2,1),gf{cur}.x(i1,i2,2),t);
+                dive= uex+vey;
+                tauvnv1e =  mu*( 2*uex*n1 + (uey+vex)*n2 );
+
+                divu=ux+vy;
+                fprintf(' ... div(ue)=%9.2e (divu=%9.2e), tauvnv1e/uvMax=%9.2e (tauvnv1/uvMax=%9.3e), [rx,ry,sx,sy]=[%9.3e,%9.3e,%9.3e,%9.3e]\n',dive,divu,tauvnv1e/uvMax,tauvnv1/uvMax, rx,ry,sx,sy); 
+
+                pause
               end
+
+
+
 
 
             end % end for i1

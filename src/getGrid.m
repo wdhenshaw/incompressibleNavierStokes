@@ -5,17 +5,17 @@ function [gf,par] = getGrid( t, gf,cur, par )
 
 
   if( ~isfield(gf{cur},'x') )
-  	if( par.idebug>0 )
-  	  fprintf('*** Create the grid for cur=%d t=%9.3e ***\n',cur,t);
-  	end
+    if( par.idebug>0 )
+      fprintf('*** Create the grid for cur=%d t=%9.3e ***\n',cur,t);
+    end
 
     % first time: create the x and rx arrays as needed
-	  gf{cur}.x = par.x(:,:,:);
-	  if( ~strcmp(par.map,'Cartesian') || par.gridMotion~=par.noMotion )
-	    gf{cur}.rx = par.rx(:,:,:,:);
-	    gf{cur}.gv = zeros(par.Ngx,par.Ngy,2);
-	  end
-	end
+    gf{cur}.x = par.x(:,:,:);
+    if( ~strcmp(par.map,'Cartesian') || par.gridMotion~=par.noMotion )
+      gf{cur}.rx = par.rx(:,:,:,:);
+      gf{cur}.gv = zeros(par.Ngx,par.Ngy,2);
+    end
+  end
 
   if( par.gridMotionOption==par.correctGrid && ~strcmp(par.map,'freeSurface') )
     % --- we only corrext the grid for a free surface problem ---
@@ -162,8 +162,8 @@ function [gf,par] = getGrid( t, gf,cur, par )
             yv = amp*sin(par.kx*rv);
           elseif( strcmp(par.icfs,'gaussian') )
             yv = amp*exp( - (par.betag*(xv-par.x0g)).^2 );
-		  elseif (strcmp(par.icfs,'cos'))
-	        yv = amp*cos(par.kx*xv - par.DispersionRelation * t);
+        elseif (strcmp(par.icfs,'cos'))
+          yv = amp*cos(par.kx*xv - par.DispersionRelation * t);
           else
             fprintf('\n getGrid:ERROR: unknown free surface initial condition, icsf=[%s]\n',par.icsf);
           end
@@ -195,7 +195,7 @@ function [gf,par] = getGrid( t, gf,cur, par )
 
 
 
-            if( par.plotEveryStep )
+            if( par.idebug>1 && par.plotEveryStep )
               figure(7)
               plot( xv,yv,'-x', gf{prev}.eta(I1,1),gf{prev}.eta(I1,2),'-' );
               grid on; xlabel('x');
@@ -306,15 +306,15 @@ function [gf,par] = getGrid( t, gf,cur, par )
 
     else
 
-    	fprintf('getGrid:ERROR:finish me for gridMotion=%d\n',par.gridMotion);
-    	error();
+      fprintf('getGrid:ERROR:finish me for gridMotion=%d\n',par.gridMotion);
+      error();
     end
 
 
 
 
-	  
-	end  % end if gridMotion
+    
+  end  % end if gridMotion
 
 
   return

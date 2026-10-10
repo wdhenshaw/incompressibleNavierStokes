@@ -1,6 +1,8 @@
 %
 %  Compute the true solution and the errors
 %
+% Note: 
+%  If par.computeRelativeErrors==1 : return relative errors 
 
 function [maxErr,perr,uerr,verr,div] = getErrors( tn,un,vn,pn, gf,cur, par )
 
@@ -26,6 +28,17 @@ function [maxErr,perr,uerr,verr,div] = getErrors( tn,un,vn,pn, gf,cur, par )
 	uErrMax = max(max(abs(un(I1,I2)-uTrue(I1,I2))));  % max-norm error
 	vErrMax = max(max(abs(vn(I1,I2)-vTrue(I1,I2))));  % max-norm error
 	pErrMax = max(max(abs(pn(I1,I2)-pTrue(I1,I2))));  % max-norm error
+
+  if( par.computeRelativeErrors )
+    uMax=max(max(abs(uTrue(I1,I2))));
+    vMax=max(max(abs(vTrue(I1,I2))));
+    pMax=max(max(abs(pTrue(I1,I2))));
+    uErrMax=uErrMax/uMax;
+    vErrMax=vErrMax/vMax;
+    pErrMax=pErrMax/pMax;
+    % fprintf('getErrors: tn=%e, pMax=%e, uMax=%e vMax=%e rel-err-[p,u,v]=[%e,%e,%e]\n',tn,pMax,uMax,vMax, pErrMax,uErrMax,vErrMax);
+    % pause
+  end
 
   div=zeros(par.Ngx,par.Ngy);
 
