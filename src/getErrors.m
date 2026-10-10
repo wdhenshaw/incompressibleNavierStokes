@@ -33,9 +33,9 @@ function [maxErr,perr,uerr,verr,div] = getErrors( tn,un,vn,pn, gf,cur, par )
     uMax=max(max(abs(uTrue(I1,I2))));
     vMax=max(max(abs(vTrue(I1,I2))));
     pMax=max(max(abs(pTrue(I1,I2))));
-    uErrMax=uErrMax/uMax;
-    vErrMax=vErrMax/vMax;
-    pErrMax=pErrMax/pMax;
+    uErrMax=uErrMax/max(uMax,1e-16);
+    vErrMax=vErrMax/max(vMax,1e-16);
+    pErrMax=pErrMax/max(pMax,1e-16);
     % fprintf('getErrors: tn=%e, pMax=%e, uMax=%e vMax=%e rel-err-[p,u,v]=[%e,%e,%e]\n',tn,pMax,uMax,vMax, pErrMax,uErrMax,vErrMax);
     % pause
   end
