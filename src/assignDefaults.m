@@ -23,7 +23,7 @@ function par = assignDefaults( temp_par, par )
 
 			case 'Poiseuille'
 				par.bcs = 'Ionn';
-				par.outflowPressureCoeff=1;
+				par.outflowPressureCoeffp=1;
 				par.outflowPressureCoeffpn=0;
 
 		end

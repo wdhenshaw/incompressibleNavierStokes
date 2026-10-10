@@ -12,14 +12,14 @@
 function outPar = ins(varargin)
 
   % clear; clf; 
-  addpath('src/'); addpath('matlabUtilities/'); % Add src files and matlabUtils
+  addpath(genpath(pwd)); % allow matlab to find files in subfolders
+  %wdh addpath('src/'); addpath('matlabUtilities/'); % Add src files and matlabUtils
 
   clearvars -except varargin;
 	
    % --- Clear all open figures ----
   clearOpenFigures(1:7);
 
-  addpath(genpath(pwd)); % allow matlab to find files in subfolders
 
   % % ------ Restrict the number of threads so that cputime gives accurate answers ----------
   % maxThreads=maxNumCompThreads;
@@ -34,8 +34,8 @@ function outPar = ins(varargin)
 
   % load the rainbow colour table & load to par
   % NOTE: Not assigned by user, just assigning variables
-  rainbow;
-  par.rainbowMap = rainbowMap;
+  % rainbow;
+  par.rainbowMap = getRainbow();
 
   % ---- Boundary Condition Types ---
   par.periodic       =-1; 

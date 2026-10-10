@@ -19,7 +19,7 @@ function testPlotStreamLines( varargin )
   par.idebug=1;
 
   % load the rainbow colour table
-  rainbow;
+  par.rainbowMap = getRainbow();
 
 
   % --- read command line args ---
