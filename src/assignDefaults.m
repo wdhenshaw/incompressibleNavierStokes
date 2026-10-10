@@ -4,8 +4,10 @@
 
 function par = assignDefaults( temp_par, par )
 
-	% Assign default options based on type of Known Solution
-	if (isfield(temp_par, 'knownSolution'))
+	% Auto-assign (-aa=1, the default) : assign default options based on type of Known Solution
+	autoAssign = ~isfield(temp_par,'aa') || temp_par.aa==1;
+
+	if (autoAssign && isfield(temp_par, 'knownSolution'))
 		switch temp_par.knownSolution		
 			case 'GravityCapillaryWave'
 				par.xa=0;
