@@ -1,0 +1,16 @@
+# macOS
+.DS_Store
+
+# check file written by every ins run (saved baselines are check/ins*.check with other names)
+/ins.check
+/check/ins.check
+
+# LaTeX build output
+*.aux
+*.log
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.blg
+*.out
+*.toc

@@ -181,7 +181,7 @@ function outPar = ins(varargin)
     line = varargin{i};
 
     % Read command line arguments for any entry in the "par" class
-    temp_par = assignCommandLineOption( line, temp_par, temp_par.echo );
+    temp_par = assignCommandLineOption( line, temp_par, temp_par.echo, 1 ); % addNamesToPar=1 since temp_par starts nearly empty
   end
 
 	par = assignDefaults(temp_par, par);
