@@ -25,8 +25,8 @@ function [gf,par,ut,vt] = advanceAdams( t,dt, gf,cur, ut,vt,par )
   gf{next}.u(I1,I2) = gf{cur}.u(I1,I2) + par.ab1*ut(I1,I2) + par.ab2*utm(I1,I2); 
   gf{next}.v(I1,I2) = gf{cur}.v(I1,I2) + par.ab1*vt(I1,I2) + par.ab2*vtm(I1,I2); 
 
-  if( 1==0 ) %  && t<=1*dt )
-    fprintf('advanceAdams: Set (u,v) to exact at tnp1=%9.3e \n',tnp1);
+  if( par.cheat == 2 ) %  && t<=1*dt )
+    % fprintf('advanceAdams: Set (u,v) to exact at tnp1=%9.3e \n',tnp1);
     gf{next}.u(I1,I2) = par.ue(gf{next}.x(I1,I2,1),gf{next}.x(I1,I2,2),tnp1);
     gf{next}.v(I1,I2) = par.ve(gf{next}.x(I1,I2,1),gf{next}.x(I1,I2,2),tnp1);
   end
@@ -39,6 +39,12 @@ function [gf,par,ut,vt] = advanceAdams( t,dt, gf,cur, ut,vt,par )
   %   gf{next}.u(I1,I2) = par.ue(gf{next}.x(I1,I2,1),gf{next}.x(I1,I2,2),tnp1);
   %   gf{next}.v(I1,I2) = par.ve(gf{next}.x(I1,I2,1),gf{next}.x(I1,I2,2),tnp1);
   % end
+
+
+  if (par.cheat == 2)
+    gf{next}.u = par.ue( gf{next}.x(:, :, 1), gf{next}.x(:, :, 2), tnp1);
+	gf{next}.v = par.ve( gf{next}.x(:, :, 1), gf{next}.x(:, :, 2), tnp1);
+  end
 
   % --- solve the pressure equation ---
   if( par.gridMotion~=par.noMotion) par.factorPressureMatrix=1; end
