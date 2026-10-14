@@ -767,7 +767,7 @@ function [p,par] = pressureEquation( t,u,v,dt, gf,cur, par )
      end 
    end
 
-  if( par.useTrueForP )
+  if( par.cheat == 1 )
     % over-write the true solution for p
     [I1,I2] = getIndex(par.dim);
     p(I1,I2) = par.pe(gf{cur}.x(I1,I2,1),gf{cur}.x(I1,I2,2),t);

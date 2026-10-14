@@ -143,7 +143,6 @@ function outPar = ins(varargin)
   par.idebug                = 0;   % set to 1 for debugging TODO: Add more about other debugging types!!!
   par.computeErrors         = 0;   
   par.computeRelativeErrors = 0;   % 1 = compute relative errors  
-  par.useTrueForP           = 0;   % 1 = over-write true solution for p      
   par.verbose               = 0;   % Change to increase amount outputed                % TODO: Implement
   par.echo                  = 1;   % Parameter involved in assignCommandLineArguments
   par.checkFileName         = 'ins.check'; % name of the check file
@@ -192,7 +191,7 @@ function outPar = ins(varargin)
     temp_par = assignCommandLineOption( line, temp_par, temp_par.echo, 1 ); % addNamesToPar=1 since temp_par starts nearly empty
   end
 
-	par = assignDefaults(temp_par, par);
+  par = assignDefaults(temp_par, par);
 
   if( nargin==0 )
     fprintf('Usage\n');

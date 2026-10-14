@@ -12,9 +12,14 @@
 
 ### 10.08.26
 
-- [ ] Fix the traction boundary condition
+- [X] Fix the traction boundary condition
     - Note, Henshaw doesn't seem to have proof of traction BC converging quadratically with grid refinement
-    - [ ] Investigate how it works for other free surface solutions
-    - [ ] Investigate if pressure is the sole source of error
+    - [X] Investigate how it works for other free surface solutions
+    - [X] Investigate if pressure is the sole source of error
 - [ ] Fixing the `im2` timestepping scheme
-- [ ] Implementing a Travelling Wave Solution for an Annulus
+
+### 10.13.26
+
+- [ ] Implement Dan's travelling wave solutions
+    - [ ] In Cartesian Geometry
+    - [ ] In Annulus
