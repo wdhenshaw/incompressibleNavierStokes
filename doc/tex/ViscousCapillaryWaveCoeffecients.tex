@@ -1,0 +1,162 @@
+%!TEX root = ../insDoc.tex
+
+% -------------------------------------------------------------------
+\clearpage
+\section{Viscous gravity-capillary travelling wave} \label{sec:viscous_capillary_wave}
+
+The travelling wave solution of Section~\ref{sec:travelling_wave_linear_surface} is inviscid. Here we describe the viscous
+gravity-capillary travelling wave derived in Appendix C.2.1 of D.~Serino's thesis (results in Section 4.5.1 of the thesis) and how the
+coefficients of the solution are computed in \texttt{src/getViscousCapillaryWaveCoeffs.m}.
+
+% -------------------------------------------------------------------
+\subsection{Problem statement} \label{sec:vcw_problem}
+
+Consider a fluid in the channel $\xv\in[0,L]\times[-H,0]$ with a no-slip wall at $y=-H$ and a free surface linearized about $y=0$.
+Linearized travelling wave solutions are sought of the form
+\ba
+   \vv(x,y,t) = \hat{\vv}(y) e^{i(kx-\omega t)} , \qquad p(x,y,t) = -\rho g y + \hat{p}(y) e^{i(kx-\omega t)},  \label{eq:vcwAnsatz}
+\ea
+where $k = 2\pi n/L$ for a nonzero integer $n$, $\omega$ is a complex frequency, $g>0$ is the gravitational acceleration and
+$\hat{\vv}(y) = [\vHat_1(y),\vHat_2(y)]^T$, $\hat{p}(y)$ are coefficient functions. The physical solution is the real part of~\eqref{eq:vcwAnsatz}.
+Substituting~\eqref{eq:vcwAnsatz} into the linear Stokes equations gives
+\bse
+\label{eq:vcwODEs}
+\bat
+   & ik\vHat_1 + \vHat_2' = 0 , \\
+   & -i\omega\rho\vHat_1 + ik\hat{p} = \mu( -k^2\vHat_1 + \vHat_1'' ), \\
+   & -i\omega\rho\vHat_2 + \hat{p}' = \mu( -k^2\vHat_2 + \vHat_2'' ),
+\eat
+\ese
+and taking the divergence gives $\hat{p}'' - k^2 \hat{p} = 0$. The boundary conditions are no-slip at the bottom,
+\ba
+   \vHat_1(-H) = \vHat_2(-H) = 0,  \label{eq:vcwNoSlip}
+\ea
+and the linearized free surface conditions at $y=0$ (zero shear stress, and a normal stress balanced by gravity and surface tension),
+\ba
+   \hat{\tau}_{12}(0) = \mu\big( \vHat_1'(0) + ik\vHat_2(0) \big) = 0, \qquad
+   -\hat{p}(0) + 2\mu\vHat_2'(0) = -(\rho g + \gamma k^2)\, \uHat_2(0), \label{eq:vcwFreeSurface}
+\ea
+where $\uHat_2 = \vHat_2/(-i\omega)$ is the coefficient of the surface displacement. The gravity term comes from evaluating the
+hydrostatic pressure $-\rho g y$ at the displaced surface, and the surface tension term from the linearized curvature $\kappa \approx \eta_{xx}$.
+These conditions are consistent with the traction boundary condition~\eqref{eq:tractionBC} used by the code.
+
+% -------------------------------------------------------------------
+\subsection{Hyperbolic basis shifted to the bottom wall} \label{sec:vcw_basis}
+
+The thesis writes the coefficient functions with the exponentials $e^{\pm ky}$ and $e^{\pm\alpha y}$. At the bottom wall these
+become $e^{kH}$ and $e^{\alpha H}$ which are large, so the coefficients of $e^{-ky}$ and $e^{-\alpha y}$ must be correspondingly small
+(in Table 4.1 of the thesis, $B$ and $D$ are about $10^{-5}$ times $A$ and $C$). The resulting $4\times4$ system is poorly scaled, and this gets worse as $\nu$ decreases.
+
+\mni
+Instead we use hyperbolic functions of the distance from the bottom wall, $s = y + H \in[0,H]$. Let
+\ba
+   \alpha^2 = k^2 - \f{i\omega}{\nu}, \qquad q = \f{ik}{\rho\omega}, \qquad G = \rho g + \gamma k^2 .
+\ea
+\textbf{Note:} the sign of $\alpha^2$ follows (C.27) of the thesis, which is consistent with~\eqref{eq:vcwODEs}; equation (4.75) of the thesis has the sign reversed.
+The pressure is $\hat{p} = a\cosh(ks) + b\sinh(ks)$ and, since $k^2-\alpha^2 = i\omega/\nu$, the particular solution for $\vHat_2$
+is $-q\big(a\sinh(ks) + b\cosh(ks)\big)$. The general solution is then
+\bse
+\bat
+  & \hat{p}(s)   = a\cosh(ks) + b\sinh(ks), \\
+  & \vHat_2(s)   = -q\big( a\sinh(ks) + b\cosh(ks) \big) + c_1\cosh(\alpha s) + c_2\sinh(\alpha s), \\
+  & \vHat_1(s)   = \f{i}{k}\, \vHat_2'(s) .
+\eat
+\ese
+At $s=0$ we have $\cosh=1$ and $\sinh=0$, so the no-slip conditions~\eqref{eq:vcwNoSlip} give $c_1$ and $c_2$ in closed form,
+\ba
+   c_1 = q\, b , \qquad c_2 = q\,\f{k}{\alpha}\, a .
+\ea
+Substituting, the velocity and its derivatives become
+\bse
+\label{eq:vcwV2}
+\bat
+  & \vHat_2(s)   = q\Big[ a\Big( \f{k}{\alpha}\sinh(\alpha s) - \sinh(ks) \Big) + b\big( \cosh(\alpha s) - \cosh(ks) \big) \Big], \\
+  & \vHat_2'(s)  = q\Big[ a\, k\big( \cosh(\alpha s) - \cosh(ks) \big) + b\big( \alpha\sinh(\alpha s) - k\sinh(ks) \big) \Big], \\
+  & \vHat_2''(s) = q\Big[ a\, k\big( \alpha\sinh(\alpha s) - k\sinh(ks) \big) + b\big( \alpha^2\cosh(\alpha s) - k^2\cosh(ks) \big) \Big].
+\eat
+\ese
+Each term vanishes at the wall, and only the two constants $(a,b)$ remain.
+
+% -------------------------------------------------------------------
+\subsection{Dispersion relation} \label{sec:vcw_dispersion}
+
+Using $\vHat_1 = (i/k)\vHat_2'$, the free surface conditions~\eqref{eq:vcwFreeSurface} at $s=H$ become
+\ba
+   \vHat_2''(H) + k^2\vHat_2(H) = 0, \qquad -\hat{p}(H) + 2\mu\vHat_2'(H) + \f{iG}{\omega}\vHat_2(H) = 0 .
+\ea
+This is a homogeneous $2\times2$ system $M(\omega)[a,b]^T = 0$. To keep the entries $O(1)$ for small $\nu$, both rows are divided by $\cosh(\alpha H)$
+(and the first row also by $q$). With
+\ba
+   T_\alpha = \tanh(\alpha H), \qquad c_k = \f{\cosh(kH)}{\cosh(\alpha H)}, \qquad s_k = \f{\sinh(kH)}{\cosh(\alpha H)},
+\ea
+the entries are
+\bse
+\label{eq:vcwMatrix}
+\bat
+  & M_{11} = k\Big[ \Big(\alpha + \f{k^2}{\alpha}\Big) T_\alpha - 2k\, s_k \Big],  \qquad
+  && M_{12} = \alpha^2 + k^2 - 2k^2 c_k , \\
+  & M_{21} = -c_k + q\Big[ 2\mu k(1-c_k) + \f{iG}{\omega}\Big( \f{k}{\alpha}T_\alpha - s_k \Big) \Big], \qquad
+  && M_{22} = -s_k + q\Big[ 2\mu(\alpha T_\alpha - k s_k) + \f{iG}{\omega}(1-c_k) \Big].
+\eat
+\ese
+The dispersion relation is $\det M(\omega) = 0$. Some remarks on evaluating $M(\omega)$:
+\begin{itemize}
+  \item $\cosh(kH)$ and $\sinh(kH)$ do not depend on $\omega$ and are computed once.
+  \item Each evaluation needs only one complex exponential, $e^{-\alpha H}$, from which
+        $T_\alpha = (1-e^{-2\alpha H})/(1+e^{-2\alpha H})$ and $1/\cosh(\alpha H) = 2e^{-\alpha H}/(1+e^{-2\alpha H})$.
+        Taking the principal square root, $\Re(\alpha)\ge0$, keeps $e^{-\alpha H}$ bounded.
+  \item All entries are even functions of $\alpha$, so the branch of the square root does not affect $\det M$.
+\end{itemize}
+
+% -------------------------------------------------------------------
+\subsection{Solving for $\omega$ and the coefficients} \label{sec:vcw_solve}
+
+The complex root of $\det M(\omega)=0$ is found with a secant iteration in the complex plane (the Matlab function \texttt{fzero} only handles real functions).
+The initial guess is
+\ba
+   \omega_0 = \sqrt{ \Big( gk + \f{\gamma k^3}{\rho} \Big)\tanh(kH) } \; - \; 2i\nu k^2 , \label{eq:vcwOmegaGuess}
+\ea
+which combines the inviscid dispersion relation for gravity-capillary waves on a fluid of depth $H$ (the same relation used in Section~\ref{sec:travelling_wave_linear_surface})
+with the classical weak-viscosity decay rate $e^{-2\nu k^2 t}$ of a free surface wave (Lamb, \textit{Hydrodynamics}). This guess ignores the
+boundary layer at the bottom wall and is only accurate for small $\nu$. For the thesis parameters ($\nu=0.05$, $k=2\pi$, $\gamma=0.05$) it gives
+$\omega_0\approx 4.32-3.95i$ while the root in Table 4.1 is $\omega = 3.045-1.773i$. A warning is printed when the converged root differs from the default
+guess by more than 25\%, and the user can supply a guess with the command line option \texttt{-omega0} (no spaces in the value), e.g.
+\begin{Verbatim}[fontsize=\small]
+   ins -knownSolution=ViscousGravityCapillaryWave -omega0=3.045-1.773i ...
+\end{Verbatim}
+
+\mni
+Given $\omega$, the null vector $[a,b]^T$ is taken from the row of $M$ with the larger norm, $[a,b]^T = [-M_{12}, M_{11}]^T$ (or the equivalent from the second row).
+The constants are then normalized so that the surface displacement is real at $t=0$,
+\ba
+   \hat{\eta} = \uHat_2(H) = \f{i}{\omega}\vHat_2(H) = \eta_0 , \qquad \eta(x,t) = \Re\big( \eta_0 e^{i(kx-\omega t)} \big),
+\ea
+where $\eta_0$ is the amplitude given by \texttt{-ampfs}. At $t=0$ the surface is $\eta_0\cos(kx)$, which matches the existing free surface initial condition \texttt{-icfs=cos}.
+
+% -------------------------------------------------------------------
+\subsection{Comparison with the thesis constants} \label{sec:vcw_thesis}
+
+The thesis writes $\hat{p} = Ae^{ky} + Be^{-ky}$ and the homogeneous part of $\vHat_2$ as $Ce^{\alpha y} + De^{-\alpha y}$. These are related to our constants by
+\ba
+   A = \half(a+b)e^{kH}, \qquad B = \half(a-b)e^{-kH}, \qquad C = \half(c_1+c_2)e^{\alpha H}, \qquad D = \half(c_1-c_2)e^{-\alpha H}.
+\ea
+The thesis normalizes $|\hat{\uv}(0)| = u_0$ (equation (C.36)) but does not state the phase, so only ratios such as $B/A$, $C/A$, $D/A$ can be compared directly
+with Table 4.1. In addition $C$ and $D$ swap if $\alpha\rightarrow-\alpha$. These values are printed when \texttt{-idebug} is positive.
+
+% -------------------------------------------------------------------
+\subsection{Matlab implementation} \label{sec:vcw_matlab}
+
+The function
+\begin{Verbatim}[fontsize=\small]
+   [par, vcw] = getViscousCapillaryWaveCoeffs( par )
+\end{Verbatim}
+uses \texttt{par.kx} (already scaled by $2\pi$), \texttt{par.xa, par.xb, par.ya, par.yb}, \texttt{par.nu}, \texttt{par.rho}, \texttt{par.gravity}
+(the code uses \texttt{gravity}$<0$ so $g=-$\texttt{par.gravity}), \texttt{par.gamma}, \texttt{par.ampfs} and \texttt{par.omega0}
+($0$ means use the default guess~\eqref{eq:vcwOmegaGuess}). It returns
+\begin{description}
+   \item[\texttt{par.DispersionRelation}] the complex frequency $\omega$, which is used by the free surface initial condition in \texttt{getGrid.m}.
+   \item[\texttt{vcw}] a structure with the fields \texttt{omega, alpha, k, H, q, a, b, c1, c2} needed by \texttt{defineKnownSolution.m} to evaluate the exact
+     solution~\eqref{eq:vcwV2}, and \texttt{ABCD}, the thesis constants scaled by $u_0$, for checking against Table 4.1.
+\end{description}
+The thesis results in Table 4.1 use $L=H=1$, $\nu=0.05$, $k=2\pi$, $\rho=1$, $g=1$ and $\gamma=0.05,\,0.1,\,0.2$.
+

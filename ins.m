@@ -111,6 +111,7 @@ function outPar = ins(varargin)
   par.map = 'Cartesian';           % 'Cartesian', 'Rectangle', 'Annulus', 'TFI', 'rotatedSquare', 'freeSurface', ...
   par.icfs  = 'sine';              % free surface initial condition ['sine','gaussian','cos']
   par.ampfs = 0.05;                % initial free surface amplitude
+  par.omega0 = 0;                  % initial guess for the complex traveling wave frequency (0 = use default guess)
 
   % Motion Parameters
   par.motion='none';   % [none|translate|rotate|deform]
@@ -202,6 +203,7 @@ function outPar = ins(varargin)
     fprintf('     -motion=[none|translate|rotate|deform]\n');
     fprintf('     -ic=[default|constant|zero|shear]\n');
     fprintf('     -icfs=[sine|gaussian]\n');
+    fprintf('     -omega0=<f> : complex initial guess for the traveling wave frequency, no spaces (e.g. -omega0=3.045-1.773i)\n');
     fprintf('where:')
     fprintf(' bcs : list of four letters, d=Dirichlet, n=no-slip wall, s=slip wall, i=inflow, I=pressure inflow, o=outflow\n');
     fprintf('     : examples -bcs=ions : left=i, right=o, bottom=n, top=s\n');
