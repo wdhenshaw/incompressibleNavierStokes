@@ -70,29 +70,29 @@ function [par, vcw] = getViscousCapillaryWaveCoeffs( par )
   a = ab(1);
   b = ab(2);
 
-  % Normalize so the surface displacement etaHat = (i/omega) v2Hat(H) = ampfs is real
+  % Normalize so the surface displacement etaHat = (i/omega) vHat(H) = ampfs is real
   alpha = sqrt( k^2 - 1i*omega/nu );
   q = 1i*k/(rho*omega);
   coshAH = cosh(alpha*H);
   sinhAH = sinh(alpha*H);
-  v2HatH = q*( a*( (k/alpha)*sinhAH - sinhKH ) + b*( coshAH - coshKH ) );
-  etaHat = (1i/omega)*v2HatH;
+  vHatH = q*( a*( (k/alpha)*sinhAH - sinhKH ) + b*( coshAH - coshKH ) );
+  etaHat = (1i/omega)*vHatH;
 
   scale = par.ampfs/etaHat;
   a = a*scale;
   b = b*scale;
-  v2HatH = v2HatH*scale;
+  vHatH = vHatH*scale;
   c1 = q*b;
   c2 = q*(k/alpha)*a;
 
-  % Thesis constants (C.26)-(C.29), scaled so |uHat(0)| = 1 as in (C.36), for comparison with Table 4.1.
+  % Thesis constants (C.26)-(C.29), scaled so the surface displacement |(uHat,vHat)|/|omega| = 1 at y=0 as in (C.36), for comparison with Table 4.1.
   % The thesis phase is not known so only ratios such as B/A, C/A, D/A are directly comparable.
-  v1HatH = (1i/k)*q*( a*k*( coshAH - coshKH ) + b*( alpha*sinhAH - k*sinhKH ) );
-  u0 = sqrt( abs(v1HatH)^2 + abs(v2HatH)^2 )/abs(omega);
-  A = 0.5*(a + b)*exp( k*H)/u0;
-  B = 0.5*(a - b)*exp(-k*H)/u0;
-  C = 0.5*(c1 + c2)*exp( alpha*H)/u0;
-  D = 0.5*(c1 - c2)*exp(-alpha*H)/u0;
+  uHatH = (1i/k)*q*( a*k*( coshAH - coshKH ) + b*( alpha*sinhAH - k*sinhKH ) );
+  dispMag = sqrt( abs(uHatH)^2 + abs(vHatH)^2 )/abs(omega);
+  A = 0.5*(a + b)*exp( k*H)/dispMag;
+  B = 0.5*(a - b)*exp(-k*H)/dispMag;
+  C = 0.5*(c1 + c2)*exp( alpha*H)/dispMag;
+  D = 0.5*(c1 - c2)*exp(-alpha*H)/dispMag;
 
   par.DispersionRelation = omega;
 
@@ -135,23 +135,23 @@ function [par, vcw] = getViscousCapillaryWaveCoeffs( par )
     sinhKHsechAH = sinhKH*sechAH;      % sinh(k H)/cosh(alpha H)
 
     % At s=H, scaled by 1/cosh(alpha H):
-    %   v2Hat   = qw*( a*v2HatA   + b*v2HatB   )
-    %   v2Hat'  = qw*( a*v2HatyA  + b*v2HatyB  )
-    %   v2Hat'' = qw*( a*v2HatyyA + b*v2HatyyB )
-    v2HatA   = (k/alphaw)*tanhAH - sinhKHsechAH;
-    v2HatB   = 1 - coshKHsechAH;
-    v2HatyA  = k*(1 - coshKHsechAH);
-    v2HatyB  = alphaw*tanhAH - k*sinhKHsechAH;
-    v2HatyyA = k*(alphaw*tanhAH - k*sinhKHsechAH);
-    v2HatyyB = alphaw^2 - k^2*coshKHsechAH;
+    %   vHat   = qw*( a*vHatA   + b*vHatB   )
+    %   vHat'  = qw*( a*vHatyA  + b*vHatyB  )
+    %   vHat'' = qw*( a*vHatyyA + b*vHatyyB )
+    vHatA   = (k/alphaw)*tanhAH - sinhKHsechAH;
+    vHatB   = 1 - coshKHsechAH;
+    vHatyA  = k*(1 - coshKHsechAH);
+    vHatyB  = alphaw*tanhAH - k*sinhKHsechAH;
+    vHatyyA = k*(alphaw*tanhAH - k*sinhKHsechAH);
+    vHatyyB = alphaw^2 - k^2*coshKHsechAH;
 
     Mw = zeros(2,2);
-    % shear stress: v2Hat'' + k^2 v2Hat = 0  (common factor qw dropped)
-    Mw(1,1) = v2HatyyA + k^2*v2HatA;
-    Mw(1,2) = v2HatyyB + k^2*v2HatB;
-    % normal stress: -pHat + 2 mu v2Hat' + (i G/omega) v2Hat = 0
-    Mw(2,1) = -coshKHsechAH + qw*( 2*mu*v2HatyA + (1i*G/omega)*v2HatA );
-    Mw(2,2) = -sinhKHsechAH + qw*( 2*mu*v2HatyB + (1i*G/omega)*v2HatB );
+    % shear stress: vHat'' + k^2 vHat = 0  (common factor qw dropped)
+    Mw(1,1) = vHatyyA + k^2*vHatA;
+    Mw(1,2) = vHatyyB + k^2*vHatB;
+    % normal stress: -pHat + 2 mu vHat' + (i G/omega) vHat = 0
+    Mw(2,1) = -coshKHsechAH + qw*( 2*mu*vHatyA + (1i*G/omega)*vHatA );
+    Mw(2,2) = -sinhKHsechAH + qw*( 2*mu*vHatyB + (1i*G/omega)*vHatB );
 
   end
 

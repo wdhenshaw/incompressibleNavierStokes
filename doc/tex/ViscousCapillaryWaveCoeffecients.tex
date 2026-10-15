@@ -14,29 +14,29 @@ coefficients of the solution are computed in \texttt{src/getViscousCapillaryWave
 Consider a fluid in the channel $\xv\in[0,L]\times[-H,0]$ with a no-slip wall at $y=-H$ and a free surface linearized about $y=0$.
 Linearized travelling wave solutions are sought of the form
 \ba
-   \vv(x,y,t) = \hat{\vv}(y) e^{i(kx-\omega t)} , \qquad p(x,y,t) = -\rho g y + \hat{p}(y) e^{i(kx-\omega t)},  \label{eq:vcwAnsatz}
+   \uv(x,y,t) = \hat{\uv}(y) e^{i(kx-\omega t)} , \qquad p(x,y,t) = -\rho g y + \hat{p}(y) e^{i(kx-\omega t)},  \label{eq:vcwAnsatz}
 \ea
 where $k = 2\pi n/L$ for a nonzero integer $n$, $\omega$ is a complex frequency, $g>0$ is the gravitational acceleration and
-$\hat{\vv}(y) = [\vHat_1(y),\vHat_2(y)]^T$, $\hat{p}(y)$ are coefficient functions. The physical solution is the real part of~\eqref{eq:vcwAnsatz}.
+$\hat{\uv}(y) = [\uHat(y),\vHat(y)]^T$, $\hat{p}(y)$ are coefficient functions. The physical solution is the real part of~\eqref{eq:vcwAnsatz}.
 Substituting~\eqref{eq:vcwAnsatz} into the linear Stokes equations gives
 \bse
 \label{eq:vcwODEs}
 \bat
-   & ik\vHat_1 + \vHat_2' = 0 , \\
-   & -i\omega\rho\vHat_1 + ik\hat{p} = \mu( -k^2\vHat_1 + \vHat_1'' ), \\
-   & -i\omega\rho\vHat_2 + \hat{p}' = \mu( -k^2\vHat_2 + \vHat_2'' ),
+   & ik\uHat + \vHat' = 0 , \\
+   & -i\omega\rho\uHat + ik\hat{p} = \mu( -k^2\uHat + \uHat'' ), \\
+   & -i\omega\rho\vHat + \hat{p}' = \mu( -k^2\vHat + \vHat'' ),
 \eat
 \ese
 and taking the divergence gives $\hat{p}'' - k^2 \hat{p} = 0$. The boundary conditions are no-slip at the bottom,
 \ba
-   \vHat_1(-H) = \vHat_2(-H) = 0,  \label{eq:vcwNoSlip}
+   \uHat(-H) = \vHat(-H) = 0,  \label{eq:vcwNoSlip}
 \ea
 and the linearized free surface conditions at $y=0$ (zero shear stress, and a normal stress balanced by gravity and surface tension),
 \ba
-   \hat{\tau}_{12}(0) = \mu\big( \vHat_1'(0) + ik\vHat_2(0) \big) = 0, \qquad
-   -\hat{p}(0) + 2\mu\vHat_2'(0) = -(\rho g + \gamma k^2)\, \uHat_2(0), \label{eq:vcwFreeSurface}
+   \hat{\tau}_{12}(0) = \mu\big( \uHat'(0) + ik\vHat(0) \big) = 0, \qquad
+   -\hat{p}(0) + 2\mu\vHat'(0) = -(\rho g + \gamma k^2)\, \hat{\eta}, \label{eq:vcwFreeSurface}
 \ea
-where $\uHat_2 = \vHat_2/(-i\omega)$ is the coefficient of the surface displacement. The gravity term comes from evaluating the
+where $\hat{\eta} = \vHat(0)/(-i\omega)$ is the coefficient of the surface displacement $\eta(x,t)$. The gravity term comes from evaluating the
 hydrostatic pressure $-\rho g y$ at the displaced surface, and the surface tension term from the linearized curvature $\kappa \approx \eta_{xx}$.
 These conditions are consistent with the traction boundary condition~\eqref{eq:tractionBC} used by the code.
 
@@ -53,13 +53,13 @@ Instead we use hyperbolic functions of the distance from the bottom wall, $s = y
    \alpha^2 = k^2 - \f{i\omega}{\nu}, \qquad q = \f{ik}{\rho\omega}, \qquad G = \rho g + \gamma k^2 .
 \ea
 \textbf{Note:} the sign of $\alpha^2$ follows (C.27) of the thesis, which is consistent with~\eqref{eq:vcwODEs}; equation (4.75) of the thesis has the sign reversed.
-The pressure is $\hat{p} = a\cosh(ks) + b\sinh(ks)$ and, since $k^2-\alpha^2 = i\omega/\nu$, the particular solution for $\vHat_2$
+The pressure is $\hat{p} = a\cosh(ks) + b\sinh(ks)$ and, since $k^2-\alpha^2 = i\omega/\nu$, the particular solution for $\vHat$
 is $-q\big(a\sinh(ks) + b\cosh(ks)\big)$. The general solution is then
 \bse
 \bat
   & \hat{p}(s)   = a\cosh(ks) + b\sinh(ks), \\
-  & \vHat_2(s)   = -q\big( a\sinh(ks) + b\cosh(ks) \big) + c_1\cosh(\alpha s) + c_2\sinh(\alpha s), \\
-  & \vHat_1(s)   = \f{i}{k}\, \vHat_2'(s) .
+  & \vHat(s)   = -q\big( a\sinh(ks) + b\cosh(ks) \big) + c_1\cosh(\alpha s) + c_2\sinh(\alpha s), \\
+  & \uHat(s)   = \f{i}{k}\, \vHat'(s) .
 \eat
 \ese
 At $s=0$ we have $\cosh=1$ and $\sinh=0$, so the no-slip conditions~\eqref{eq:vcwNoSlip} give $c_1$ and $c_2$ in closed form,
@@ -70,9 +70,9 @@ Substituting, the velocity and its derivatives become
 \bse
 \label{eq:vcwV2}
 \bat
-  & \vHat_2(s)   = q\Big[ a\Big( \f{k}{\alpha}\sinh(\alpha s) - \sinh(ks) \Big) + b\big( \cosh(\alpha s) - \cosh(ks) \big) \Big], \\
-  & \vHat_2'(s)  = q\Big[ a\, k\big( \cosh(\alpha s) - \cosh(ks) \big) + b\big( \alpha\sinh(\alpha s) - k\sinh(ks) \big) \Big], \\
-  & \vHat_2''(s) = q\Big[ a\, k\big( \alpha\sinh(\alpha s) - k\sinh(ks) \big) + b\big( \alpha^2\cosh(\alpha s) - k^2\cosh(ks) \big) \Big].
+  & \vHat(s)   = q\Big[ a\Big( \f{k}{\alpha}\sinh(\alpha s) - \sinh(ks) \Big) + b\big( \cosh(\alpha s) - \cosh(ks) \big) \Big], \\
+  & \vHat'(s)  = q\Big[ a\, k\big( \cosh(\alpha s) - \cosh(ks) \big) + b\big( \alpha\sinh(\alpha s) - k\sinh(ks) \big) \Big], \\
+  & \vHat''(s) = q\Big[ a\, k\big( \alpha\sinh(\alpha s) - k\sinh(ks) \big) + b\big( \alpha^2\cosh(\alpha s) - k^2\cosh(ks) \big) \Big].
 \eat
 \ese
 Each term vanishes at the wall, and only the two constants $(a,b)$ remain.
@@ -80,9 +80,9 @@ Each term vanishes at the wall, and only the two constants $(a,b)$ remain.
 % -------------------------------------------------------------------
 \subsection{Dispersion relation} \label{sec:vcw_dispersion}
 
-Using $\vHat_1 = (i/k)\vHat_2'$, the free surface conditions~\eqref{eq:vcwFreeSurface} at $s=H$ become
+Using $\uHat = (i/k)\vHat'$, the free surface conditions~\eqref{eq:vcwFreeSurface} at $s=H$ become
 \ba
-   \vHat_2''(H) + k^2\vHat_2(H) = 0, \qquad -\hat{p}(H) + 2\mu\vHat_2'(H) + \f{iG}{\omega}\vHat_2(H) = 0 .
+   \vHat''(H) + k^2\vHat(H) = 0, \qquad -\hat{p}(H) + 2\mu\vHat'(H) + \f{iG}{\omega}\vHat(H) = 0 .
 \ea
 This is a homogeneous $2\times2$ system $M(\omega)[a,b]^T = 0$. To keep the entries $O(1)$ for small $\nu$, both rows are divided by $\cosh(\alpha H)$
 (and the first row also by $q$). With
@@ -129,18 +129,18 @@ guess by more than 25\%, and the user can supply a guess with the command line o
 Given $\omega$, the null vector $[a,b]^T$ is taken from the row of $M$ with the larger norm, $[a,b]^T = [-M_{12}, M_{11}]^T$ (or the equivalent from the second row).
 The constants are then normalized so that the surface displacement is real at $t=0$,
 \ba
-   \hat{\eta} = \uHat_2(H) = \f{i}{\omega}\vHat_2(H) = \eta_0 , \qquad \eta(x,t) = \Re\big( \eta_0 e^{i(kx-\omega t)} \big),
+   \hat{\eta} = \f{i}{\omega}\vHat(H) = \eta_0 , \qquad \eta(x,t) = \Re\big( \eta_0 e^{i(kx-\omega t)} \big),
 \ea
 where $\eta_0$ is the amplitude given by \texttt{-ampfs}. At $t=0$ the surface is $\eta_0\cos(kx)$, which matches the existing free surface initial condition \texttt{-icfs=cos}.
 
 % -------------------------------------------------------------------
 \subsection{Comparison with the thesis constants} \label{sec:vcw_thesis}
 
-The thesis writes $\hat{p} = Ae^{ky} + Be^{-ky}$ and the homogeneous part of $\vHat_2$ as $Ce^{\alpha y} + De^{-\alpha y}$. These are related to our constants by
+The thesis writes $\hat{p} = Ae^{ky} + Be^{-ky}$ and the homogeneous part of $\vHat$ as $Ce^{\alpha y} + De^{-\alpha y}$. These are related to our constants by
 \ba
    A = \half(a+b)e^{kH}, \qquad B = \half(a-b)e^{-kH}, \qquad C = \half(c_1+c_2)e^{\alpha H}, \qquad D = \half(c_1-c_2)e^{-\alpha H}.
 \ea
-The thesis normalizes $|\hat{\uv}(0)| = u_0$ (equation (C.36)) but does not state the phase, so only ratios such as $B/A$, $C/A$, $D/A$ can be compared directly
+The thesis normalizes the magnitude of the surface displacement vector, $|\hat{\uv}(0)|/|\omega| = u_0$ (equation (C.36), where the thesis uses $\hat{\uv}$ for the displacement), but does not state the phase, so only ratios such as $B/A$, $C/A$, $D/A$ can be compared directly
 with Table 4.1. In addition $C$ and $D$ swap if $\alpha\rightarrow-\alpha$. These values are printed when \texttt{-idebug} is positive.
 
 % -------------------------------------------------------------------

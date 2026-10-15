@@ -167,6 +167,72 @@ elseif( strcmp(knownSolution,'GravityCapillaryWave') )
 	par.pfe = @(x,y,t) 0.;
 
 
+% Linearized viscous gravity-capillary travelling wave with a no-slip wall at y=ya and a free surface at y=yb
+% (Dan's thesis, Appendix C.2.1). See getViscousCapillaryWaveCoeffs.m for the coefficients.
+elseif( strcmp(knownSolution,'ViscousCapillaryWave') )
+
+  par.computeErrors=1;
+
+  [par, vcw] = getViscousCapillaryWaveCoeffs( par );
+
+  k     = vcw.k;
+  omega = vcw.omega;
+  alpha = vcw.alpha;
+  q     = vcw.q;
+  a     = vcw.a;
+  b     = vcw.b;
+  rho   = par.rho;
+  g     = -par.gravity;   % main code uses gravity<0, the TW solution uses g>0
+  ya    = par.ya;
+  yb    = par.yb;
+
+  % Distance from the bottom wall
+  s = @(y) y - ya;
+
+  % Travelling wave factor exp(i(k x - omega t))
+  wave = @(x,t) exp( 1i*( k*x - omega*t ) );
+
+  % Coefficient functions for the pressure and the vertical velocity and their y-derivatives
+  pHat  = @(y)       a*cosh(k*s(y)) + b*sinh(k*s(y));
+  pHaty = @(y)     k*( a*sinh(k*s(y)) + b*cosh(k*s(y)) );
+
+  vHat    = @(y) q*( a*( (k/alpha)*sinh(alpha*s(y)) - sinh(k*s(y)) ) + b*( cosh(alpha*s(y)) - cosh(k*s(y)) ) );
+  vHaty   = @(y) q*( a*k*( cosh(alpha*s(y)) - cosh(k*s(y)) ) + b*( alpha*sinh(alpha*s(y)) - k*sinh(k*s(y)) ) );
+  vHatyy  = @(y) q*( a*k*( alpha*sinh(alpha*s(y)) - k*sinh(k*s(y)) ) + b*( alpha^2*cosh(alpha*s(y)) - k^2*cosh(k*s(y)) ) );
+  vHatyyy = @(y) q*( a*k*( alpha^2*cosh(alpha*s(y)) - k^2*cosh(k*s(y)) ) + b*( alpha^3*sinh(alpha*s(y)) - k^3*sinh(k*s(y)) ) );
+
+  % The horizontal velocity follows from the divergence: uHat = (i/k) vHat'
+  uHat   = @(y) (1i/k)*vHaty(y);
+  uHaty  = @(y) (1i/k)*vHatyy(y);
+  uHatyy = @(y) (1i/k)*vHatyyy(y);
+
+  par.ue   = @(x,y,t) real(              uHat  (y).*wave(x,t) );
+  par.uex  = @(x,y,t) real(     (1i*k)*uHat  (y).*wave(x,t) );
+  par.uey  = @(x,y,t) real(              uHaty (y).*wave(x,t) );
+  par.uexx = @(x,y,t) real(     (-k^2)*uHat  (y).*wave(x,t) );
+  par.uexy = @(x,y,t) real(     (1i*k)*uHaty (y).*wave(x,t) );
+  par.ueyy = @(x,y,t) real(              uHatyy(y).*wave(x,t) );
+  par.uet  = @(x,y,t) real( (-1i*omega)*uHat  (y).*wave(x,t) );
+
+  par.ve   = @(x,y,t) real(              vHat  (y).*wave(x,t) );
+  par.vex  = @(x,y,t) real(     (1i*k)*vHat  (y).*wave(x,t) );
+  par.vey  = @(x,y,t) real(              vHaty (y).*wave(x,t) );
+  par.vexx = @(x,y,t) real(     (-k^2)*vHat  (y).*wave(x,t) );
+  par.vexy = @(x,y,t) real(     (1i*k)*vHaty (y).*wave(x,t) );
+  par.veyy = @(x,y,t) real(              vHatyy(y).*wave(x,t) );
+  par.vet  = @(x,y,t) real( (-1i*omega)*vHat  (y).*wave(x,t) );
+
+  % Hydrostatic pressure is measured from the undisturbed surface y=yb
+  par.pe  = @(x,y,t) -rho*g*(y - yb) + real(        pHat (y).*wave(x,t) );
+  par.pex = @(x,y,t)                   real( (1i*k)*pHat (y).*wave(x,t) );
+  par.pey = @(x,y,t) -rho*g          + real(        pHaty(y).*wave(x,t) );
+
+  % No forcing required as the solution is exact for the linearized equations
+  par.ufe = @(x,y,t) 0.;
+  par.vfe = @(x,y,t) 0.;
+  par.pfe = @(x,y,t) 0.;
+
+
 elseif( strcmp(knownSolution,'none') )
 
   if( strcmp(par.ms,'none') )
