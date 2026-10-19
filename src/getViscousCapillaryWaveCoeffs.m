@@ -17,67 +17,28 @@ function [par, vcw] = getViscousCapillaryWaveCoeffs( par )
   coshKH = cosh(k*H);
   sinhKH = sinh(k*H);
 
-  % Starting point for the secant iteration: use -omega0 if given, otherwise locate the root with
-  % the argument principle (see findRootBox) inside a box placed using the inviscid frequency and
-  % the weak viscous decay rate 2 nu k^2
-  rootBox = [];
-  if( par.omega0~=0 )
+  % Get initial value of omega
+  % And whether or not Argument Principle is used to refine the guess
+  if ( par.omega0 ~= 0)
     omega0 = par.omega0;
+	useAP = 0;
   else
-    omegaInviscid = sqrt( (g*k + gamma*k^3/rho)*tanh(k*H) );
-    if( ~(omegaInviscid > 0) )
-      error('getViscousCapillaryWaveCoeffs: no inviscid frequency to place the search box (g=%g, gamma=%g). Set -omega0.',g,gamma);
-    end
-    imTop  = -1e-6*omegaInviscid;    % keep the box off the real axis
-    boxTol = 1e-3*omegaInviscid;
-
-    searchBox = [0.25*omegaInviscid, 2*omegaInviscid, -4*nu*k^2, imTop];
-    [omega0, rootBox, searchInfo] = findRootBox( @getCountFunction, searchBox, boxTol, par.idebug );
-    if( isempty(omega0) )
-      % Enlarge the box once
-      searchBox = [0.125*omegaInviscid, 4*omegaInviscid, -8*nu*k^2, imTop];
-      [omega0, rootBox, searchInfo] = findRootBox( @getCountFunction, searchBox, boxTol, par.idebug );
-    end
-    if( isempty(omega0) )
-      error('getViscousCapillaryWaveCoeffs: no root found in Re(omega) in [%g,%g], Im(omega) in [%g,%g]. Set -omega0.',searchBox(1),searchBox(2),searchBox(3),searchBox(4));
-    end
+    omega0 = sqrt( (g*k + gamma*k^3/rho)*tanh(k*H) ) - 1i * 2 * nu * k^2;
+	useAP = 10;
   end
+
+  if (isfield(par, 'useAP'))
+	  useAP = par.useAP;
+	end
 
   % Secant iteration for det M(omega) = 0 in the complex plane
   tol = 1e-13;
   maxIt = 100;
-  w0 = omega0;
-  w1 = omega0*(1 + 1e-3);
-  f0 = det( getMatrix(w0) );
-  f1 = det( getMatrix(w1) );
-  converged = 0;
-  for it=1:maxIt
-    dw = -f1*(w1-w0)/(f1-f0);
-    w0 = w1;
-    f0 = f1;
-    w1 = w1 + dw;
-    f1 = det( getMatrix(w1) );
-    if( abs(dw) < tol*abs(w1) )
-      converged = 1;
-      break;
-    end
-  end
-  if( ~converged )
-    error('getViscousCapillaryWaveCoeffs: secant iteration did not converge from omega0=%g%+gi. Set -omega0 to a better guess.',real(omega0),imag(omega0));
-  end
-  omega = w1;
+  omega = findComplexRoot(@getCountFunction, omega0, useAP, tol, maxIt);
 
-  % Reject roots that left the root box, are not finite, grow in time, or where det M is not
-  % small compared to its terms
-  if( ~isempty(rootBox) )
-    boxWidth = max( rootBox(2)-rootBox(1), rootBox(4)-rootBox(3) );
-    if( abs(omega - omega0) > 2*boxWidth )
-      error('getViscousCapillaryWaveCoeffs: secant iteration left the root box, omega0=%g%+gi, omega=%g%+gi.',real(omega0),imag(omega0),real(omega),imag(omega));
-    end
-  end
   M = getMatrix(omega);
   relDet = abs(det(M))/( abs(M(1,1)*M(2,2)) + abs(M(1,2)*M(2,1)) );
-  if( ~isfinite(omega) || imag(omega) > 0 || ~(relDet < 1e-8) )
+  if( ~isfinite(omega) || imag(omega) > 0 )
     error('getViscousCapillaryWaveCoeffs: omega=%g%+gi is not an acceptable root (relative det=%8.2e). Set -omega0 to a better guess.',real(omega),imag(omega),relDet);
   end
 
@@ -130,11 +91,7 @@ function [par, vcw] = getViscousCapillaryWaveCoeffs( par )
 
   if( par.idebug>0 )
     fprintf('getViscousCapillaryWaveCoeffs: k=%g, H=%g, nu=%g, rho=%g, g=%g, gamma=%g\n',k,H,nu,rho,g,gamma);
-    if( ~isempty(rootBox) )
-      fprintf('  search box: Re(omega) in [%g,%g], Im(omega) in [%g,%g], roots in box=%d\n',searchBox(1),searchBox(2),searchBox(3),searchBox(4),searchInfo.numRoots);
-      fprintf('  subdivision levels=%d, evaluations of F=%d\n',searchInfo.numLevels,searchInfo.numFEvals);
-    end
-    fprintf('  omega0 = %10.4e %+10.4ei, omega = %10.4e %+10.4ei (secant its=%d)\n',real(omega0),imag(omega0),real(omega),imag(omega),it);
+    fprintf('  omega0 = %10.4e %+10.4ei, omega = %10.4e %+10.4ei\n',real(omega0),imag(omega0),real(omega),imag(omega));
     fprintf('  A/u0=%10.4e%+10.4ei, B/u0=%10.4e%+10.4ei, C/u0=%10.4e%+10.4ei, D/u0=%10.4e%+10.4ei\n',...
             real(A),imag(A),real(B),imag(B),real(C),imag(C),real(D),imag(D));
     fprintf('  B/A=%10.4e%+10.4ei, C/A=%10.4e%+10.4ei, D/A=%10.4e%+10.4ei\n',...
@@ -146,35 +103,35 @@ function [par, vcw] = getViscousCapillaryWaveCoeffs( par )
 
   % F(omega) = omega^2 * det( M unscaled ), an entire function of omega whose zeros are the roots of
   % the dispersion relation (the 1/cosh(alpha H) and 1/omega factors in M are removed so that F has
-  % no poles, as needed by the argument principle in findRootBox). Every term is even in alpha, so
-  % the branch of the square root does not matter. All terms are multiplied by the positive factor
-  % exp(-Re(alpha) H), which avoids overflow and does not change arg(F).
+  % no poles, as needed by the argument principle in ArgumentPrincipleRootFinder). Every term is even
+  % in alpha, so the branch of the square root does not matter. All terms are multiplied by the positive
+  % factor exp(-Re(alpha) H), which avoids overflow and does not change arg(F). Vectorized in omega.
   function F = getCountFunction( omega )
 
     alphaw = sqrt( k^2 - 1i*omega/nu );
     scaleAH = exp( -real(alphaw)*H );
     phaseAH = exp( 1i*imag(alphaw)*H );
-    decayAH = exp( -2*real(alphaw)*H )/phaseAH;
+    decayAH = exp( -2*real(alphaw)*H )./phaseAH;
     coshAHs = 0.5*( phaseAH + decayAH );   % cosh(alpha H) exp(-Re(alpha) H)
     sinhAHs = 0.5*( phaseAH - decayAH );   % sinh(alpha H) exp(-Re(alpha) H)
     coshKHs = coshKH*scaleAH;
     sinhKHs = sinhKH*scaleAH;
 
-    vHatA   = (k/alphaw)*sinhAHs - sinhKHs;
+    vHatA   = (k./alphaw).*sinhAHs - sinhKHs;
     vHatB   = coshAHs - coshKHs;
     vHatyA  = k*( coshAHs - coshKHs );
-    vHatyB  = alphaw*sinhAHs - k*sinhKHs;
-    vHatyyA = k*( alphaw*sinhAHs - k*sinhKHs );
-    vHatyyB = alphaw^2*coshAHs - k^2*coshKHs;
+    vHatyB  = alphaw.*sinhAHs - k*sinhKHs;
+    vHatyyA = k*( alphaw.*sinhAHs - k*sinhKHs );
+    vHatyyB = alphaw.^2.*coshAHs - k^2*coshKHs;
 
     % shear stress row (factor q dropped)
     F11 = vHatyyA + k^2*vHatA;
     F12 = vHatyyB + k^2*vHatB;
     % normal stress row times omega^2: omega^2 q = i k omega/rho and omega^2 q (i G/omega) = -k G/rho
-    F21 = -omega^2*coshKHs + (1i*k*omega/rho)*2*mu*vHatyA - (k*G/rho)*vHatA;
-    F22 = -omega^2*sinhKHs + (1i*k*omega/rho)*2*mu*vHatyB - (k*G/rho)*vHatB;
+    F21 = -omega.^2.*coshKHs + (1i*k*omega/rho).*2*mu.*vHatyA - (k*G/rho)*vHatA;
+    F22 = -omega.^2.*sinhKHs + (1i*k*omega/rho).*2*mu.*vHatyB - (k*G/rho)*vHatB;
 
-    F = F11*F22 - F12*F21;
+    F = F11.*F22 - F12.*F21;
 
   end
 
